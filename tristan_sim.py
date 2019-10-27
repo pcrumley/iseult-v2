@@ -1,50 +1,116 @@
-from functools import lru_cache, cachedProperty
+from functools import lru_cache#, #cached_property
 import re, sys, os, h5py
 import numpy as np
 
-
-
 @lru_cache(maxsize = 32)
-def get_file_numbers(dirpath = None,
-                    sim_type = 'v2'):
-    if
+def get_flist_numbers(outdir = None, sim_type = 'v2'):
+    """A function that gets passed a directory and simulation type
+    and retuns an ordered list of all the endings of the simulation output files.
+    """
+    if sim_type == 'v2':
+        output_file_names = ['domain.*', 'flds.tot.*', 'spec.tot.*', 'prtl.tot.*']
+    else:
+        output_file_names = []
+    output_file_keys = [key.split('.')[0] for key in output_file_names]
+    output_file_regex = [re.compile(elm) for elm in  output_file_names]
+    path_dict = {}
     try:
         # Create a dictionary of all the paths to the files
-        hasStar = 0
-        for key, regEx in zip(self._outputFileKey, self._outputFileRegEx):
-            self._pathDict[key] = [item for item in filter(regEx.match, os.listdir(self.dir))]
-            self._pathDict[key].sort()
-            for i in range(len(self._pathDict[key])):
-                elm = self._pathDict[key][i]
+        has_star = 0
+        for key, regex in zip(output_file_keys, output_file_regex):
+            path_dict[key] = [item for item in filter(regex.match, os.listdir(outdir))]
+            path_dict[key].sort()
+            for i in range(len(path_dict[key])):
+                elm = path_dict[key][i]
                 try:
                     int(elm.split('.')[-1])
-                 except ValueError:
+                except ValueError:
                     if elm.split('.')[-1] == '***':
-                        hasStar += 1
-                    self._pathDict[key].remove(elm)
+                        has_star += 1
+                    path_dict[key].remove(elm)
         ### GET THE NUMBERS THAT HAVE ALL SET OF FILES:
-        allThere = set(elm.split('.')[-1] for elm in self._pathDict[self._outputFileKey[0]])
-        for key in self._pathDict.keys():
-            allThere &= set(elm.split('.')[-1] for elm in self._pathDict[key])
-        allThere = list(sorted(allThere, key = lambda x: int(x)))
-        if hasStar == len(self._pathDict.keys()):
-            allThere.append('***')
-        return allThere
+        all_there = set(elm.split('.')[-1] for elm in path_dict[output_file_keys[0]])
+        for key in path_dict.keys():
+            all_there &= set(elm.split('.')[-1] for elm in path_dict[key])
+        all_there = list(sorted(all_there, key = lambda x: int(x)))
+        if has_star == len(path_dict.keys()):
+            all_there.append('***')
+        return all_there
 
     except OSError:
         return []
 
+def n_to_fnum(outdir = None, n = -1, sim_type = 'v2'):
+    f_list = get_flist_numbers(outdir, sim_type)
+    return f_list[n]
 
+def get_available_quantities(sim_type = 'v2'):
+    # Returns a hierachical dictionary structure showing
+    # All available data quantities from the simulations
+    data_structure = {
+        'prtls': [
+            { 'electrons' : [
+                'x',
+                'y',
+                'z',
+                'px',
+                'py',
+                'pz',
+                'gamma',
+                'proc',
+                'index',
+                'KE'
+            ]},
+            { 'ions': [
+                'x',
+                'y',
+                'z',
+                'px',
+                'py',
+                'pz',
+                'gamma',
+                'proc',
+                'index',
+                #'charge',
+                'KE'
+            ]}
+        ],
+        'vec_fields': [
+            'E',
+            'B',
+            'J'
+        ],
+        'scalar_fields': [
+            'density',
+            'rho',
+            'electron density',
+            'ion density',
+            'theta_B',
+            'B total',
+        ],
+        'scalars': [
+            'Total KE_e',
+            'Total KE_i',
+            'time'
+        ],
+        'params': []
+    }
+    return
 
+@lru_cache()
+def get_data(dirpath = None, n = -1, sim_type = 'v2', **kwargs):
+    # First fi
+    return 0
+
+"""
 class TristanSim(object):
     def __init__(self, dirpath=None, xtraStride = 1,
-                outputFileNames = ['domain.*', 'flds.tot.*', 'spec.tot.*', 'prtl.tot.*'],
+
                 ):
 
         # created RegEx for each of the output files
         self._outputFileNames = outputFileNames
-        self._outputFileKey = [key.split('.')[0] for key in self._outputFileNames]
-        self._outputFileRegEx = [re.compile(elm) for elm in self._outputFileNames]
+
 
         # Open one of the output files and l
         self._outputFileH5Keys = []
@@ -681,10 +747,7 @@ class TristanSim(object):
     @cached_property
     def xinject2(self):
         return self.load_param('xinject2')
-
+"""
 
 if __name__=='__main__':
-    mySim = TristanSim('../test_output')
-    for prtl in Particles.get_prtls():
-        print(getattr(getattr(mySim,prtl),'x'))
-    #print(mySim.get_avail_prtl_quantities())
+    print(n_to_fnum('output/',5))
