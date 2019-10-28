@@ -171,37 +171,122 @@ data_structure = {
             }
         }
     },
-    'vec_flds': [
-        {'E' : [
-            'x',
-            'y',
-            'z'
-        ]},
-        {'B' : [
-            'x',
-            'y',
-            'z'
-        ]},
-        {'J' : [
-            'x',
-            'y',
-            'z'
-        ]}
-    ],
-    'scalar_flds': [
-        'density',
-        'rho',
-        'electron density',
-        'ion density',
-        'theta_B',
-        'B_total',
-    ],
-    'scalars': [
+    'vec_flds': {
+        'E': {
+            'x': {
+                'h5attr': 'ex',
+                'axis_label': r'$E$',
+                '1d_label': r'$E_x$',
+                'cbar_label': r'$E$'
+            },
+            'y': {
+                'h5attr': 'ey',
+                'axis_label': r'$E$',
+                '1d_label': r'$E_y$',
+                'cbar_label': r'$E$'
+            },
+            'z': {
+                'h5attr': 'ez',
+                'axis_label': r'$E$',
+                '1d_label': r'$E_z$',
+                'cbar_label': r'$E$'
+            }
+        },
+        'B' : {
+            'x': {
+                'h5attr': 'bx',
+                'axis_label': r'$B$',
+                '1d_label': r'$B_x$',
+                'cbar_label': r'$B$'
+            },
+            'y': {
+                'h5attr': 'by',
+                'axis_label': r'$B$',
+                '1d_label': r'$B_y$',
+                'cbar_label': r'$B$'
+            },
+            'z': {
+                'h5attr': 'bz',
+                'axis_label': r'$B$',
+                '1d_label': r'$B_z$',
+                'cbar_label': r'$B$'
+            }
+        },
+        'J' : {
+            'x': {
+                'h5attr': 'jx',
+                'axis_label': r'$J$',
+                '1d_label': r'$J_x$',
+                'cbar_label': r'$J$'
+            },
+            'y': {
+                'h5attr': 'jy',
+                'axis_label': r'$J$',
+                '1d_label': r'$J_y$',
+                'cbar_label': r'$J$'
+            },
+            'z': {
+                'h5attr': 'jz',
+                'axis_label': r'$J$',
+                '1d_label': r'$J_z$',
+                'cbar_label': r'$J$'
+            }
+        }
+    },
+    'scalar_flds': {
+        'density': {
+            'h5attr': None,
+            'axis_label': r'$n$',
+            '1d_label': r'$n$',
+            'cbar_label': r'$n$'
+        },
+        'rho': {
+            'h5attr': None,
+            'axis_label': r'$\rho$',
+            '1d_label': r'$\rho$',
+            'cbar_label': r'$\rho$'
+        },
+        'electron_density': {
+            'h5attr': 'dens1',
+            'axis_label': r'$n_e$',
+            '1d_label': r'$n_e$',
+            'cbar_label': r'$n_e$'
+        },
+        'ion_density': {
+            'h5attr': 'dens2',
+            'axis_label': r'$n_i$',
+            '1d_label': r'$n_i$',
+            'cbar_label': r'$n_i$'
+        },
+        'theta_B': {
+            'h5attr': None,
+            'axis_label': r'$\theta_B$',
+            '1d_label': r'$\theta_B$',
+            'cbar_label': r'$\theta_B$'
+        },
+        'B_total': {
+            'h5attr': None,
+            'axis_label': r'$|B|$',
+            '1d_label': r'$|B|$',
+            'cbar_label': r'$|B|$'
+        }
+    },
+    'scalars': {
         'Total KE_e',
         'Total KE_i',
         'time'
-    ],
-    'params': []
+    },
+    'params': {
+        'istep': '',
+        'stride': '',
+        'mi': '',
+        'me': '',
+        'c_omp': '',
+        'time': '',
+        'ppc0': '',
+        'qi': '',
+        'sigma': ''
+    }
 }
 def get_available_quantities(sim_type = 'v2'):
     # Returns a hierachical dictionary structure showing
@@ -230,15 +315,17 @@ def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
         lookup[key] = val
 
     if sim_type == 'v2':
+        f_end = n_to_fnum(dirpath, n)
         if lookup['data_class'] == 'prtls':
-            fpath = os.path.join(dirpath, 'prtl.tot.') + n_to_fnum(dirpath, n)
+            fpath = os.path.join(dirpath, 'prtl.tot.') + f_end
             if lookup['prtl_type'] in data_structure['prtls'].keys():
                 if lookup['attribute'] in data_structure['prtls'][lookup['prtl_type']].keys():
                     if data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'] is not None:
-                        response_dir['data'] = h5_getter(fpath, 'x2')
+                        response_dir['data'] = h5_getter(fpath,
+                            data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'])
 
                     elif lookup['attribute'] == 'gamma':
-                        gamma_arr = np.sqrt(
+                        response_dir['data'] = np.sqrt(
                             get_data(dirpath, n, sim_type,
                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                 attribute = 'px')['data']**2
@@ -249,25 +336,53 @@ def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                 attribute = 'pz')['data']**2
                              + 1)
-                        response_dir['data'] = gamma_arr
-                        return response_dir
-
                     elif lookup['attribute'] == 'KE':
-                        gamma_arr = get_data(dirpath, n, sim_type,
+                        response_dir['data'] = get_data(dirpath, n, sim_type,
                                         data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                         attribute = 'gamma')['data'] - 1
-                        response_dir['data'] = gamma_arr
 
                     response_dir['axis_label'] = data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['axis_label']
                     response_dir['1d_label'] =  data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['1d_label']
                     response_dir['hist_cbar_label'] =  data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['hist_cbar_label']
                     return response_dir
 
+        elif lookup['data_class'] == 'vec_flds':
+            fpath = os.path.join(dirpath, 'flds.tot.') + f_end
+            if lookup['fld'] in data_structure['vec_flds'].keys():
+                if lookup['component'] in data_structure['vec_flds'][lookup['fld']].keys():
+                    if data_structure['vec_flds'][lookup['fld']][lookup['component']]['h5attr'] is not None:
+                        response_dir['data'] = h5_getter(fpath,
+                            data_structure['vec_flds'][lookup['fld']][lookup['component']]['h5attr'])
+                    response_dir['axis_label'] = data_structure['vec_flds'][lookup['fld']][lookup['component']]['axis_label']
+                    response_dir['1d_label'] = data_structure['vec_flds'][lookup['fld']][lookup['component']]['1d_label']
+                    response_dir['cbar_label'] = data_structure['vec_flds'][lookup['fld']][lookup['component']]['cbar_label']
+                    return response_dir
+        elif lookup['data_class'] == 'scalar_flds':
+            fpath = os.path.join(dirpath, 'flds.tot.') + f_end
+            if lookup['fld'] in data_structure['scalar_flds'].keys():
+                if data_structure['scalar_flds'][lookup['fld']]['h5attr'] is not None:
+                    response_dir['data'] = h5_getter(fpath,
+                        data_structure['scalar_flds'][lookup['fld']]['h5attr'])
+                elif lookup['fld'] == 'density':
+                    response_dir['data'] = get_data(dirpath, n, sim_type,
+                                    data_class = 'scalar_flds',
+                                    fld = 'electron_density')['data'] + get_data(dirpath, n, sim_type,
+                                    data_class = 'scalar_flds',
+                                    fld = 'ion_density')['data']
+
+                response_dir['axis_label'] = data_structure['scalar_flds'][lookup['fld']]['axis_label']
+                response_dir['1d_label'] = data_structure['scalar_flds'][lookup['fld']]['1d_label']
+                response_dir['cbar_label'] = data_structure['scalar_flds'][lookup['fld']]['cbar_label']
+                return response_dir
+        elif lookup['data_class'] == 'param':
+            return 1.0
     else:
         return {}
-
 
 if __name__=='__main__':
     print(n_to_fnum('output/',-1))
     print(get_data('output/', n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
-    print(get_data('output/', n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'x'))
+    print(get_data('output/', n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
+    print(get_data('output/', n = 15, data_class='vec_flds', fld = 'E', component = 'x'))
+    print(get_data('output/', n = 15, data_class='scalar_flds', fld = 'density'))
+    print(get_data('output/', n = 15, data_class='param', fld = 'c_omp'))
