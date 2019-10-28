@@ -296,12 +296,16 @@ def get_available_quantities(sim_type = 'v2'):
 
 
 
-def h5_getter(filepath, attribute):
+def h5_getter(filepath, attribute, prtl_stride = None):
     with h5py.File(filepath, 'r') as f:
-        return f[attribute][:]
+        if prtl_stride is not None:
+            return f[attribute][::prtl_stride]
+        else:
+            return f[attribute][:]
+
 
 @lru_cache()
-def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
+def get_sim_data(dirpath = None, n = -1, sim_type = 'v2', stride = 1, **kwargs):
     """ This function is how you should access data on the hdf5
     files."""
 
@@ -322,22 +326,22 @@ def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
                 if lookup['attribute'] in data_structure['prtls'][lookup['prtl_type']].keys():
                     if data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'] is not None:
                         response_dir['data'] = h5_getter(fpath,
-                            data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'])
+                            data_structure['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'], prtl_stride = stride)
 
                     elif lookup['attribute'] == 'gamma':
                         response_dir['data'] = np.sqrt(
-                            get_data(dirpath, n, sim_type,
+                            get_sim_data(dirpath, n, sim_type,
                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                 attribute = 'px')['data']**2
-                            + get_data(dirpath, n, sim_type,
+                            + get_sim_data(dirpath, n, sim_type,
                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                 attribute = 'py')['data']**2
-                            + get_data(dirpath, n, sim_type,
+                            + get_sim_data(dirpath, n, sim_type,
                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                 attribute = 'pz')['data']**2
                              + 1)
                     elif lookup['attribute'] == 'KE':
-                        response_dir['data'] = get_data(dirpath, n, sim_type,
+                        response_dir['data'] = get_sim_data(dirpath, n, sim_type,
                                         data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                         attribute = 'gamma')['data'] - 1
 
@@ -364,9 +368,9 @@ def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
                     response_dir['data'] = h5_getter(fpath,
                         data_structure['scalar_flds'][lookup['fld']]['h5attr'])
                 elif lookup['fld'] == 'density':
-                    response_dir['data'] = get_data(dirpath, n, sim_type,
+                    response_dir['data'] = get_sim_data(dirpath, n, sim_type,
                                     data_class = 'scalar_flds',
-                                    fld = 'electron_density')['data'] + get_data(dirpath, n, sim_type,
+                                    fld = 'electron_density')['data'] + get_sim_data(dirpath, n, sim_type,
                                     data_class = 'scalar_flds',
                                     fld = 'ion_density')['data']
 
@@ -381,8 +385,8 @@ def get_data(dirpath = None, n = -1, sim_type = 'v2',  **kwargs):
 
 if __name__=='__main__':
     print(n_to_fnum('output/',-1))
-    print(get_data('output/', n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
-    print(get_data('output/', n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
-    print(get_data('output/', n = 15, data_class='vec_flds', fld = 'E', component = 'x'))
-    print(get_data('output/', n = 15, data_class='scalar_flds', fld = 'density'))
-    print(get_data('output/', n = 15, data_class='param', fld = 'c_omp'))
+    print(get_sim_data('output/', n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
+    print(get_sim_data('output/', n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
+    print(get_sim_data('output/', n = 15, data_class='vec_flds', fld = 'E', component = 'x'))
+    print(get_sim_data('output/', n = 15, data_class='scalar_flds', fld = 'density'))
+    print(get_sim_data('output/', n = 15, data_class='param', fld = 'c_omp'))
