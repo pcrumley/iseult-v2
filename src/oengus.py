@@ -34,9 +34,9 @@ import argparse
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', figure = None name =''):
-        self.sim_name = name
-        self.sim = sim
+    def __init__(self, preset_view='Default', figure = None):#, name =''):
+        #self.sim_name = name
+        #self.sim = sim
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.dirname = sim.dir
         self.figure = figure
@@ -52,7 +52,8 @@ class Oengus():
                 self.cfgDict = yaml.safe_load(f)
         self.GenMainParamDict()
 
-        # Create the figure
+        # Clear the figure then add stuff back in
+        self.fig.clf()
 
         if self.MainParamDict['HorizontalCbars']:
             self.axes_extent = self.MainParamDict['HAxesExtent']
@@ -63,8 +64,8 @@ class Oengus():
             self.axes_extent = self.MainParamDict['VAxesExtent']
             self.cbar_extent = self.MainParamDict['VCbarExtent']
             self.SubPlotParams = self.MainParamDict['VSubPlotParams']
-        self.figure = plt.figure(figsize = self.MainParamDict['FigSize'], dpi = self.MainParamDict['dpi'], edgecolor = 'none', facecolor = 'w')
-
+        self.figure.set_dpi(self.MainParamDict['dpi'])
+        self.figure.set_size_inches(self.MainParamDict['FigSize'])
         self.figure.subplots_adjust( **self.SubPlotParams)
         self.canvas = FigureCanvasAgg(self.figure)
 
