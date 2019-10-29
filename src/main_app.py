@@ -5,7 +5,6 @@ import h5py # Allows us the read the data files
 import time, string, io
 from PIL import Image
 import matplotlib
-matplotlib.use('TkAgg')
 import new_cmaps
 import numpy as np
 import matplotlib.colors as mcolors

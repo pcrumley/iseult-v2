@@ -1,7 +1,12 @@
 #! /usr/bin/env python
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'stix'
+matplotlib.rcParams['font.family'] = 'STIXGeneral'
+matplotlib.rcParams['image.origin'] = 'upper'
 
 if __name__ == '__main__':
     import argparse
+
     parser = argparse.ArgumentParser(description='Plotting program for Tristan-MP files.')
     parser.add_argument('-n', nargs = '?',# dest='accumulate', action='store_const',
                             const=-1, default=-1,
@@ -33,8 +38,13 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
     if not cmd_args.b:
+        matplotlib.use('TkAgg')
         from main_app import runMe
         runMe(cmd_args)
+    else:
+        matplotlib.use('Agg')
+        pass
+
     """
 
     else:

@@ -1,7 +1,5 @@
 import os,sys, subprocess, yaml, time
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as cm
 import new_cmaps
@@ -10,37 +8,21 @@ from collections import deque
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 from tristan_sim import get_flist_numbers, get_sim_data
-from density_panel import DensPanel
-from spectra_panel import SpectralPanel
-from mag_panel import BPanel
-from energy_panel import EnergyPanel
-from fft_panel import FFTPanel
-from total_energy_panel import TotEnergyPanel
-from moments_panel import MomentsPanel
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+#from density_panel import DensPanel
+#from spectra_panel import SpectralPanel
+#from mag_panel import BPanel
+#from energy_panel import EnergyPanel
+#from fft_panel import FFTPanel
+#from total_energy_panel import TotEnergyPanel
+#from moments_panel import MomentsPanel
+
 from PIL import Image
-
-matplotlib.rcParams['mathtext.fontset'] = 'stix'
-matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams['image.origin'] = 'upper'
-import argparse
-
-
-"""
-### NEED THIS!
-
-"""
-
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', figure = None):#, name =''):
-        #self.sim_name = name
-        #self.sim = sim
+    def __init__(self, preset_view='Default', interactive = True):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
-        self.dirname = sim.dir
-        self.figure = figure
-        # Read Config File
+        #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
                 self.cfgDict = yaml.safe_load(f)
@@ -53,7 +35,7 @@ class Oengus():
         self.GenMainParamDict()
 
         # Clear the figure then add stuff back in
-        self.fig.clf()
+        self.figure = plt.figure(figsize = self.MainParamDict['FigSize'], dpi = self.MainParamDict['dpi'], edgecolor = 'none', facecolor = 'w')
 
         if self.MainParamDict['HorizontalCbars']:
             self.axes_extent = self.MainParamDict['HAxesExtent']
@@ -64,10 +46,13 @@ class Oengus():
             self.axes_extent = self.MainParamDict['VAxesExtent']
             self.cbar_extent = self.MainParamDict['VCbarExtent']
             self.SubPlotParams = self.MainParamDict['VSubPlotParams']
-        self.figure.set_dpi(self.MainParamDict['dpi'])
-        self.figure.set_size_inches(self.MainParamDict['FigSize'])
         self.figure.subplots_adjust( **self.SubPlotParams)
-        self.canvas = FigureCanvasAgg(self.figure)
+        if interactive:
+            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+            self.canvas = FigureCanvasTkAgg(self.figure)
+        else:
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            self.canvas = FigureCanvasAgg(self.figure)
 
 
         # Make the object hold the timestep info
@@ -130,19 +115,17 @@ class Oengus():
                     self.btheta = self.sim[0].btheta
         o = self.sim[0]
         nxf0 = o.by.shape[1]
-        if np.isnan(self.btheta):
-            self.b0 = 1.0
-            self.e0 = 1.0
-        else:
-            # Normalize by b0
-            self.bx0 = o.bx[0,-1,-10]
-            self.by0 = o.by[0,-1,-10]
-            self.bz0 = o.bz[0,-1,-10]
-            self.b0 = np.sqrt(self.bx0**2+self.by0**2+self.bz0**2)
-            self.ex0 = o.ex[0,-1,-2]
-            self.ey0 = o.ey[0,-1,-2]
-            self.ez0 = o.ez[0,-1,-2]
-            self.e0 = np.sqrt(self.ex0**2+self.ey0**2+self.ez0**2)
+        self.btheta = np.NaN
+        self.b0 = 1.0
+        self.e0 = 1.0
+        self.bx0 = 1.0
+        self.by0 = 1.0
+        self.bz0 = 1.0
+        self.b0 = np.sqrt(self.bx0**2+self.by0**2+self.bz0**2)
+        self.ex0 = 1.0
+        self.ey0 = 1.0
+        self.ez0 = 1.0
+        self.e0 = np.sqrt(self.ex0**2+self.ey0**2+self.ez0**2)
 
         dens_arr =np.copy(self.sim[-1].dens[0,:,:])
         final_time = self.sim[-1].time
