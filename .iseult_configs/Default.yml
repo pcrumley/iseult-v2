@@ -5,7 +5,7 @@ Chart0_0:
   cmap: None
   cnorm_type: Linear
   cpow_num: 0.6
-  flds_type: 'density'
+  flds_type: density
   div_midpoint: 0.0
   face_color: gainsboro
   interpolation: none
