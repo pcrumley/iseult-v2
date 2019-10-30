@@ -171,7 +171,9 @@ class PicSim(object):
                 hash_key = 'scalars' + lookup['attribute'] + f_end
                 if hash_key not in self._data_dictionary:
                     if lookup['attribute'] == 'shock_loc':
-                        dens_avg1D = np.average(self.get_data(n, data_class='scalar_flds', fld = 'density')['data'], axis =2)
+                        dens_avg1D = np.average(
+                            self.get_data(n, data_class='scalar_flds', fld = 'density')['data'].reshape(
+                            -1,self.get_data(n, data_class='scalar_flds', fld = 'density')['data'].shape[-1]), axis = 0)
                         x_ax = self.get_data(n, data_class='axes', attribute= 'x')['data']
                         istep = self.get_data(n, data_class='param', attribute = 'istep')
                         c_omp = self.get_data(n, data_class='param', attribute = 'c_omp')

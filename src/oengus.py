@@ -103,51 +103,10 @@ class Oengus():
 
 
         # previous objects
-        if self.showingTotEnergy:
-            self.calc_total_energy()
+        #if self.showingTotEnergy:
+        #    self.calc_total_energy()
 
 
-        ### CALC THE SHOCK speed
-        self.btheta = np.nan
-        if 'sigma' in self.sim._h5Key2FileDict.keys():
-            if 'btheta' in self.sim._h5Key2FileDict.keys():
-                if np.abs(self.sim[0].sigma)!=0:
-                    self.btheta = self.sim[0].btheta
-        o = self.sim[0]
-        nxf0 = o.by.shape[1]
-        self.btheta = np.NaN
-        self.b0 = 1.0
-        self.e0 = 1.0
-        self.bx0 = 1.0
-        self.by0 = 1.0
-        self.bz0 = 1.0
-        self.b0 = np.sqrt(self.bx0**2+self.by0**2+self.bz0**2)
-        self.ex0 = 1.0
-        self.ey0 = 1.0
-        self.ez0 = 1.0
-        self.e0 = np.sqrt(self.ex0**2+self.ey0**2+self.ez0**2)
-
-        dens_arr =np.copy(self.sim[-1].dens[0,:,:])
-        final_time = self.sim[-1].time
-        istep = self.sim[-1].istep
-        c_omp = self.sim[-1].c_omp
-
-        # Find out where the shock is at the last time step.
-        jstart = int(min(10*c_omp/istep, nxf0))
-        # build the final x_axis of the plot
-
-        xaxis_final = np.arange(dens_arr.shape[1])/c_omp*istep
-        # Find the shock by seeing where the density is 1/2 of it's
-        # max value.
-
-        dens_half_max = max(dens_arr[dens_arr.shape[0]//2,jstart:])*.5
-
-        # Find the farthest location where the average density is greater
-        # than half max
-        ishock_final = np.where(dens_arr[dens_arr.shape[0]//2,jstart:]>=dens_half_max)[0][-1]
-        xshock_final = xaxis_final[ishock_final]
-        xshock_final -= np.min(self.sim[-1].xe[self.sim[-1].xe!=0])/self.sim[-1].c_omp
-        self.shock_speed = xshock_final/final_time
         self.create_graphs()
     def GenMainParamDict(self, config_file = None):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
@@ -241,26 +200,26 @@ class Oengus():
         self.FFT_color = self.MainParamDict['FFT_color']
 
 
-    def calc_total_energy(self):
-        self.TotalEnergyTimes = []
-        self.TotalElectronEnergy = []
-        self.TotalIonEnergy = []#
-        self.TotalMagEnergy = []
-        self.TotalElectricEnergy =[]
-        self.TotalBzEnergy = []
-        for o in self.sim:
-            self.TotalEnergyTimes.append(o.time)
-            self.TotalElectronEnergy.append(np.sum(np.sqrt(o.ue*o.ue + o.ve*o.ve + o.we*o.we +1)-1)*o.stride*abs(o.qi)*o.c**2)
-            self.TotalIonEnergy.append(np.sum(np.sqrt(o.ui*o.ui + o.vi*o.vi + o.wi*o.wi +1)-1)*o.stride*abs(o.qi)*o.mi/o.me*o.c**2)
-            self.TotalMagEnergy.append(np.sum(o.bz*o.bz+o.bx*o.bx+o.by*o.by)*o.istep**2*.5)
-            self.TotalElectricEnergy.append(np.sum(o.ez*o.ez+o.ex*o.ex+o.ey*o.ey)*o.istep**2*.5)
-            self.TotalBzEnergy.append(np.sum(o.bz*o.bz)*o.istep**2*.5)
-            o.clear()
-        self.TotalElectronEnergy = np.array(self.TotalElectronEnergy)
-        self.TotalIonEnergy = np.array(self.TotalIonEnergy)
-        self.TotalMagEnergy = np.array(self.TotalMagEnergy)
-        self.TotalElectricEnergy = np.array(self.TotalElectricEnergy)
-        self.TotalBzEnergy = np.array(self.TotalBzEnergy)
+    #def calc_total_energy(self):
+    #    self.TotalEnergyTimes = []
+    #    self.TotalElectronEnergy = []
+    #    self.TotalIonEnergy = []#
+    #    self.TotalMagEnergy = []
+    #    self.TotalElectricEnergy =[]
+    #    self.TotalBzEnergy = []
+    #    for o in self.sim:
+    #        self.TotalEnergyTimes.append(o.time)
+    #        self.TotalElectronEnergy.append(np.sum(np.sqrt(o.ue*o.ue + o.ve*o.ve + o.we*o.we +1)-1)*o.stride*abs(o.qi)*o.c**2)
+    #        self.TotalIonEnergy.append(np.sum(np.sqrt(o.ui*o.ui + o.vi*o.vi + o.wi*o.wi +1)-1)*o.stride*abs(o.qi)*o.mi/o.me*o.c**2)
+    #        self.TotalMagEnergy.append(np.sum(o.bz*o.bz+o.bx*o.bx+o.by*o.by)*o.istep**2*.5)
+    #        self.TotalElectricEnergy.append(np.sum(o.ez*o.ez+o.ex*o.ex+o.ey*o.ey)*o.istep**2*.5)
+    #        self.TotalBzEnergy.append(np.sum(o.bz*o.bz)*o.istep**2*.5)
+    #        o.clear()
+    #    self.TotalElectronEnergy = np.array(self.TotalElectronEnergy)
+    #    self.TotalIonEnergy = np.array(self.TotalIonEnergy)
+    #    self.TotalMagEnergy = np.array(self.TotalMagEnergy)
+    #    self.TotalElectricEnergy = np.array(self.TotalElectricEnergy)
+    #    self.TotalBzEnergy = np.array(self.TotalBzEnergy)
 
     def create_graphs(self):
         o = self.sim[0]
@@ -421,30 +380,30 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].refresh()
-        if self.showingCPUs:
-            if 'my' in self.sim._h5Key2FileDict.keys():
-                cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
-            else:
-                tmpSize = ((self.MaxYInd+1)*o.istep)//(o.my0-5)
-                cpu_y_locs = np.cumsum(np.ones(tmpSize)*(o.my0)-5)/o.c_omp
-            if 'mx' in self.sim._h5Key2FileDict.keys():
-                cpu_x_locs = np.cumsum(o.mx-5)/o.c_omp
-            else:
-                tmpSize = ((self.MaxXInd+1)*o.istep)//(o.mx0-5)
-                cpu_x_locs = np.cumsum(np.ones(tmpSize)*(o.mx0)-5)/o.c_omp
+        #if self.showingCPUs:
+        #    if 'my' in self.sim._h5Key2FileDict.keys():
+        #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
+        #    else:
+        #        tmpSize = ((self.MaxYInd+1)*o.istep)//(o.my0-5)
+        #        cpu_y_locs = np.cumsum(np.ones(tmpSize)*(o.my0)-5)/o.c_omp
+        #    if 'mx' in self.sim._h5Key2FileDict.keys():
+        #        cpu_x_locs = np.cumsum(o.mx-5)/o.c_omp
+        #    else:
+        #        tmpSize = ((self.MaxXInd+1)*o.istep)//(o.mx0-5)
+        #        cpu_x_locs = np.cumsum(np.ones(tmpSize)*(o.mx0)-5)/o.c_omp
 
 
-            for i in range(self.MainParamDict['NumOfRows']):
-                for j in range(self.MainParamDict['NumOfCols']):
-                    try:
-                        if self.SubPlotList[i][j].param_dict['show_cpu_domains']:
-                            for k in range(len(self.parent.cpu_x_locs)):
-                                self.SubPlotList[i][j].axes.axvline(cpu_x_locs[k], linewidth = 1, linestyle = ':',color = 'w')
-                            for k in range(len(self.parent.cpu_y_locs)):
-                                self.SubPlotList[i][j].axes.axvline(cpu_y_locs[k], linewidth = 1, linestyle = ':',color = 'w')
+        #    for i in range(self.MainParamDict['NumOfRows']):
+        #        for j in range(self.MainParamDict['NumOfCols']):
+        #            try:
+        #                if self.SubPlotList[i][j].param_dict['show_cpu_domains']:
+        #                    for k in range(len(self.parent.cpu_x_locs)):
+        #                        self.SubPlotList[i][j].axes.axvline(cpu_x_locs[k], linewidth = 1, linestyle = ':',color = 'w')
+        #                    for k in range(len(self.parent.cpu_y_locs)):
+        #                        self.SubPlotList[i][j].axes.axvline(cpu_y_locs[k], linewidth = 1, linestyle = ':',color = 'w')
 
-                    except KeyError:
-                        pass
+        #            except KeyError:
+        #                pass
 
         if self.MainParamDict['ShowTitle']:
             if len(self.sim_name) == 0:

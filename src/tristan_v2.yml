@@ -44,6 +44,34 @@ params:
   time:
     h5attr: null
     h5file: null
+  btheta:
+    h5attr: null
+    h5file: null
+  bx0:
+    h5attr: null
+    h5file: null
+  by0:
+    h5attr: null
+    h5file: null
+  bz0:
+    h5attr: null
+    h5file: null
+  e0:
+    h5attr: null
+    h5file: null
+  ex0:
+    h5attr: null
+    h5file: null
+  ey0:
+    h5attr: null
+    h5file: null
+  ez0:
+    h5attr: null
+    h5file: null
+  e0:
+    h5attr: null
+    h5file: null
+
 prtls:
   electrons:
     KE:

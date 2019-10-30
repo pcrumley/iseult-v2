@@ -11,11 +11,11 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
 
-class DensPanel:
+class ScalarFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
     plot_param_dict = {'twoD': 0,
-                       'dens_type': 0, #0 = n, 1 = n_i, 2 =n_e, 3=rho
+                       'flds_type': 'density',
                        'show_cbar': True,
                        'set_color_limits': False,
                        'v_min': 0,
@@ -41,14 +41,13 @@ class DensPanel:
     gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
     gradient = np.vstack((gradient, gradient))
 
-    def __init__(self, parent, pos, param_dict):
+    def __init__(self, parent, pos, param_dict, sim):
+        self.sim = sim
         self.param_dict = {}
-        for key, val in self.plot_param_dict.items():
-            self.param_dict[key] = val
-        for key, val in param_dict.items():
-            self.param_dict[key] = val
+        self.param_dict.update(self.plot_param_dict)
+        self.param_dict.update(param_dict)
         self.pos = pos
-        self.chartType = 'DensityPlot'
+        self.chartType = 'ScalarFldsPlot'
         self.parent = parent
         self.figure = self.parent.figure
         self.InterpolationMethods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
@@ -66,7 +65,7 @@ class DensPanel:
         else:
             return PowerNormWithNeg(self.GetPlotParam('cpow_num'), vmin, vmax, div_cmap = self.GetPlotParam('UseDivCmap'),midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
 
-    def update_data(self, output):
+    def update_data(self, n):
         ''' A Helper function that loads the data for the plot'''
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
@@ -77,33 +76,19 @@ class DensPanel:
         else:
             self.cmap = self.GetPlotParam('cmap')
 
-
-        if self.GetPlotParam('normalize_density'):
-            self.ppc0 = getattr(output, 'ppc0')
-        elif not np.isnan(getattr(output, 'ppc0')):
-            self.ppc0 = 1.0
-        else:
-            self.param_dict['normalize_density'] = False
-
         self.dens_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
         # get c_omp and istep to convert cells to physical units
-        self.c_omp = getattr(output, 'c_omp')
-        self.istep = getattr(output, 'istep')
-        self.dens = getattr(output, 'dens')[:,:,:]
 
-        # Now calculate rho if needed.
-        if self.GetPlotParam('dens_type') == 1:
-            self.densi = getattr(output, 'densi')[:,:,:]
 
-        if self.GetPlotParam('dens_type') == 2:
-            self.dense = getattr(output, 'dens')[:,:,:]-getattr(output, 'densi')[:,:,:]
+    def draw(self, n):
+        o = self.sim[n]
+        # FIND THE SLICE
+        MaxZInd = len(self.sim.get_data(n, data_type='axes', attribute='z')['data']) - 1
+        MaxYInd = len(self.sim.get_data(n, data_type='axes', attribute='y')['data']) - 1
+        MaxXInd = len(self.sim.get_data(n, data_type='axes', attribute='y')['data']) - 1
 
-        if self.GetPlotParam('dens_type')== 3: # rho
-            self.rho = 2*getattr(output, 'densi')[:,:,:] - self.dens
-
-        self.xaxis_values = np.arange(self.dens.shape[2])/self.c_omp*self.istep
-
-    def draw(self):
+        self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
+        self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
         if self.GetPlotParam('OutlineText'):
             self.annotate_kwargs = {'horizontalalignment': 'right',
             'verticalalignment': 'top',
@@ -408,39 +393,24 @@ class DensPanel:
                     self.cbar.set_extent([0,1,clim[0],clim[1]])
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self):
+    def refresh(self, n):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
         time, is that we won't actually do any drawing in the plot. The plot
         will be redrawn after all subplots data is changed. '''
-
+        self.scalar_fld = self.sim.get_data(n, data_type = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+        self.xaxis =  self.sim.get_data(n, data_type = 'axes', attribute = 'x')
+        self.c_omp = self.sim.get_data(n, data_type = 'param', attribute = 'c_omp')
+        self.istep = self.sim.get_data(n, data_type = 'param', attribute = 'istep')
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.GetPlotParam('twoD') == 0:
-            if self.GetPlotParam('dens_type') == 0:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.dens.reshape(-1,self.dens.shape[-1]), axis = 0))
-                else: # x-y plane
-                    self.linedens[0].set_data(self.xaxis_values, self.dens[self.parent.zSlice,self.parent.ySlice,:])
 
-            elif self.GetPlotParam('dens_type')==1:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.densi.reshape(-1,self.densi.shape[-1]), axis = 0))
-                else:
-                    self.linedens[0].set_data(self.xaxis_values, self.densi[self.parent.zSlice,self.parent.ySlice,:])
-            elif self.GetPlotParam('dens_type')==2:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.dense.reshape(-1,self.dense.shape[-1]), axis = 0))
-                else:
-                    self.linedens[0].set_data(self.xaxis_values, self.dense[self.parent.zSlice,self.parent.ySlice,:])
-            elif self.GetPlotParam('dens_type')==3:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.rho.reshape(-1,self.rho.shape[-1]), axis = 0))
-                else:
-                    self.linedens[0].set_data(self.xaxis_values, self.rho[self.parent.zSlice,self.parent.ySlice,:])
-            if self.GetPlotParam('normalize_density'):
-                self.linedens[0].set_data(self.linedens[0].get_data()[0], self.linedens[0].get_data()[1]*self.ppc0**(-1))
+            if self.parent.MainParamDict['Average1D']:
+                self.linedens[0].set_data(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0))
+            else: # x-y plane
+                self.linedens[0].set_data(self.xaxis['data'], self.scalar_fld['data'][self.parent.zSlice,self.parent.ySlice,:])
 
             #### Set the ylims...
             min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
@@ -452,60 +422,40 @@ class DensPanel:
                 self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
             if self.GetPlotParam('set_v_max'):
                 self.axes.set_ylim(top = self.GetPlotParam('v_max'))
-            if self.GetPlotParam('show_shock'):
-                self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+            #if self.GetPlotParam('show_shock'):
+            #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
 
             if self.parent.MainParamDict['SetxLim']:
-                if self.parent.MainParamDict['xLimsRelative']:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                else:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+                #if self.parent.MainParamDict['xLimsRelative']:
+                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
+                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+                #else:
+                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
             else:
                 self.axes.set_xlim(self.xaxis_values[0], self.xaxis_values[-1])
 
 
         else: # Now refresh the plot if it is 2D
-            if self.GetPlotParam('dens_type') == 0:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                    self.cax.set_data(self.dens[self.parent.zSlice,:,:])
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                    self.cax.set_data(self.dens[:,self.parent.ySlice,:])
+            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
+                self.cax.set_data(self.scalar_fld['data'][self.parent.zSlice,:,:])
+            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
+                self.cax.set_data(self.scalar_fld['data'][:,self.parent.ySlice,:])
 
-
-
-            elif self.GetPlotParam('dens_type')==1:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                    self.cax.set_data(self.densi[self.parent.zSlice,:,:])
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                    self.cax.set_data(self.densi[:,self.parent.ySlice,:])
-            elif self.GetPlotParam('dens_type')==2:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                    self.cax.set_data(self.dense[self.parent.zSlice,:,:])
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                    self.cax.set_data(self.dense[:,self.parent.ySlice,:])
-            elif self.GetPlotParam('dens_type')==3:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                    self.cax.set_data(self.rho[self.parent.zSlice,:,:])
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                    self.cax.set_data(self.rho[:,self.parent.ySlice,:])
-
-
-            if self.GetPlotParam('normalize_density'):
-                self.cax.set_data(self.cax.get_array()/self.ppc0)
+            #if self.GetPlotParam('normalize_density'):
+            #    self.cax.set_data(self.cax.get_array()/self.ppc0)
 
 
             self.ymin = 0
             self.ymax =  self.cax.get_array().shape[0]/self.c_omp*self.istep
             self.xmin = 0
-            self.xmax =  self.xaxis_values[-1]
+            self.xmax =  self.xaxis['data'][-1]
             self.cax.set_extent([self.xmin,self.xmax, self.ymin, self.ymax])
             if self.parent.MainParamDict['SetxLim']:
-                if self.parent.MainParamDict['xLimsRelative']:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                else:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+                #if self.parent.MainParamDict['xLimsRelative']:
+                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
+                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+                #else:
+                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
             else:
                 self.axes.set_xlim(self.xmin,self.xmax)
 
@@ -531,8 +481,8 @@ class DensPanel:
             self.cax.norm.vmax = self.vmax
             if self.GetPlotParam('show_cbar'):
                 self.CbarTickFormatter()
-            if self.GetPlotParam('show_shock'):
-                self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+            #if self.GetPlotParam('show_shock'):
+            #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
 
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
