@@ -67,6 +67,9 @@ class ScalarFldsPlot:
 
     def update_data(self, n):
         ''' A Helper function that loads the data for the plot'''
+
+
+    def draw(self, n):
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -77,18 +80,19 @@ class ScalarFldsPlot:
             self.cmap = self.GetPlotParam('cmap')
 
         self.dens_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
-        # get c_omp and istep to convert cells to physical units
+                # get c_omp and istep to convert cells to physical units
 
-
-    def draw(self, n):
-        o = self.sim[n]
         # FIND THE SLICE
         MaxZInd = len(self.sim.get_data(n, data_type='axes', attribute='z')['data']) - 1
         MaxYInd = len(self.sim.get_data(n, data_type='axes', attribute='y')['data']) - 1
-        MaxXInd = len(self.sim.get_data(n, data_type='axes', attribute='y')['data']) - 1
 
         self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
         self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
+        self.scalar_fld = self.sim.get_data(n, data_type = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+
+
+        self.c_omp = self.sim.get_data(n, data_type = 'param', attribute = 'c_omp')
+        self.istep = self.sim.get_data(n, data_type = 'param', attribute = 'istep')
         if self.GetPlotParam('OutlineText'):
             self.annotate_kwargs = {'horizontalalignment': 'right',
             'verticalalignment': 'top',
@@ -111,49 +115,19 @@ class ScalarFldsPlot:
             # Link up the spatial axes if desired
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-            # First choose the 'zval' to plot, we can only do one because it is 2-d.
-            if self.GetPlotParam('dens_type') == 0:
-                if self.GetPlotParam('normalize_density'):
-                    self.zval = self.dens*self.ppc0**(-1.0)
-                    self.two_d_label = r'$n/n_0$'
-                else:
-                    self.zval = self.dens
-                    self.two_d_label = r'$n$'
-
-            if self.GetPlotParam('dens_type') == 1:
-                if self.GetPlotParam('normalize_density'):
-                    self.zval = self.densi*self.ppc0**(-1.0)
-                    self.two_d_label = r'$n_i/n_0$'
-                else:
-                    self.zval = self.densi
-                    self.two_d_label = r'$n_i$'
-            if self.GetPlotParam('dens_type') == 2:
-                if self.GetPlotParam('normalize_density'):
-                    self.zval = self.dense*self.ppc0**(-1.0)
-                    self.two_d_label = r'$n_e/n_0$'
-                else:
-                    self.zval = self.dense
-                    self.two_d_label = r'$n_e$'
-            if self.GetPlotParam('dens_type') == 3:
-                if self.FigWrap.GetPlotParam('normalize_density'):
-                    self.zval = self.rho*self.ppc0**(-1.0)
-                    self.two_d_label = r'$\rho/n_0$'
-                else:
-                    self.zval = self.rho
-                    self.two_d_label = r'$\rho$'
 
 
             if self.parent.MainParamDict['2DSlicePlane'] ==0: # x-y plane
                 if self.parent.MainParamDict['ImageAspect']:
-                    self.cax = self.axes.imshow(self.zval[self.parent.zSlice,:,:], norm = self.norm(), origin = 'lower')
+                    self.cax = self.axes.imshow(self.scalar_fld['data'][self.parent.zSlice,:,:], norm = self.norm(), origin = 'lower')
                 else:
-                    self.cax = self.axes.imshow(self.zval[self.parent.zSlice,:,:], norm = self.norm(), origin = 'lower',
+                    self.cax = self.axes.imshow(self.scalar_fld['data'][self.parent.zSlice,:,:], norm = self.norm(), origin = 'lower',
                                                 aspect = 'auto')
             elif self.parent.MainParamDict['2DSlicePlane'] ==1: # x-z plane
                 if self.parent.MainParamDict['ImageAspect']:
-                    self.cax = self.axes.imshow(self.zval[:,self.parent.ySlice,:], norm = self.norm(), origin = 'lower')
+                    self.cax = self.axes.imshow(self.scalar_fld['data'][:,self.parent.ySlice,:], norm = self.norm(), origin = 'lower')
                 else:
-                    self.cax = self.axes.imshow(self.zval[:,self.parent.ySlice,:], norm = self.norm(), origin = 'lower',
+                    self.cax = self.axes.imshow(self.scalar_fld['data'][:,self.parent.ySlice,:], norm = self.norm(), origin = 'lower',
                                                 aspect = 'auto')
 
 
@@ -263,32 +237,18 @@ class ScalarFldsPlot:
 
 
         else:
+            self.xaxis =  self.sim.get_data(n, data_type = 'axes', attribute = 'x')
             # Do the 1D Plots
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
             # Make the 1-D plots
             if self.parent.MainParamDict['Average1D']:
-                self.linedens = self.axes.plot(self.xaxis_values, np.average(self.dens.reshape(-1,self.dens.shape[-1]), axis = 0), color = self.dens_color)
+                self.linedens = self.axes.plot(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0), color = self.dens_color)
             else:
-                self.linedens = self.axes.plot(self.xaxis_values, self.dens[self.parent.zSlice,self.parent.ySlice,:], color = self.dens_color)
+                self.linedens = self.axes.plot(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:], color = self.dens_color)
 
-            if self.GetPlotParam('dens_type')==1:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.densi.reshape(-1,self.densi.shape[-1]), axis = 0))
-                else: # x-y plane
-                    self.linedens[0].set_data(self.xaxis_values, self.densi[self.parent.zSlice,self.parent.ySlice,:])
-            if self.GetPlotParam('dens_type')==2:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.dense.reshape(-1,self.dense.shape[-1]), axis = 0))
-                else: # x-y plane
-                    self.linedens[0].set_data(self.xaxis_values, self.dense[self.parent.zSlice,self.parent.ySlice,:])
-            if self.GetPlotParam('dens_type')==2:
-                if self.parent.MainParamDict['Average1D']:
-                    self.linedens[0].set_data(self.xaxis_values, np.average(self.rho.reshape(-1,self.rho.shape[-1]), axis = 0))
-                else: # x-y plane
-                    self.linedens[0].set_data(self.xaxis_values, self.rho[self.parent.zSlice,self.parent.ySlice,:])
-            if self.GetPlotParam('normalize_density'):
-                self.linedens[0].set_data(self.linedens[0].get_data()[0], self.linedens[0].get_data()[1]*self.ppc0**(-1))
+            #if self.GetPlotParam('normalize_density'):
+            #    self.linedens[0].set_data(self.linedens[0].get_data()[0], self.linedens[0].get_data()[1]*self.ppc0**(-1))
 
             #### Set the ylims... there is a problem where it scales the ylims for the invisible lines:
             min_max = [self.linedens[0].get_data()[1].min(), self.linedens[0].get_data()[1].max()]
@@ -296,9 +256,9 @@ class ScalarFldsPlot:
             min_max[0] -= 0.04*dist
             min_max[1] += 0.04*dist
             self.axes.set_ylim(min_max)
-            self.shock_line =self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-                    PathEffects.Normal()])
-            self.shock_line.set_visible(self.GetPlotParam('show_shock'))
+            #self.shock_line =self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
+            #        PathEffects.Normal()])
+            #self.shock_line.set_visible(self.GetPlotParam('show_shock'))
 
             if int(matplotlib.__version__[0]) < 2:
                 self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
@@ -307,14 +267,14 @@ class ScalarFldsPlot:
 
             self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
 
-            if self.parent.MainParamDict['SetxLim']:
-                if self.parent.MainParamDict['xLimsRelative']:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                else:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xaxis_values[0],self.xaxis_values[-1])
+            #if self.parent.MainParamDict['SetxLim']:
+            #    if self.parent.MainParamDict['xLimsRelative']:
+            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
+            #                           self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+            #    else:
+            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+            #else:
+            self.axes.set_xlim(self.xaxis['data'][0],self.xaxis['data'][-1])
 
             if self.GetPlotParam('set_v_min'):
                 self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
@@ -322,22 +282,16 @@ class ScalarFldsPlot:
                 self.axes.set_ylim(top = self.GetPlotParam('v_max'))
 
             # Handle the axes labeling
-            tmp_str = r'$\rm density$'
-            if self.GetPlotParam('dens_type') == 1:
-                tmp_str = r'$n_i$'
-            if self.GetPlotParam('dens_type') == 2:
-                tmp_str = r'$n_e$'
-            if self.GetPlotParam('dens_type') == 3:
-                tmp_str = r'$\rho$'
-
-            if self.GetPlotParam('normalize_density'):
-                tmp_str += r'$\ [n_0]$'
-            self.axes.set_xlabel(r'$x\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_ylabel(tmp_str, labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
 
-        if self.GetPlotParam('show_cpu_domains'):
-            self.parent.SetCpuDomainLines()
+            #if self.GetPlotParam('normalize_density'):
+            #    tmp_str += r'$\ [n_0]$'
+            self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+
+
+        #if self.GetPlotParam('show_cpu_domains'):
+        #    self.parent.SetCpuDomainLines()
 
     def CbarTickFormatter(self):
         ''' A helper function that sets the cbar ticks & labels. This used to be
