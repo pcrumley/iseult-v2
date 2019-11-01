@@ -1,4 +1,3 @@
-from functools import lru_cache#, #cached_property
 import re, sys, os, h5py, yaml
 import numpy as np
 
@@ -9,7 +8,7 @@ def h5_getter(filepath, attribute, prtl_stride = None):
         else:
             return f[attribute][:]
 
-class PicSim(object):
+class picSim(object):
     def __init__(self, dirpath=None, cfg_file = 'tristan_v2.yml'):
         self._outdir = dirpath
         with open(cfg_file, 'r') as f:
@@ -51,6 +50,8 @@ class PicSim(object):
 
         except OSError:
             return []
+    def __len__(self):
+        return len(self._fnum)
 
     @property
     def file_list(self):
@@ -171,9 +172,7 @@ class PicSim(object):
                 hash_key = 'scalars' + lookup['attribute'] + f_end
                 if hash_key not in self._data_dictionary:
                     if lookup['attribute'] == 'shock_loc':
-                        dens_avg1D = np.average(
-                            self.get_data(n, data_class='scalar_flds', fld = 'density')['data'].reshape(
-                            -1,self.get_data(n, data_class='scalar_flds', fld = 'density')['data'].shape[-1]), axis = 0)
+                        dens_avg1D = np.average(self.get_data(n, data_class='scalar_flds', fld = 'density')['data'], axis =2)
                         x_ax = self.get_data(n, data_class='axes', attribute= 'x')['data']
                         istep = self.get_data(n, data_class='param', attribute = 'istep')
                         c_omp = self.get_data(n, data_class='param', attribute = 'c_omp')
@@ -198,22 +197,23 @@ class PicSim(object):
                 return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
 
             elif lookup['data_class'] == 'axes':
+
                 hash_key = 'axes' + lookup['attribute'] + f_end
                 if hash_key not in self._data_dictionary:
                     if lookup['attribute'] == 'x':
                         ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[2])
-                        ans *= self.get_data(n, data_class='param', attribute = 'istep')
+                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
                         ans /= self.get_data(n, data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
                     elif lookup['attribute'] == 'y':
-                        ans = np.arange(get_sim_data(outdir, n, sim_type='v2', data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[1])
-                        ans *= get_sim_data(outdir, n, sim_type='v2', data_class='param', attribute = 'istep')
-                        ans /= get_sim_data(outdir, n, sim_type='v2', data_class='param', attribute = 'c_omp')
+                        ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[1])
+                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
+                        ans /= self.get_data(n, data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
                     elif lookup['attribute'] == 'z':
-                        ans = np.arange(get_sim_data(outdir, n, sim_type='v2', data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[0])
-                        ans *= get_sim_data(outdir, n, sim_type='v2', data_class='param', attribute = 'istep')
-                        ans /= get_sim_data(outdir, n, sim_type='v2', data_class='param', attribute = 'c_omp')
+                        ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[0])
+                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
+                        ans /= self.get_data(n,data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
 
                 return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict['axes'][lookup['attribute']]['axis_label']}

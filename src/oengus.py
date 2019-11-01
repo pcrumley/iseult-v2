@@ -7,8 +7,7 @@ import numpy as np
 from collections import deque
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
-from tristan_sim import get_flist_numbers, get_sim_data
-#from density_panel import DensPanel
+from scalar_flds_plot import scalarFldsPlot
 #from spectra_panel import SpectralPanel
 #from mag_panel import BPanel
 #from energy_panel import EnergyPanel
@@ -22,6 +21,8 @@ class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, preset_view='Default', interactive = True):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
+        self.sim_name = ''
+        self.dirname = ''
         #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
@@ -68,15 +69,15 @@ class Oengus():
         self.showingCPUs = False
         self.showingTotEnergy = False
         PlotTypeDict = {
-            'PhasePlot': PhasePanel,
-            'EnergyPlot': EnergyPanel,
-            'FieldsPlot': FieldsPanel,
-            'DensityPlot': DensPanel,
-            'SpectraPlot': SpectralPanel,
-            'MagPlots': BPanel,
-            'FFTPlots': FFTPanel,
-            'TotalEnergyPlot': TotEnergyPanel,
-            'Moments': MomentsPanel
+            'ScalarFlds': scalarFldsPlot,
+            #'EnergyPlot': EnergyPanel,
+            #'FieldsPlot': FieldsPanel,
+            #'DensityPlot': DensPanel,
+            #'SpectraPlot': SpectralPanel,
+            #'MagPlots': BPanel,
+            #'FFTPlots': FFTPanel,
+            #'TotalEnergyPlot': TotEnergyPanel,
+            #'Moments': MomentsPanel
         }
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
@@ -91,7 +92,7 @@ class Oengus():
                         pass
                 else:
                     # The graph isn't specified in the config file, just set it equal to phase plots
-                    self.SubPlotList[i].append(PlotTypeDict['PhasePlot'](self, (i,j), {}))
+                    self.SubPlotList[i].append(PlotTypeDict['ScalarFlds'](self, (i,j), {}))
 
 
 
@@ -107,7 +108,9 @@ class Oengus():
         #    self.calc_total_energy()
 
 
-        self.create_graphs()
+        #self.create_graphs()
+    def open_sim(self, sim):
+        self.sim = sim
     def GenMainParamDict(self, config_file = None):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
             It also sets all of the plots parameters.'''
@@ -222,42 +225,17 @@ class Oengus():
     #    self.TotalBzEnergy = np.array(self.TotalBzEnergy)
 
     def create_graphs(self):
-        o = self.sim[0]
         # FIND THE SLICE
-        self.MaxZInd = o.bx.shape[0]-1
-        self.MaxYInd = o.bx.shape[1]-1
-        self.MaxXInd = o.bx.shape[2]-1
+        #self.MaxZInd = o.bx.shape[0]-1
+        #self.MaxYInd = o.bx.shape[1]-1
+        #self.MaxXInd = o.bx.shape[2]-1
 
-        self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
-        self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
-        if self.MainParamDict['ConstantShockVel']:
-            self.shock_loc = o.time*self.shock_speed
-            self.shock_loc += np.min(o.xe[o.xe!=0])/o.c_omp
-        else:
-            jstart = int(min(10*o.c_omp/o.istep, o.dens[0,:,:].shape[1]))
-            cur_xaxis = np.arange(o.dens[0,:,:].shape[1])/o.c_omp*o.istep
-            # Find the shock by seeing where the density is 1/2 of it's
-            # max value.
-
-            dens_half_max = max(o.dens[0,:,:][o.dens[0,:,:].shape[0]//2,jstart:])*.5
-
-            # Find the farthest location where the average density is greater
-            # than half max
-            ishock = np.where(o.dens[0,:,:][o.dens[0,:,:].shape[0]//2,jstart:]>=dens_half_max)[0][-1]
-            self.shock_loc = cur_xaxis[ishock]
-
-            #self.cpu_x_locs = np.cumsum(self.DataDict['mx']-5)/self.DataDict['c_omp'][0]
-            #self.cpu_y_locs = np.cumsum(self.DataDict['my']-5)/self.DataDict['c_omp'][0]
-
-        # Now that the DataDict is created, iterate over all the subplots and
-        # load the data into them:
-        for i in range(self.MainParamDict['NumOfRows']):
-            for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].update_data(o)
+        #self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
+        #self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].draw()
+                self.SubPlotList[i][j].draw(self.sim, -1)
         if self.showingCPUs:
             if 'my' in self.sim._h5Key2FileDict.keys():
                 cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
@@ -283,11 +261,11 @@ class Oengus():
                     except KeyError:
                         pass
 
-        if self.MainParamDict['ShowTitle']:
-            if len(self.sim_name) == 0:
-                self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
-            else:
-                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+        #if self.MainParamDict['ShowTitle']:
+        #    if len(self.sim_name) == 0:
+        #        self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+        #    else:
+        #        self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
         ####
         #
         # Write the lines to the phase plots

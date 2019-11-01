@@ -11,7 +11,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
 
-class ScalarFldsPlot:
+class scalarFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
     plot_param_dict = {'twoD': 0,
@@ -41,8 +41,7 @@ class ScalarFldsPlot:
     gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
     gradient = np.vstack((gradient, gradient))
 
-    def __init__(self, parent, pos, param_dict, sim):
-        self.sim = sim
+    def __init__(self, parent, pos, param_dict):
         self.param_dict = {}
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
@@ -65,11 +64,8 @@ class ScalarFldsPlot:
         else:
             return PowerNormWithNeg(self.GetPlotParam('cpow_num'), vmin, vmax, div_cmap = self.GetPlotParam('UseDivCmap'),midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
 
-    def update_data(self, n):
-        ''' A Helper function that loads the data for the plot'''
 
-
-    def draw(self, n):
+    def draw(self, sim, n):
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -83,16 +79,17 @@ class ScalarFldsPlot:
                 # get c_omp and istep to convert cells to physical units
 
         # FIND THE SLICE
-        MaxZInd = len(self.sim.get_data(n, data_type='axes', attribute='z')['data']) - 1
-        MaxYInd = len(self.sim.get_data(n, data_type='axes', attribute='y')['data']) - 1
-
-        self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
-        self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
-        self.scalar_fld = self.sim.get_data(n, data_type = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+        MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
+        MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
 
 
-        self.c_omp = self.sim.get_data(n, data_type = 'param', attribute = 'c_omp')
-        self.istep = self.sim.get_data(n, data_type = 'param', attribute = 'istep')
+        self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
+        self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
+
+        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+
+        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
+        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
         if self.GetPlotParam('OutlineText'):
             self.annotate_kwargs = {'horizontalalignment': 'right',
             'verticalalignment': 'top',
@@ -237,7 +234,7 @@ class ScalarFldsPlot:
 
 
         else:
-            self.xaxis =  self.sim.get_data(n, data_type = 'axes', attribute = 'x')
+            self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
             # Do the 1D Plots
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
@@ -347,16 +344,16 @@ class ScalarFldsPlot:
                     self.cbar.set_extent([0,1,clim[0],clim[1]])
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self, n):
+    def refresh(self, sim, n):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
         time, is that we won't actually do any drawing in the plot. The plot
         will be redrawn after all subplots data is changed. '''
-        self.scalar_fld = self.sim.get_data(n, data_type = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
-        self.xaxis =  self.sim.get_data(n, data_type = 'axes', attribute = 'x')
-        self.c_omp = self.sim.get_data(n, data_type = 'param', attribute = 'c_omp')
-        self.istep = self.sim.get_data(n, data_type = 'param', attribute = 'istep')
+        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+        self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
+        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.GetPlotParam('twoD') == 0:
@@ -440,3 +437,14 @@ class ScalarFldsPlot:
 
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
+
+if __name__== '__main__':
+    from oengus import Oengus
+    from pic_sim import picSim
+    import matplotlib.pyplot as plt
+    oengus = Oengus(interactive=False)
+
+
+    oengus.open_sim(picSim('../output/'))
+    oengus.create_graphs()
+    #plt.show()
