@@ -164,6 +164,11 @@ class picSim(object):
                             tmp += self.get_data(n, data_class='vec_flds', fld = 'B', component = 'z')['data']**2
 
                             self._data_dictionary[hash_key] = np.sqrt(tmp)
+                        elif lookup['fld'] == 'theta_B':
+                            bx = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data']
+                            bperp = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'y')['data']**2
+                            bperp += self.get_data(n, data_class='vec_flds', fld = 'B', component = 'z')['data']**2
+                            self._data_dictionary[hash_key] = np.arctan2(np.sqrt(bperp), bx)
                         elif lookup['fld'] == 'density':
                             self._data_dictionary[hash_key] = self.get_data(n,
                                     data_class = 'scalar_flds',
