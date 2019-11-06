@@ -5,7 +5,7 @@ Chart0_0:
   cmap: None
   cnorm_type: Linear
   cpow_num: 0.6
-  flds_type: B_total
+  flds_type: theta_B
   div_midpoint: 0.0
   face_color: gainsboro
   interpolation: none
@@ -20,7 +20,7 @@ Chart0_0:
   spatial_x: true
   spatial_y: 0
   stretch_colors: false
-  twoD: 0
+  twoD: 1
   v_max: 10
   v_min: 0
 MainParamDict:

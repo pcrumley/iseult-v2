@@ -205,11 +205,9 @@ class picSim(object):
                         return {'data': vel_shock, 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
                     else:
                         return {'data': 1.0, 'label': ''}
-
                 return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
 
             elif lookup['data_class'] == 'axes':
-
                 hash_key = 'axes' + lookup['attribute'] + f_end
                 if hash_key not in self._data_dictionary:
                     if lookup['attribute'] == 'x':
