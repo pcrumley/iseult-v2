@@ -345,7 +345,7 @@ class scalarFldsPlot:
                     self.cbar.set_extent([0,1,clim[0],clim[1]])
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self, sim, n):
+    def refresh(self, sim   , n):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
