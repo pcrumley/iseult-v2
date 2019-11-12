@@ -440,12 +440,13 @@ class scalarFldsPlot:
         return self.param_dict[keyname]
 
 if __name__== '__main__':
+    import os
     from oengus import Oengus
     from pic_sim import picSim
     import matplotlib.pyplot as plt
     oengus = Oengus(interactive=False)
 
 
-    oengus.open_sim(picSim('../output/'))
+    oengus.open_sim(picSim(os.path.join(os.path.dirname(__file__),'../output')))
     oengus.create_graphs()
     plt.savefig('test.png')

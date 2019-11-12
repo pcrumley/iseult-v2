@@ -19,10 +19,11 @@ from PIL import Image
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', interactive = True):
+    def __init__(self, preset_view='Default', interactive = True, tkApp = None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.dirname = ''
+        self.tkApp = tkApp
         #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
@@ -49,8 +50,9 @@ class Oengus():
             self.SubPlotParams = self.MainParamDict['VSubPlotParams']
         self.figure.subplots_adjust( **self.SubPlotParams)
         if interactive:
+            print('hi')
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            self.canvas = FigureCanvasTkAgg(self.figure)
+            self.canvas = FigureCanvasTkAgg(self.figure, master = self.tkApp)
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
@@ -319,7 +321,7 @@ class Oengus():
                         linewidth = 1.5, linestyle = '-', color = self.electron_color))
                         # Choose the right dashes pattern
                         self.SubPlotList[pos[0]][pos[1]].IntRegionLines[-1].set_dashes(self.dashes_options[k])
-        self.canvas.draw()
+        #self.canvas.draw()
 
     def draw_output(self, n):
         o = self.sim[n]
@@ -434,7 +436,7 @@ class Oengus():
                         [min(self.SubPlotList[spos[0]][spos[1]].graph.e_right_loc, self.SubPlotList[pos[0]][pos[1]].graph.xmax+1),
                         min(self.SubPlotList[spos[0]][spos[1]].graph.e_right_loc, self.SubPlotList[pos[0]][pos[1]].graph.xmax-1)])
                         i+=1
-        self.canvas.draw()
+        Self.canvas.draw()
 
         s, (width, height) = self.canvas.print_to_buffer()
         return Image.frombytes('RGBA', (width, height), s)

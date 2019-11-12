@@ -11,6 +11,7 @@ def h5_getter(filepath, attribute, prtl_stride = None):
 class picSim(object):
     def __init__(self, dirpath=None, cfg_file = 'tristan_v2.yml'):
         self._outdir = dirpath
+        cfg_file = os.path.join(os.path.dirname(__file__), cfg_file)
         with open(cfg_file, 'r') as f:
             self._cfgDict=yaml.safe_load(f)
         self._xtra_stride = 1
@@ -234,7 +235,7 @@ class picSim(object):
         except KeyError:
             return response_dir
 if __name__=='__main__':
-    sim = PicSim('../output')
+    sim =picSim(os.path.join(os.path.dirname(__file__),'../output'))
     print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
     print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
     print(sim.get_data(n = 15, data_class='vec_flds', fld = 'E', component = 'x'))
