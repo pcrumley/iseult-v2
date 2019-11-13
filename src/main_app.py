@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import time, os
+import time, os, sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog

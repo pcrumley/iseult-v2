@@ -50,7 +50,6 @@ class Oengus():
             self.SubPlotParams = self.MainParamDict['VSubPlotParams']
         self.figure.subplots_adjust( **self.SubPlotParams)
         if interactive:
-            print('hi')
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.canvas = FigureCanvasTkAgg(self.figure, master = self.tkApp)
         else:
