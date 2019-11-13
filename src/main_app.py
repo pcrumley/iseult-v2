@@ -7,8 +7,8 @@ from oengus import Oengus
 from pic_sim import picSim
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
-
-
+from mpl_param import Param
+from playback_bar import playbackBar
 def destroy(e):
     sys.exit()
 
@@ -61,7 +61,10 @@ class MainApp(Tk.Tk):
 
         self.oengus.canvas._tkcanvas.pack(side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
         self.oengus.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-
+        # Make the object hold the timestep info
+        self.time_step = Param(1, minimum=1, maximum=1000)
+        self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
+        self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
         self.update()
 
