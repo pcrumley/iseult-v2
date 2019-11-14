@@ -53,9 +53,9 @@ class MainApp(Tk.Tk):
         #self.bind_all("<Command-o>", self.OnOpen)
         #self.bind_all("S", self.OpenSettings)
         self.oengus = Oengus(interactive=True, tkApp = self)
+        print(len(picSim()))
 
-
-        self.oengus.open_sim(picSim(os.path.join(os.path.dirname(__file__),'../output')))
+        self.oengus.open_sim(picSim())#os.path.join(os.path.dirname(__file__),'../output')))
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
 
@@ -71,13 +71,14 @@ class MainApp(Tk.Tk):
 
 
         self.config(menu=menubar)
-
+        self.protocol("WM_DELETE_WINDOW", sys.exit)
         self.bind('<Return>', self.txt_enter)
-        #self.bind('<Left>', self.playbackbar.SkipLeft)
-        #self.bind('<Right>', self.playbackbar.SkipRight)
+        self.bind('<Left>', self.playbackbar.skip_left)
+        self.bind('<Right>', self.playbackbar.skip_right)
         #self.bind('r', self.playbackbar.OnReload)
         #self.bind('<space>', self.playbackbar.PlayHandler)
         #self.update()
+
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):

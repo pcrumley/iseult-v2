@@ -23,7 +23,7 @@ class Oengus():
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.dirname = ''
-        self.tkApp = tkApp
+        #self.tkApp = tkApp
         self.interactive = interactive
         #self.dirname = sim.dir
         try:
@@ -52,7 +52,7 @@ class Oengus():
         self.figure.subplots_adjust( **self.SubPlotParams)
         if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            self.canvas = FigureCanvasTkAgg(self.figure, master = self.tkApp)
+            self.canvas = FigureCanvasTkAgg(self.figure, master = tkApp)
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)

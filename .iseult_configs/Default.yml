@@ -23,6 +23,31 @@ Chart0_0:
   twoD: 1
   v_max: 10
   v_min: 0
+Chart1_0:
+  ChartType: ScalarFlds
+  OutlineText: true
+  UseDivCmap: false
+  cmap: None
+  cnorm_type: Linear
+  cpow_num: 0.6
+  flds_type: B_total
+  div_midpoint: 0.0
+  face_color: gainsboro
+  interpolation: none
+  normalize_density: true
+  set_color_limits: false
+  set_v_max: false
+  set_v_min: false
+  show_cbar: true
+  show_cpu_domains: false
+  show_labels: true
+  show_shock: false
+  spatial_x: true
+  spatial_y: 0
+  stretch_colors: false
+  twoD: 1
+  v_max: 10
+  v_min: 0
 MainParamDict:
   2DSlicePlane: 0
   Average1D: 0
@@ -65,7 +90,7 @@ MainParamDict:
   MaxCols: 8
   MaxRows: 8
   NumFontSize: 11
-  NumOfCols: 1
+  NumOfCols: 2
   NumOfRows: 1
   PrtlStride: 5
   Recording: false
