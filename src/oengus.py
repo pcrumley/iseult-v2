@@ -24,6 +24,7 @@ class Oengus():
         self.sim_name = ''
         self.dirname = ''
         self.tkApp = tkApp
+        self.interactive = interactive
         #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
@@ -49,7 +50,7 @@ class Oengus():
             self.cbar_extent = self.MainParamDict['VCbarExtent']
             self.SubPlotParams = self.MainParamDict['VSubPlotParams']
         self.figure.subplots_adjust( **self.SubPlotParams)
-        if interactive:
+        if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.canvas = FigureCanvasTkAgg(self.figure, master = self.tkApp)
         else:
@@ -323,42 +324,13 @@ class Oengus():
         #self.canvas.draw()
 
     def draw_output(self, n):
-        o = self.sim[n]
-        # FIND THE SLICE
-        self.MaxZInd = o.bx.shape[0]-1
-        self.MaxYInd = o.bx.shape[1]-1
-        self.MaxXInd = o.bx.shape[2]-1
-
-        self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
-        self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
-        if self.MainParamDict['ConstantShockVel']:
-            self.shock_loc = o.time*self.shock_speed
-            self.shock_loc += np.min(o.xe[o.xe!=0])/o.c_omp
-        else:
-            jstart = int(min(10*o.c_omp/o.istep, o.dens[0,:,:].shape[1]))
-            cur_xaxis = np.arange(o.dens[0,:,:].shape[1])/o.c_omp*o.istep
-            # Find the shock by seeing where the density is 1/2 of it's
-            # max value.
-
-            dens_half_max = max(o.dens[0,:,:][o.dens[0,:,:].shape[0]//2,jstart:])*.5
-
-            # Find the farthest location where the average density is greater
-            # than half max
-            ishock = np.where(o.dens[0,:,:][o.dens[0,:,:].shape[0]//2,jstart:]>=dens_half_max)[0][-1]
-            self.shock_loc = cur_xaxis[ishock]
-
-            #self.cpu_x_locs = np.cumsum(self.DataDict['mx']-5)/self.DataDict['c_omp'][0]
-            #self.cpu_y_locs = np.cumsum(self.DataDict['my']-5)/self.DataDict['c_omp'][0]
-
-        # Now that the DataDict is created, iterate over all the subplots and
-        # load the data into them:
-        for i in range(self.MainParamDict['NumOfRows']):
-            for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].update_data(o)
+        #for i in range(self.MainParamDict['NumOfRows']):
+        #    for j in range(self.MainParamDict['NumOfCols']):
+        #        self.SubPlotList[i][j].update_data(o)
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].refresh()
+                self.SubPlotList[i][j].refresh(self.sim, n)
         #if self.showingCPUs:
         #    if 'my' in self.sim._h5Key2FileDict.keys():
         #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
@@ -384,11 +356,11 @@ class Oengus():
         #            except KeyError:
         #                pass
 
-        if self.MainParamDict['ShowTitle']:
-            if len(self.sim_name) == 0:
-                self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
-            else:
-                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+        #if self.MainParamDict['ShowTitle']:
+        #    if len(self.sim_name) == 0:
+        #        self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+        #    else:
+        #        self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
         ####
         #
         # Write the lines to the phase plots
@@ -396,9 +368,9 @@ class Oengus():
         ####
 
         # first find all the phase plots that need writing to
-        self.phase_plot_list = []
-        self.spectral_plot_list = []
-
+        #self.phase_plot_list = []
+        #self.spectral_plot_list = []
+        """
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 if self.SubPlotList[i][j].chartType =='PhasePlot' or self.SubPlotList[i][j].chartType =='EnergyPlot':
@@ -435,10 +407,11 @@ class Oengus():
                         [min(self.SubPlotList[spos[0]][spos[1]].graph.e_right_loc, self.SubPlotList[pos[0]][pos[1]].graph.xmax+1),
                         min(self.SubPlotList[spos[0]][spos[1]].graph.e_right_loc, self.SubPlotList[pos[0]][pos[1]].graph.xmax-1)])
                         i+=1
-        Self.canvas.draw()
-
-        s, (width, height) = self.canvas.print_to_buffer()
-        return Image.frombytes('RGBA', (width, height), s)
+        """
+        self.canvas.draw()
+        if not self.interactive:
+            s, (width, height) = self.canvas.print_to_buffer()
+            return Image.frombytes('RGBA', (width, height), s)
 def runMe(cmd_args):
     tic = time.time()
     cmdout = ['ffmpeg',

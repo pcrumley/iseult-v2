@@ -109,7 +109,6 @@ class playbackBar(Tk.Frame):
         #    self.parent.MainParamDict['LoopPlayback'] = self.LoopVar.get()
 
     def skip_left(self, e = None):
-        print(self.param.value)
         self.param.set(self.param.value - self.oengus.MainParamDict['SkipSize'])
 
     def skip_right(self, e = None):
@@ -191,4 +190,5 @@ class playbackBar(Tk.Frame):
             self.param.set(int(self.slider.get()))
     def set_knob(self, value):
         "Don't need to do anything here if param changes val"
-        pass
+        self.slider.set(value)
+        self.tstep.set(str(value))

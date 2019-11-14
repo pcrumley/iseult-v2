@@ -345,7 +345,7 @@ class scalarFldsPlot:
                     self.cbar.set_extent([0,1,clim[0],clim[1]])
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self, sim   , n):
+    def refresh(self, sim, n):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
@@ -355,6 +355,14 @@ class scalarFldsPlot:
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
         self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
+        # FIND THE SLICE
+        MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
+        MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
+
+
+        self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
+        self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
+
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.GetPlotParam('twoD') == 0:
@@ -362,7 +370,7 @@ class scalarFldsPlot:
             if self.parent.MainParamDict['Average1D']:
                 self.linedens[0].set_data(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0))
             else: # x-y plane
-                self.linedens[0].set_data(self.xaxis['data'], self.scalar_fld['data'][self.parent.zSlice,self.parent.ySlice,:])
+                self.linedens[0].set_data(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:])
 
             #### Set the ylims...
             min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
@@ -389,9 +397,9 @@ class scalarFldsPlot:
 
         else: # Now refresh the plot if it is 2D
             if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                self.image.set_data(self.scalar_fld['data'][self.parent.zSlice,:,:])
+                self.image.set_data(self.scalar_fld['data'][self.zSlice,:,:])
             elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                self.image.set_data(self.scalar_fld['data'][:,self.parent.ySlice,:])
+                self.image.set_data(self.scalar_fld['data'][:,self.ySlice,:])
 
             #if self.GetPlotParam('normalize_density'):
             #    self.image.set_data(self.image.get_array()/self.ppc0)

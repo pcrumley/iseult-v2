@@ -65,19 +65,24 @@ class MainApp(Tk.Tk):
         self.time_step = Param(1, minimum=1, maximum=1000)
         self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
+        self.time_step.attach(self)
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
         self.update()
 
 
         self.config(menu=menubar)
 
-        #self.bind('<Return>', self.TxtEnter)
+        self.bind('<Return>', self.txt_enter)
         #self.bind('<Left>', self.playbackbar.SkipLeft)
         #self.bind('<Right>', self.playbackbar.SkipRight)
         #self.bind('r', self.playbackbar.OnReload)
         #self.bind('<space>', self.playbackbar.PlayHandler)
         #self.update()
-
+    def txt_enter(self, e):
+        self.playbackbar.text_callback()
+    def set_knob(self, value):
+        self.oengus.draw_output(value-1)
+        self.oengus.canvas.get_tk_widget().update_idletasks()
 
 def runMe(cmd_args):
     app = MainApp('Iseult', cmd_args)
