@@ -45,7 +45,7 @@ Chart1_0:
   spatial_x: true
   spatial_y: 0
   stretch_colors: false
-  twoD: 1
+  twoD: 0
   v_max: 10
   v_min: 0
 MainParamDict:
@@ -90,7 +90,7 @@ MainParamDict:
   MaxCols: 8
   MaxRows: 8
   NumFontSize: 11
-  NumOfCols: 2
+  NumOfCols: 1
   NumOfRows: 1
   PrtlStride: 5
   Recording: false

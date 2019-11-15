@@ -189,6 +189,6 @@ class playbackBar(Tk.Frame):
         if int(self.slider.get()) != self.param.value:
             self.param.set(int(self.slider.get()))
     def set_knob(self, value):
-        "Don't need to do anything here if param changes val"
+        self.slider.config(to =self.param.maximum)
         self.slider.set(value)
         self.tstep.set(str(value))

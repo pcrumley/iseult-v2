@@ -14,7 +14,7 @@ from matplotlib.ticker import FuncFormatter
 class scalarFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
-    plot_param_dict = {'twoD': 1,
+    plot_param_dict = {'twoD': 0,
                        'flds_type': 'B_total',
                        'show_cbar': True,
                        'set_color_limits': False,
@@ -392,7 +392,7 @@ class scalarFldsPlot:
                 #else:
                 self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
             else:
-                self.axes.set_xlim(self.xaxis_values[0], self.xaxis_values[-1])
+                self.axes.set_xlim(self.xaxis['data'][0], self.xaxis['data'][-1])
 
 
         else: # Now refresh the plot if it is 2D

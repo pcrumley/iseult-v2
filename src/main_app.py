@@ -53,9 +53,15 @@ class MainApp(Tk.Tk):
         #self.bind_all("<Command-o>", self.OnOpen)
         #self.bind_all("S", self.OpenSettings)
         self.oengus = Oengus(interactive=True, tkApp = self)
-        print(len(picSim()))
+        # open a sim
+        self.sim = picSim(os.curdir)
+        if len(self.sim) == 0:
+            self.sim.outdir = os.path.join(os.curdir, 'output')
+        if len(self.sim) == 0:
+            print('pop up here')
 
-        self.oengus.open_sim(picSim())#os.path.join(os.path.dirname(__file__),'../output')))
+        self.oengus.open_sim(self.sim)#os.path.join(os.path.dirname(__file__),'../output')))
+
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
 
@@ -66,6 +72,10 @@ class MainApp(Tk.Tk):
         self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         self.time_step.attach(self)
+        self.time_step.set_max(len(self.sim))
+        self.time_step.set(len(self.sim))
+        #self.playbackbar.slider.config(to =self.time_step.maximum)
+
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
         self.update()
 

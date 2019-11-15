@@ -65,10 +65,11 @@ class Param:
 
     def set_max(self, max_arg, knob=None):
         self.maximum = max_arg
-        self.value = self.constrain(self.value)
-        for feedback_knob in self.knobs:
-            if feedback_knob != knob:
-                feedback_knob.set_knob(self.value)
+        if self.value != self.constrain(self.value):
+            self.value = self.constrain(self.value)
+            for feedback_knob in self.knobs:
+                if feedback_knob != knob:
+                    feedback_knob.set_knob(self.value)
         return self.value
 
     def constrain(self, value):
