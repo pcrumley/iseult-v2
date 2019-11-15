@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import time, os, sys
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from custom_toolbar import myCustomToolbar
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog
 from oengus import Oengus
@@ -69,9 +69,11 @@ class MainApp(Tk.Tk):
 
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
-
+        #self.toolbar = myCustomToolbar(self.oengus.canvas, self)
+        #self.toolbar.update()
         self.oengus.canvas._tkcanvas.pack(side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
         self.oengus.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
+
         # Make the object hold the timestep info
         self.time_step = Param(1, minimum=1, maximum=1000)
         self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
@@ -79,10 +81,11 @@ class MainApp(Tk.Tk):
         self.time_step.attach(self)
         self.time_step.set_max(len(self.sim))
         self.time_step.set(len(self.sim))
+        #NavigationToolbar2Tk.__init__(self, plotCanvas, parent)
         #self.playbackbar.slider.config(to =self.time_step.maximum)
 
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
-        self.update()
+
 
 
         self.config(menu=menubar)
@@ -91,7 +94,8 @@ class MainApp(Tk.Tk):
         self.bind('<Left>', self.playbackbar.skip_left)
         self.bind('<Right>', self.playbackbar.skip_right)
         #self.bind('r', self.playbackbar.OnReload)
-        #self.bind('<space>', self.playbackbar.PlayHandler)
+        self.bind('<space>', self.playbackbar.play_handler)
+        self.update()
         #self.update()
 
     def txt_enter(self, e):
