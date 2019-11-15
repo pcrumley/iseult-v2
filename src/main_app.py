@@ -58,8 +58,13 @@ class MainApp(Tk.Tk):
         if len(self.sim) == 0:
             self.sim.outdir = os.path.join(os.curdir, 'output')
         if len(self.sim) == 0:
-            print('pop up here')
-
+            self.sim.outdir = filedialog.askdirectory(
+                title = 'Choose the directory of the output files',
+                initialdir = os.curdir,
+                mustexist = True,
+                parent = self)
+            if len(self.sim) == 0:
+                self.sim.outdir = os.path.join(self.sim.outdir, 'output')
         self.oengus.open_sim(self.sim)#os.path.join(os.path.dirname(__file__),'../output')))
 
         self.oengus.create_graphs()
