@@ -12,7 +12,7 @@ class playbackBar(Tk.Frame):
     def __init__(self, oengus, tstep_param, canvas = None):
         Tk.Frame.__init__(self)
         self.oengus = oengus
-        self.playPressed = False
+        self.play_pressed = False
 
         # This param should be the time-step of the simulation
         self.param = tstep_param
@@ -115,29 +115,24 @@ class playbackBar(Tk.Frame):
         self.param.set(self.param.value + self.oengus.MainParamDict['SkipSize'])
 
     def play_handler(self, e = None):
-        print('play_handler')
-        """
-        if not self.playPressed:
+        if not self.play_pressed:
             # Set the value of play pressed to true, change the button name to
             # pause, turn off clear_fig, and start the play loop.
-            self.playPressed = True
-            self.parent.RenewCanvas()
-
+            self.play_pressed = True
             self.playB.config(text='Pause')
 
-            self.after(int(self.parent.MainParamDict['WaitTime']*1E3), self.blink)
+            self.after(int(self.oengus.MainParamDict['WaitTime']*1E3), self.blink)
         else:
-            self.parent.resizable(1,1)
+            #self.parent.resizable(1,1)
             # pause the play loop, turn clear fig back on, and set the button name back to play
-            self.playPressed = False
-            try:
-                self.MovieFrame.destroy()
-            except AttributeError:
-                pass
-            self.parent.RenewCanvas()
+            self.play_pressed = False
+            #try:
+            #    self.MovieFrame.destroy()
+            #except AttributeError:
+            #    pass
+            #self.parent.RenewCanvas()
 #            self.parent.MainParamDict['ClearFig'] = True
             self.playB.config(text='Play')
-        """
 
 
     def open_measures(self):
@@ -151,21 +146,18 @@ class playbackBar(Tk.Frame):
         """
 
     def blink(self):
-        print('blink')
-        """
-        if self.playPressed:
+        if self.play_pressed:
             # First check to see if the timestep can get larger
-            if self.param.value == self.param.maximum and not self.parent.MainParamDict['LoopPlayback']:
+            if self.param.value == self.param.maximum and not self.oengus.MainParamDict['LoopPlayback']:
                 # push pause button
                 self.PlayHandler()
 
             # otherwise skip right by size skip size
             else:
-                self.param.set(self.param.value + self.parent.MainParamDict['SkipSize'])
+                self.param.set(self.param.value + self.oengus.MainParamDict['SkipSize'])
 
             # start loopin'
-            self.after(int(self.parent.MainParamDict['WaitTime']*1E3), self.blink)
-        """
+            self.after(int(self.oengus.MainParamDict['WaitTime']*1E3), self.blink)
 
     def text_callback(self):
         try:
