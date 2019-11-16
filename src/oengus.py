@@ -38,8 +38,10 @@ class Oengus():
         self.GenMainParamDict()
 
         # Clear the figure then add stuff back in
-        self.figure = plt.figure(figsize = self.MainParamDict['FigSize'], dpi = self.MainParamDict['dpi'], edgecolor = 'none', facecolor = 'w')
-
+        if self.interactive:
+            self.figure = plt.figure(figsize = (1,1), dpi = self.MainParamDict['dpi'], edgecolor = 'none', facecolor = 'w')
+        else:
+            self.figure = plt.figure(figsize = self.MainParamDict['FigSize'], dpi = self.MainParamDict['dpi'], edgecolor = 'none', facecolor = 'w')
         if self.MainParamDict['HorizontalCbars']:
             self.axes_extent = self.MainParamDict['HAxesExtent']
             self.cbar_extent = self.MainParamDict['HCbarExtent']

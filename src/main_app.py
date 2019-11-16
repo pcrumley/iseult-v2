@@ -69,6 +69,8 @@ class MainApp(Tk.Tk):
 
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
+        self.minsize(780, 280)
+
         #self.toolbar = myCustomToolbar(self.oengus.canvas, self)
         #self.toolbar.update()
         self.oengus.canvas._tkcanvas.pack(side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
@@ -96,7 +98,6 @@ class MainApp(Tk.Tk):
         #self.bind('r', self.playbackbar.OnReload)
         self.bind('<space>', self.playbackbar.play_handler)
         self.update()
-        #self.update()
 
     def txt_enter(self, e):
         self.playbackbar.text_callback()
