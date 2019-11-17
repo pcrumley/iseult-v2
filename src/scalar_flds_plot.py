@@ -46,10 +46,10 @@ class scalarFldsPlot:
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
         self.pos = pos
-        self.chartType = 'ScalarFldsPlot'
+        self.chart_type = 'ScalarFlds'
         self.parent = parent
         self.figure = self.parent.figure
-        self.InterpolationMethods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
+        self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 

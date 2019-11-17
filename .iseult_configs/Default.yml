@@ -1,5 +1,5 @@
 Chart0_0:
-  ChartType: ScalarFlds
+  chart_type: ScalarFlds
   OutlineText: true
   UseDivCmap: false
   cmap: None
@@ -24,7 +24,7 @@ Chart0_0:
   v_max: 10
   v_min: 0
 Chart1_0:
-  ChartType: ScalarFlds
+  chart_type: ScalarFlds
   OutlineText: true
   UseDivCmap: false
   cmap: None

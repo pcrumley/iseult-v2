@@ -1,60 +1,55 @@
+import tkinter as Tk
+from tkinter import ttk
+
 class ScalarFieldsSettings(Tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)
-
-        self.wm_title('Dens Plot (%d,%d) Settings' % self.parent.FigWrap.pos)
+        self.loc = loc
+        self.wm_title(f'Scalar Flds Plot {self.loc} Settings')
         self.parent = parent
         frm = ttk.Frame(self)
         frm.pack(fill=Tk.BOTH, expand=True)
         self.protocol('WM_DELETE_WINDOW', self.OnClosing)
         self.bind('<Return>', self.TxtEnter)
-
-
+        self.subplot = self.parent.oengus.SubPlotList[self.loc[0]][self.loc[1]]
+        self.params = self.subplot.param_dict
         # Create the OptionMenu to chooses the Chart Type:
         self.InterpolVar = Tk.StringVar(self)
-        self.InterpolVar.set(self.parent.GetPlotParam('interpolation')) # default value
+        self.InterpolVar.set(self.params['interpolation']) # default value
         self.InterpolVar.trace('w', self.InterpolChanged)
 
         ttk.Label(frm, text="Interpolation Method:").grid(row=0, column = 2)
-        InterplChooser = ttk.OptionMenu(frm, self.InterpolVar, self.parent.GetPlotParam('interpolation'), *tuple(self.parent.InterpolationMethods))
+        InterplChooser = ttk.OptionMenu(frm, self.InterpolVar, self.params['interpolation'], *tuple(self.subplot.interpolation_methods))
         InterplChooser.grid(row =0, column = 3, sticky = Tk.W + Tk.E)
 
         # Create the OptionMenu to chooses the Chart Type:
         self.ctypevar = Tk.StringVar(self)
-        self.ctypevar.set(self.parent.chartType) # default value
+        self.ctypevar.set(self.subplot.chart_type) # default value
         self.ctypevar.trace('w', self.ctypeChanged)
 
         ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column = 0)
-        ctypeChooser = ttk.OptionMenu(frm, self.ctypevar, self.parent.chartType, *tuple(self.parent.ChartTypes))
+        ctypeChooser = ttk.OptionMenu(frm, self.ctypevar, self.subplot.chart_type, *tuple(self.parent.oengus.plot_types_dict.keys()))
         ctypeChooser.grid(row =0, column = 1, sticky = Tk.W + Tk.E)
 
-
         self.TwoDVar = Tk.IntVar(self) # Create a var to track whether or not to plot in 2-D
-        self.TwoDVar.set(self.parent.GetPlotParam('twoD'))
+        self.TwoDVar.set(self.params['twoD'])
         cb = ttk.Checkbutton(frm, text = "Show in 2-D",
                 variable = self.TwoDVar,
                 command = self.Change2d)
         cb.grid(row = 1, sticky = Tk.W)
-
+        print([key for key in self.parent.sim.get_available_quantities()['scalar_flds']])
         # the Radiobox Control to choose the Field Type
-        self.DensList = ['dens', 'dens_i', 'dens_e', 'rho']
-        self.DensTypeVar  = Tk.IntVar()
-        self.DensTypeVar.set(self.parent.GetPlotParam('dens_type'))
+        self.quantity  = Tk.StringVar(self)
+        self.quantity.set(self.params['flds_type'])
 
-        ttk.Label(frm, text='Choose Density:').grid(row = 2, sticky = Tk.W)
-
-        for i in range(len(self.DensList)):
-            ttk.Radiobutton(frm,
-                text=self.DensList[i],
-                variable=self.DensTypeVar,
-                command = self.RadioField,
-                value=i).grid(row = 3+i//2, column = i-2*(i//2), sticky =Tk.W)
-
+        ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky = Tk.W)
+        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['flds_type'], *tuple(self.parent.sim.get_available_quantities()['scalar_flds'].keys()))
+        quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
 
         # Control whether or not Cbar is shown
         self.CbarVar = Tk.IntVar()
-        self.CbarVar.set(self.parent.GetPlotParam('show_cbar'))
+        self.CbarVar.set(self.params['show_cbar'])
         cb = ttk.Checkbutton(frm, text = "Show Color bar",
                         variable = self.CbarVar,
                         command = self.CbarHandler)
@@ -69,23 +64,23 @@ class ScalarFieldsSettings(Tk.Toplevel):
         cb.grid(row = 6, column = 1, sticky = Tk.W)
 
         # Normalize Density Var
-        self.NormDVar = Tk.IntVar()
-        self.NormDVar.set(self.parent.GetPlotParam('normalize_density'))
-        cb = ttk.Checkbutton(frm, text = "Normalize to ppc0",
-                        variable = self.NormDVar,
-                        command = self.NormPPCHandler)
-        cb.grid(row = 7, sticky = Tk.W)
+        #self.NormDVar = Tk.IntVar()
+        #self.NormDVar.set(self.parent.GetPlotParam('normalize_density'))
+        #cb = ttk.Checkbutton(frm, text = "Normalize to ppc0",
+        #                variable = self.NormDVar,
+        #                command = self.NormPPCHandler)
+        #cb.grid(row = 7, sticky = Tk.W)
 
         # show labels
         self.ShowLabels = Tk.IntVar()
-        self.ShowLabels.set(self.parent.GetPlotParam('show_labels'))
+        self.ShowLabels.set(self.params['show_labels'])
         cb = ttk.Checkbutton(frm, text = "Show Labels 2D",
                         variable = self.ShowLabels,
                         command = self.LabelHandler)
         cb.grid(row = 7, column = 1, sticky = Tk.W)
         # Control whether or not diverging cmap is used
         self.DivVar = Tk.IntVar()
-        self.DivVar.set(self.parent.GetPlotParam('UseDivCmap'))
+        self.DivVar.set(self.params['UseDivCmap'])
         cb = ttk.Checkbutton(frm, text = "Use Diverging Cmap",
                         variable = self.DivVar,
                         command = self.DivHandler)
@@ -93,26 +88,26 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
         # Use full div cmap
         self.StretchVar = Tk.IntVar()
-        self.StretchVar.set(self.parent.GetPlotParam('stretch_colors'))
+        self.StretchVar.set(self.params['stretch_colors'])
         cb = ttk.Checkbutton(frm, text = "Asymmetric Color Space",
                         variable = self.StretchVar,
                         command = self.StretchHandler)
         cb.grid(row = 9, column = 0, columnspan =2, sticky = Tk.W)
 
-        self.CPUVar = Tk.IntVar()
-        self.CPUVar.set(self.parent.GetPlotParam('show_cpu_domains'))
-        cb = ttk.Checkbutton(frm, text = "Show CPU domains",
-                        variable = self.CPUVar,
-                        command = self.CPUVarHandler)
-        cb.grid(row = 10, column = 0, sticky = Tk.W)
+        #self.CPUVar = Tk.IntVar()
+        #self.CPUVar.set(self.parent.GetPlotParam('show_cpu_domains'))
+        #cb = ttk.Checkbutton(frm, text = "Show CPU domains",
+        #                variable = self.CPUVar,
+        #                command = self.CPUVarHandler)
+        #cb.grid(row = 10, column = 0, sticky = Tk.W)
 
         # Create the OptionMenu to chooses the cnorm_type:
         self.cnormvar = Tk.StringVar(self)
-        self.cnormvar.set(self.parent.chartType) # default value
+        self.cnormvar.set(self.params['cnorm_type']) # default value
         self.cnormvar.trace('w', self.cnormChanged)
 
         ttk.Label(frm, text="Choose Color Norm:").grid(row=6, column = 2)
-        cnormChooser = ttk.OptionMenu(frm, self.cnormvar, self.parent.GetPlotParam('cnorm_type'), *tuple(['Pow', 'Linear']))
+        cnormChooser = ttk.OptionMenu(frm, self.cnormvar, self.params['cnorm_type'], *tuple(['Pow', 'Linear']))
         cnormChooser.grid(row =6, column = 3, sticky = Tk.W + Tk.E)
 
         # Now the gamma of the pow norm
@@ -144,13 +139,13 @@ class ScalarFieldsSettings(Tk.Toplevel):
         self.Zmax.set(str(self.parent.GetPlotParam('v_max')))
 
 
-        cb = ttk.Checkbutton(frm, text ='Set dens min',
+        cb = ttk.Checkbutton(frm, text ='Set flds min',
                         variable = self.setZminVar)
         cb.grid(row = 3, column = 2, sticky = Tk.W)
         self.ZminEnter = ttk.Entry(frm, textvariable=self.Zmin, width=7)
         self.ZminEnter.grid(row = 3, column = 3)
 
-        cb = ttk.Checkbutton(frm, text ='Set dens max',
+        cb = ttk.Checkbutton(frm, text ='Set flds max',
                         variable = self.setZmaxVar)
         cb.grid(row = 4, column = 2, sticky = Tk.W)
 
@@ -400,5 +395,4 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
 
     def OnClosing(self):
-        self.parent.settings_window = None
         self.destroy()

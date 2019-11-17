@@ -8,7 +8,10 @@ from pic_sim import picSim
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 from mpl_param import Param
+import numpy as np
+from scalar_flds_settings import ScalarFieldsSettings
 from playback_bar import playbackBar
+
 def destroy(e):
     sys.exit()
 
@@ -71,11 +74,11 @@ class MainApp(Tk.Tk):
         self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.minsize(780, 280)
 
-        #self.toolbar = myCustomToolbar(self.oengus.canvas, self)
-        #self.toolbar.update()
+        self.toolbar = myCustomToolbar(self.oengus.canvas, self)
+        self.toolbar.update()
         self.oengus.canvas._tkcanvas.pack(side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
         self.oengus.canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-
+        self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
         # Make the object hold the timestep info
         self.time_step = Param(1, minimum=1, maximum=1000)
         self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
@@ -83,8 +86,6 @@ class MainApp(Tk.Tk):
         self.time_step.attach(self)
         self.time_step.set_max(len(self.sim))
         self.time_step.set(len(self.sim))
-        #NavigationToolbar2Tk.__init__(self, plotCanvas, parent)
-        #self.playbackbar.slider.config(to =self.time_step.maximum)
 
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
 
@@ -98,6 +99,33 @@ class MainApp(Tk.Tk):
         #self.bind('r', self.playbackbar.OnReload)
         self.bind('<space>', self.playbackbar.play_handler)
         self.update()
+    def GetPlotParam(self, val):
+        return 1
+    def onclick(self, event):
+        '''After being clicked, we should use the x and y of the cursor to
+        determine what subplot was clicked'''
+
+        # Since the location of the cursor is returned in pixels and gs0 is
+        # given as a relative value, we must first convert the value into a
+        # relative x and y
+        if not event.inaxes:
+            pass
+        if event.button == 1:
+            pass
+        else:
+            fig_size = self.oengus.figure.get_size_inches()*self.oengus.figure.dpi # Fig size in px
+
+            x_loc = event.x/fig_size[0] # The relative x position of the mouse in the figure
+            y_loc = event.y/fig_size[1] # The relative y position of the mouse in the figure
+
+            sub_plots = self.oengus.gs0.get_grid_positions(self.oengus.figure)
+            row_array = np.sort(np.append(sub_plots[0], sub_plots[1]))
+            col_array = np.sort(np.append(sub_plots[2], sub_plots[3]))
+            i = int((len(row_array)-row_array.searchsorted(y_loc))/2)
+            j = int(col_array.searchsorted(x_loc)//2)
+            if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
+                ScalarFieldsSettings(self,(i,j))
+
 
     def txt_enter(self, e):
         self.playbackbar.text_callback()

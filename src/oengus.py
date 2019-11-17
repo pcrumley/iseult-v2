@@ -72,7 +72,7 @@ class Oengus():
         self.SubPlotList = [[] for i in range(self.MainParamDict['MaxRows'])]
         self.showingCPUs = False
         self.showingTotEnergy = False
-        PlotTypeDict = {
+        self.plot_types_dict = {
             'ScalarFlds': scalarFldsPlot,
             #'EnergyPlot': EnergyPanel,
             #'FieldsPlot': FieldsPanel,
@@ -87,8 +87,8 @@ class Oengus():
             for j in range(self.MainParamDict['NumOfCols']):
                 tmp_str = f"Chart{i}_{j}"
                 if tmp_str in self.cfgDict.keys():
-                    tmpchart_type = self.cfgDict[tmp_str]['ChartType']
-                    self.SubPlotList[i].append(PlotTypeDict[tmpchart_type](self, (i,j), self.cfgDict[tmp_str]))
+                    tmpchart_type = self.cfgDict[tmp_str]['chart_type']
+                    self.SubPlotList[i].append(self.plot_types_dict[tmpchart_type](self, (i,j), self.cfgDict[tmp_str]))
                     self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
                     try:
                         self.showingCPUs += self.cfgDict[tmp_str]['show_cpu_domains']
@@ -96,7 +96,7 @@ class Oengus():
                         pass
                 else:
                     # The graph isn't specified in the config file, just set it equal to phase plots
-                    self.SubPlotList[i].append(PlotTypeDict['ScalarFlds'](self, (i,j), {}))
+                    self.SubPlotList[i].append(self.plot_types_dict['ScalarFlds'](self, (i,j), {}))
 
 
 
@@ -277,9 +277,9 @@ class Oengus():
         ####
 
         # first find all the phase plots that need writing to
-        self.phase_plot_list = []
-        self.spectral_plot_list = []
-
+        #self.phase_plot_list = []
+        #self.spectral_plot_list = []
+        """
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 if self.SubPlotList[i][j].chartType =='PhasePlot' or self.SubPlotList[i][j].chartType =='EnergyPlot':
@@ -323,6 +323,7 @@ class Oengus():
                         linewidth = 1.5, linestyle = '-', color = self.electron_color))
                         # Choose the right dashes pattern
                         self.SubPlotList[pos[0]][pos[1]].IntRegionLines[-1].set_dashes(self.dashes_options[k])
+        """
         #self.canvas.draw()
 
     def draw_output(self, n):
