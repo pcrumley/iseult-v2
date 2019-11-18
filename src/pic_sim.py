@@ -158,6 +158,13 @@ class picSim(object):
                         if self._cfgDict['scalar_flds'][lookup['fld']]['h5attr'] is not None:
                             self._data_dictionary[hash_key] = h5_getter(fpath,
                                 self._cfgDict['scalar_flds'][lookup['fld']]['h5attr'])
+
+                        elif lookup['fld'] == 'rho':
+                                self._data_dictionary[hash_key] = self.get_data(n,
+                                            data_class = 'scalar_flds',
+                                            fld = 'ion_density')['data'] - self.get_data(n,
+                                            data_class = 'scalar_flds',
+                                            fld = 'electron_density')['data']
                         elif lookup['fld'] == 'B_total':
 
                             tmp = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data']**2
@@ -172,10 +179,10 @@ class picSim(object):
                             self._data_dictionary[hash_key] = np.arctan2(np.sqrt(bperp), bx)
                         elif lookup['fld'] == 'density':
                             self._data_dictionary[hash_key] = self.get_data(n,
-                                    data_class = 'scalar_flds',
-                                                        fld = 'electron_density')['data'] + self.get_data(n,
-                                                        data_class = 'scalar_flds',
-                                                        fld = 'ion_density')['data']
+                                        data_class = 'scalar_flds',
+                                        fld = 'electron_density')['data'] + self.get_data(n,
+                                        data_class = 'scalar_flds',
+                                        fld = 'ion_density')['data']
                     response_dir['data'] = self._data_dictionary[hash_key]
                     response_dir['axis_label'] = self._cfgDict['scalar_flds'][lookup['fld']]['axis_label']
                     response_dir['1d_label'] = self._cfgDict['scalar_flds'][lookup['fld']]['1d_label']

@@ -42,6 +42,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
         # the Radiobox Control to choose the Field Type
         self.quantity  = Tk.StringVar(self)
         self.quantity.set(self.params['flds_type'])
+        self.quantity.trace('w', self.quantityChanged)
 
         ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky = Tk.W)
         quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['flds_type'], *tuple(self.parent.sim.get_available_quantities()['scalar_flds'].keys()))
@@ -187,6 +188,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
                     tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
                 self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
                 self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
+                self.subplot.set_v_max_min()
                 self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
@@ -195,8 +197,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
-                self.remove()
-                self.redraw()
+                self.subplot.remove()
+                self.subplot.redraw()
 
     def cnormChanged(self, *args):
         if self.params['cnorm_type'] == self.cnormvar.get():
@@ -204,8 +206,18 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['cnorm_type'] = self.cnormvar.get()
             if self.params['twoD']:
-                self.remove()
-                self.redraw()
+                self.subplot.remove()
+                self.subplot.redraw()
+
+
+    def quantityChanged(self, *args):
+        if self.params['flds_type'] == self.quantity.get():
+            pass
+        else:
+            self.params['flds_type'] = self.quantity.get()
+            self.subplot.remove()
+            self.subplot.redraw()
+
 
 
     def LabelHandler(self, *args):
@@ -235,8 +247,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['twoD'] = self.TwoDVar.get()
             self.params['spatial_y'] = self.TwoDVar.get()
-            self.remove()
-            self.redraw()
+            self.subplot.remove()
+            self.subplot.redraw()
     def ctypeChanged(self, *args):
         if self.ctypevar.get() == self.subplot.chart_type:
             pass
@@ -258,6 +270,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_min'] = self.setZminVar.get()
+            self.subplot.set_v_max_min()
             self.parent.oengus.canvas.draw()
 
 
@@ -266,6 +279,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_max'] = self.setZmaxVar.get()
+            self.subplot.set_v_max_min()
             self.parent.oengus.canvas.draw()
 
     def TxtEnter(self, e):
@@ -275,16 +289,16 @@ class ScalarFieldsSettings(Tk.Toplevel):
     def GammaCallback(self):
         try:
         #make sure the user types in a float
-            if np.abs(float(self.powGamma.get()) - self.parent.GetPlotParam('cpow_num')) > 1E-4:
-                if self.parent.GetPlotParam('twoD') and self.parent.GetPlotParam('cnorm_type')=='Pow':
-                    self.parent.SetPlotParam('cpow_num', float(self.powGamma.get()), NeedsRedraw = True)
-
-                else:
-                    self.parent.SetPlotParam('cpow_num', float(self.powGamma.get()), update_plot = False)
+            if abs(float(self.powGamma.get()) - self.params['cpow_num']) > 1E-4:
+                self.params['cpow_num'] = float(self.powGamma.get())
+                if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
+                    self.subplot.remove()
+                    self.subplot.redraw()
 
         except ValueError:
             #if they type in random stuff, just set it ot the param value
-            self.powGamma.set(str(self.parent.GetPlotParam('cpow_num')))
+            self.powGamma.set(str(self.params['cpow_num']))
+
 
 
     def FieldsCallback(self):
@@ -294,85 +308,18 @@ class ScalarFieldsSettings(Tk.Toplevel):
         to_reload = False
         for j in range(len(tkvarLimList)):
             try:
-            #make sure the user types in a int
-                if np.abs(float(tkvarLimList[j].get()) - self.parent.GetPlotParam(plot_param_List[j])) > 1E-4:
-                    self.parent.SetPlotParam(plot_param_List[j], float(tkvarLimList[j].get()), update_plot = False)
+            #make sure the user types in a number
+                if abs(float(tkvarLimList[j].get()) - self.params[plot_param_List[j]]) > 1E-4:
+                    self.params[plot_param_List[j]] = float(tkvarLimList[j].get())
                     to_reload += True*tkvarSetList[j].get()
 
             except ValueError:
                 #if they type in random stuff, just set it ot the param value
-                tkvarLimList[j].set(str(self.parent.GetPlotParam(plot_param_List[j])))
+                tkvarLimList[j].set(str(self.params[plot_param_List[j]]))
         if to_reload:
-            self.parent.SetPlotParam('v_min', self.parent.GetPlotParam('v_min'))
+            self.subplot.set_v_max_min()
+            self.parent.oengus.canvas.draw()
 
-
-    def RadioField(self):
-        if self.DensTypeVar.get() == self.parent.GetPlotParam('dens_type'):
-            pass
-        else:
-            if self.parent.GetPlotParam('twoD'):
-                if self.DensTypeVar.get() == 0:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.an_2d.set_text(r'$n/n_0$')
-                    else:
-                        self.parent.an_2d.set_text(r'$n$')
-
-                elif self.DensTypeVar.get() == 1:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.an_2d.set_text(r'$n_i/n_0$')
-                    else:
-                        self.parent.an_2d.set_text(r'$n_i$')
-
-                elif self.DensTypeVar.get() == 2:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.an_2d.set_text(r'$n_e/n_0$')
-                    else:
-                        self.parent.an_2d.set_text(r'$n_e$')
-                elif self.DensTypeVar.get() == 3:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.an_2d.set_text(r'$\rho/n_0$')
-                    else:
-                        self.parent.an_2d.set_text(r'$\rho$')
-
-            else:
-                if self.DensTypeVar.get() == 0:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.axes.set_ylabel(r'${\rm density}\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$\rm density$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-
-
-                elif self.DensTypeVar.get() ==1:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.axes.set_ylabel(r'$n_i\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$n_i$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-
-                elif self.DensTypeVar.get() ==2:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.axes.set_ylabel(r'$n_e\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$n_e$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                elif self.DensTypeVar.get() ==3:
-                    if self.parent.GetPlotParam('normalize_density'):
-                        self.parent.axes.set_ylabel(r'$\rho\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$\rho$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-
-
-            self.parent.SetPlotParam('dens_type', self.DensTypeVar.get())
-
-    def remove(self):
-        try:
-            self.subplot.axC.remove()
-        except AttributeError:
-            pass
-        except KeyError:
-            pass
-        self.subplot.axes.remove()
-    def redraw(self):
-        self.subplot.draw(self.parent.sim, self.parent.time_step.value - 1)
-        self.parent.oengus.canvas.draw()
 
     def OnClosing(self):
         self.destroy()

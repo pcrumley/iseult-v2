@@ -46,6 +46,7 @@ class scalarFldsPlot:
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
         self.pos = pos
+        self.cur_time = 0
         self.chart_type = 'ScalarFlds'
         self.changedD = False
         self.parent = parent
@@ -67,7 +68,7 @@ class scalarFldsPlot:
 
 
     def draw(self, sim, n):
-
+        self.cur_time = n
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -348,11 +349,13 @@ class scalarFldsPlot:
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
     def refresh(self, sim, n):
+
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
         time, is that we won't actually do any drawing in the plot. The plot
         will be redrawn after all subplots data is changed. '''
+        self.cur_time = n
         self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
@@ -430,21 +433,49 @@ class scalarFldsPlot:
                 self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 1:
                 self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+
+
+            #if self.GetPlotParam('show_shock'):
+            #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+        self.set_v_max_min()
+    def set_v_max_min(self):
+        if not self.param_dict['twoD']:
+            #### Set the ylims...
+            min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
+            dist = min_max[1]-min_max[0]
+            min_max[0] -= 0.04*dist
+            min_max[1] += 0.04*dist
+            self.axes.set_ylim(min_max)
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(bottom = self.param_dict['v_min'])
+            if self.param_dict['set_v_max']:
+                self.axes.set_ylim(top = self.param_dict['v_max'])
+        else:
             self.vmin = self.image.get_array().min()
-            if self.GetPlotParam('set_v_min'):
-                self.vmin = self.GetPlotParam('v_min')
+            if self.param_dict['set_v_min']:
+                self.vmin = self.param_dict['v_min']
             self.vmax = self.image.get_array().max()
-            if self.GetPlotParam('set_v_max'):
-                self.vmax = self.GetPlotParam('v_max')
-            if self.GetPlotParam('UseDivCmap') and not self.GetPlotParam('stretch_colors'):
+            if self.param_dict['set_v_max']:
+                self.vmax = self.param_dict['v_max']
+            if self.param_dict['UseDivCmap'] and not self.param_dict['stretch_colors']:
                 self.vmax = max(np.abs(self.vmin), self.vmax)
                 self.vmin = -self.vmax
             self.image.norm.vmin = self.vmin
             self.image.norm.vmax = self.vmax
-            if self.GetPlotParam('show_cbar'):
+            if self.param_dict['show_cbar']:
                 self.CbarTickFormatter()
-            #if self.GetPlotParam('show_shock'):
-            #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+    def remove(self):
+        try:
+            self.axC.remove()
+        except AttributeError:
+            pass
+        except KeyError:
+            pass
+        self.axes.remove()
+    def redraw(self):
+
+        self.draw(self.parent.sim, self.cur_time)
+        self.parent.canvas.draw()
 
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
