@@ -84,6 +84,7 @@ class MainApp(Tk.Tk):
         self.playbackbar = playbackBar(self.oengus, self.time_step)
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         self.time_step.attach(self)
+        self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
         self.time_step.set_max(len(self.sim))
         self.time_step.set(len(self.sim))
 
@@ -134,6 +135,8 @@ class MainApp(Tk.Tk):
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
+        self.sim.refresh_directory()
+        self.time_step.set_max(len(self.sim))
         self.oengus.cur_time = value - 1
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()

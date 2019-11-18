@@ -53,6 +53,12 @@ MainParamDict:
   Average1D: 0
   AxLabelSize: 11
   ClearFig: true
+  cmaps_with_green:
+  - viridis
+  - Rainbow + White
+  - Blue/Green/Red/Yellow
+  - Cube YF
+  - Linear_L
   ColorMap: Blue/Green/Red/Yellow
   ConstantShockVel: true
   DivColorMap: Blue/Green/Red/Yellow

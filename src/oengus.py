@@ -66,8 +66,6 @@ class Oengus():
         self.spect_plot_counter = 0
         self.dashes_options = [[],[3,1],[5,1],[1,1]]
 
-        # divy up the figure into a bunch of subplots using GridSpec.
-        self.gs0 = gridspec.GridSpec(self.MainParamDict['NumOfRows'],self.MainParamDict['NumOfCols'])
 
         # Create the list of all of subplot wrappers
         self.SubPlotList = [[] for i in range(self.MainParamDict['MaxRows'])]
@@ -84,8 +82,8 @@ class Oengus():
             #'TotalEnergyPlot': TotEnergyPanel,
             #'Moments': MomentsPanel
         }
-        for i in range(self.MainParamDict['NumOfRows']):
-            for j in range(self.MainParamDict['NumOfCols']):
+        for i in range(self.MainParamDict['MaxRows']):
+            for j in range(self.MainParamDict['MaxCols']):
                 tmp_str = f"Chart{i}_{j}"
                 if tmp_str in self.cfgDict.keys():
                     tmpchart_type = self.cfgDict[tmp_str]['chart_type']
@@ -163,6 +161,11 @@ class Oengus():
                                                  'left': 0.06},
                               'HAxesExtent': [18, 92, 0, -1],
                               'SetyLim': False,
+                              'cmaps_with_green': ['viridis',
+                                'Rainbow + White',
+                                'Blue/Green/Red/Yellow',
+                                'Cube YF',
+                                'Linear_L'], 
                               'HSubPlotParams': {'right': 0.95,
                                                  'bottom': 0.06,
                                                  'top': 0.91,
@@ -228,7 +231,6 @@ class Oengus():
     #    self.TotalMagEnergy = np.array(self.TotalMagEnergy)
     #    self.TotalElectricEnergy = np.array(self.TotalElectricEnergy)
     #    self.TotalBzEnergy = np.array(self.TotalBzEnergy)
-
     def create_graphs(self):
         # FIND THE SLICE
         #self.MaxZInd = o.bx.shape[0]-1
@@ -237,6 +239,9 @@ class Oengus():
 
         #self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
         #self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
+
+        # divy up the figure into a bunch of subplots using GridSpec.
+        self.gs0 = gridspec.GridSpec(self.MainParamDict['NumOfRows'],self.MainParamDict['NumOfCols'])
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
@@ -266,11 +271,13 @@ class Oengus():
                     except KeyError:
                         pass
 
-        #if self.MainParamDict['ShowTitle']:
-        #    if len(self.sim_name) == 0:
-        #        self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
-        #    else:
-        #        self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+        if self.MainParamDict['ShowTitle']:
+            if len(self.sim_name) == 0:
+                self.figure.suptitle(f'{os.path.abspath(self.sim.outdir)}/*.{self.sim.file_list[self.cur_time]}', size = 15)
+                #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+            else:
+                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+
         ####
         #
         # Write the lines to the phase plots
@@ -359,7 +366,12 @@ class Oengus():
 
         #            except KeyError:
         #                pass
-
+        if self.MainParamDict['ShowTitle']:
+            if len(self.sim_name) == 0:
+                self.figure.suptitle(f'{os.path.abspath(self.sim.outdir)}/*.{self.sim.file_list[self.cur_time]}', size = 15)
+                #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+            else:
+                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
         #if self.MainParamDict['ShowTitle']:
         #    if len(self.sim_name) == 0:
         #        self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)

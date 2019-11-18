@@ -125,28 +125,29 @@ class SettingsFrame(Tk.Toplevel):
         ttk.Entry(frm, textvariable=self.yleft, width = 8 ).grid(row = 9, column =1, sticky = Tk.N)
         ttk.Entry(frm, textvariable=self.yright, width =8 ).grid(row = 9, column =2, sticky = Tk.N)
 
-        self.kLimVar = Tk.IntVar()
-        self.kLimVar.set(self.main_params['SetkLim'])
-        self.kLimVar.trace('w', self.kLimChanged)
+        #self.kLimVar = Tk.IntVar()
+        #self.kLimVar.set(self.main_params['SetkLim'])
+        #self.kLimVar.trace('w', self.kLimChanged)
 
 
 
-        self.kleft = Tk.StringVar()
-        self.kleft.set(str(self.main_params['kLeft']))
-        self.kright = Tk.StringVar()
-        self.kright.set(str(self.main_params['kRight']))
+        #self.kleft = Tk.StringVar()
+        #self.kleft.set(str(self.main_params['kLeft']))
+        #self.kright = Tk.StringVar()
+        #self.kright.set(str(self.main_params['kRight']))
 
 
-        ttk.Checkbutton(frm, text ='Set klim', variable = self.kLimVar).grid(row = 10, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.kleft, width = 8 ).grid(row = 10, column =1, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.kright, width =8 ).grid(row = 10, column =2, sticky = Tk.N)
+        #ttk.Checkbutton(frm, text ='Set klim', variable = self.kLimVar).grid(row = 10, sticky = Tk.N)
+        #ttk.Entry(frm, textvariable=self.kleft, width = 8 ).grid(row = 10, column =1, sticky = Tk.N)
+        #ttk.Entry(frm, textvariable=self.kright, width =8 ).grid(row = 10, column =2, sticky = Tk.N)
 
-        self.xRelVar = Tk.IntVar()
-        self.xRelVar.set(self.main_params['xLimsRelative'])
-        self.xRelVar.trace('w', self.xRelChanged)
-        ttk.Checkbutton(frm, text = "x limits & zooms relative to shock",
-                        variable = self.xRelVar).grid(row = 11, columnspan = 3, sticky = Tk.W)
+        #self.xRelVar = Tk.IntVar()
+        #self.xRelVar.set(self.main_params['xLimsRelative'])
+        #self.xRelVar.trace('w', self.xRelChanged)
+        #ttk.Checkbutton(frm, text = "x limits & zooms relative to shock",
+        #                variable = self.xRelVar).grid(row = 11, columnspan = 3, sticky = Tk.W)
 
+        """
         framecb = ttk.Frame(frm)
 
         ttk.Label(framecb, text='Choose 2D plane:').pack(side = Tk.LEFT, expand = 0)
@@ -165,6 +166,7 @@ class SettingsFrame(Tk.Toplevel):
                             value=1)
         self.xzbutton.pack(side = Tk.LEFT, expand = 0)
         framecb.grid(row = 12, columnspan = 4)
+        """
         """
         framey = ttk.Frame(frm)
         self.ySliceVar = Tk.IntVar()
@@ -234,18 +236,18 @@ class SettingsFrame(Tk.Toplevel):
                         variable = self.TitleVar)
         cb.grid(row = 15, sticky = Tk.W)
         # Control whether or not axes are shared with a radio box:
-        self.toLinkList = ['None', 'All spatial', 'All non p-x', 'All 2-D spatial']
-        self.LinkedVar = Tk.IntVar()
-        self.LinkedVar.set(self.main_params['LinkSpatial'])
+        #self.toLinkList = ['None', 'All spatial', 'All non p-x', 'All 2-D spatial']
+        #self.LinkedVar = Tk.IntVar()
+        #self.LinkedVar.set(self.main_params['LinkSpatial'])
 
-        ttk.Label(frm, text='Share spatial axes:').grid(row = 0, column = 2, sticky = Tk.W)
+        #ttk.Label(frm, text='Share spatial axes:').grid(row = 0, column = 2, sticky = Tk.W)
 
-        for i in range(len(self.toLinkList)):
-            ttk.Radiobutton(frm,
-                    text=self.toLinkList[i],
-                    variable=self.LinkedVar,
-                    command = self.RadioLinked,
-                    value=i).grid(row = 1+i, column = 2, sticky =Tk.N)
+        #for i in range(len(self.toLinkList)):
+        #    ttk.Radiobutton(frm,
+        #            text=self.toLinkList[i],
+        #            variable=self.LinkedVar,
+        #            command = self.RadioLinked,
+        #            value=i).grid(row = 1+i, column = 2, sticky =Tk.N)
 
         self.AspectVar = Tk.IntVar()
         self.AspectVar.set(self.main_params['ImageAspect'])
@@ -255,13 +257,13 @@ class SettingsFrame(Tk.Toplevel):
                                 variable = self.AspectVar)
         cb.grid(row = 15, column = 1, sticky = Tk.W)
 
-        self.ConstantShockVar = Tk.IntVar()
-        self.ConstantShockVar.set(self.main_params['ConstantShockVel'])
-        self.ConstantShockVar.trace('w', self.ShockSpeedVarChanged)
+        #self.ConstantShockVar = Tk.IntVar()
+        #self.ConstantShockVar.set(self.main_params['ConstantShockVel'])
+        #self.ConstantShockVar.trace('w', self.ShockSpeedVarChanged)
 
-        cb = ttk.Checkbutton(frm, text = "Constant Shock v",
-                                variable = self.ConstantShockVar)
-        cb.grid(row = 15, column = 2, sticky = Tk.W)
+        #cb = ttk.Checkbutton(frm, text = "Constant Shock v",
+        #                        variable = self.ConstantShockVar)
+        #cb.grid(row = 15, column = 2, sticky = Tk.W)
 
         self.Average1DVar = Tk.IntVar()
         self.Average1DVar.set(self.main_params['Average1D'])
@@ -277,13 +279,13 @@ class SettingsFrame(Tk.Toplevel):
         cb.grid(row = 16, sticky = Tk.W)
 
 
-        self.LinkKVar = Tk.IntVar()
-        self.LinkKVar.set(self.main_params['LinkK'])
-        self.LinkKVar.trace('w', self.LinkKChanged)
+        #self.LinkKVar = Tk.IntVar()
+        #self.LinkKVar.set(self.main_params['LinkK'])
+        #self.LinkKVar.trace('w', self.LinkKChanged)
 
-        cb = ttk.Checkbutton(frm, text = "Share k-axes",
-                                variable = self.LinkKVar)
-        cb.grid(row = 16, column =1, sticky = Tk.W)
+        #cb = ttk.Checkbutton(frm, text = "Share k-axes",
+        #                        variable = self.LinkKVar)
+        #cb.grid(row = 16, column =1, sticky = Tk.W)
 
     def yScaleHandler(self, e):
         # if changing the scale will change the value of the parameter, do so
@@ -322,17 +324,19 @@ class SettingsFrame(Tk.Toplevel):
 
         else:
             self.main_params['ImageAspect'] = self.AspectVar.get()
-            self.parent.RenewCanvas(ForceRedraw = True)
-
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
 
     def ShockSpeedVarChanged(self, *args):
         if self.main_params['ConstantShockVel'] != self.ConstantShockVar.get():
             self.main_params['ConstantShockVel'] = self.ConstantShockVar.get()
             self.parent.RenewCanvas(ForceRedraw = True)
+
     def AverageChanged(self, *args):
         if self.main_params['Average1D'] != self.Average1DVar.get():
             self.main_params['Average1D'] = self.Average1DVar.get()
-            self.parent.RenewCanvas()
+            self.oengus.draw_output()
 
     def OrientationChanged(self, *args):
         if self.CbarOrientation.get() == self.main_params['HorizontalCbars']:
@@ -340,25 +344,27 @@ class SettingsFrame(Tk.Toplevel):
 
         else:
             if self.CbarOrientation.get():
-                self.parent.axes_extent = self.main_params['HAxesExtent']
-                self.parent.cbar_extent = self.main_params['HCbarExtent']
-                self.parent.SubPlotParams = self.main_params['HSubPlotParams']
+                self.oengus.axes_extent = self.main_params['HAxesExtent']
+                self.oengus.cbar_extent = self.main_params['HCbarExtent']
+                self.oengus.SubPlotParams = self.main_params['HSubPlotParams']
 
             else:
-                self.parent.axes_extent = self.main_params['VAxesExtent']
-                self.parent.cbar_extent = self.main_params['VCbarExtent']
-                self.parent.SubPlotParams = self.main_params['VSubPlotParams']
+                self.oengus.axes_extent = self.main_params['VAxesExtent']
+                self.oengus.cbar_extent = self.main_params['VCbarExtent']
+                self.oengus.SubPlotParams = self.main_params['VSubPlotParams']
             self.main_params['HorizontalCbars'] = self.CbarOrientation.get()
-            self.parent.f.subplots_adjust( **self.parent.SubPlotParams)
-            self.parent.RenewCanvas(ForceRedraw=True)
+            self.oengus.figure.subplots_adjust(**self.oengus.SubPlotParams)
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
 
-    def LorentzBoostChanged(self, *args):
-        if self.LorentzBoostVar.get() == self.main_params['DoLorentzBoost']:
-            pass
+    #def LorentzBoostChanged(self, *args):
+    #    if self.LorentzBoostVar.get() == self.main_params['DoLorentzBoost']:
+    #        pass
 
-        else:
-            self.main_params['DoLorentzBoost'] = self.LorentzBoostVar.get()
-            self.parent.RenewCanvas()
+    #    else:
+    #        self.main_params['DoLorentzBoost'] = self.LorentzBoostVar.get()
+    #        self.parent.RenewCanvas()
 
     def TitleChanged(self, *args):
         if self.TitleVar.get()==self.main_params['ShowTitle']:
@@ -366,9 +372,8 @@ class SettingsFrame(Tk.Toplevel):
         else:
             self.main_params['ShowTitle'] = self.TitleVar.get()
             if self.TitleVar.get() == False:
-                self.parent.f.suptitle('')
-
-            self.parent.RenewCanvas()
+                self.oengus.figure.suptitle('')
+            self.oengus.canvas.draw()
 
     def RadioLinked(self, *args):
         # If the shared axes are changed, the whole plot must be redrawn
@@ -383,7 +388,7 @@ class SettingsFrame(Tk.Toplevel):
             pass
         else:
             self.main_params['2DSlicePlane'] = self.PlaneVar.get()
-            self.parent.RenewCanvas(    )
+            self.parent.RenewCanvas()
 
 
     def LinkKChanged(self, *args):
@@ -409,22 +414,25 @@ class SettingsFrame(Tk.Toplevel):
             pass
         else:
             self.main_params['ColorMap'] = self.cmapvar.get()
-            if self.main_params['ColorMap'] in self.parent.cmaps_with_green:
-                self.parent.ion_color = "#{0:02x}{1:02x}{2:02x}".format(int(np.round(new_cmaps.cmaps['plasma'](0.55)[0]*255)), int(np.round(new_cmaps.cmaps['plasma'](0.55)[1]*255)), int(np.round(new_cmaps.cmaps['plasma'](0.55)[2]*255)))
-                self.parent.electron_color ="#{0:02x}{1:02x}{2:02x}".format(int(np.round(new_cmaps.cmaps['plasma'](0.8)[0]*255)), int(np.round(new_cmaps.cmaps['plasma'](0.8)[1]*255)), int(np.round(new_cmaps.cmaps['plasma'](0.8)[2]*255)))
+            if self.main_params['ColorMap'] in self.oengus.MainParamDict['cmaps_with_green']:
 
-                self.parent.ion_fit_color = 'r'
-                self.parent.electron_fit_color = 'yellow'
+                self.oengus.MainParamDict['ion_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['plasma'](0.55)[0]*255)), int(round(new_cmaps.cmaps['plasma'](0.55)[1]*255)), int(round(new_cmaps.cmaps['plasma'](0.55)[2]*255)))
+                self.oengus.MainParamDict['electron_color'] ="#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['plasma'](0.8)[0]*255)), int(round(new_cmaps.cmaps['plasma'](0.8)[1]*255)), int(round(new_cmaps.cmaps['plasma'](0.8)[2]*255)))
+
+                self.oengus.MainParamDict['ion_fit_color'] = 'r'
+                self.oengus.MainParamDict['electron_fit_color'] = 'yellow'
 
             else:
-                self.parent.ion_color = "#{0:02x}{1:02x}{2:02x}".format(int(np.round(new_cmaps.cmaps['viridis'](0.45)[0]*255)), int(np.round(new_cmaps.cmaps['viridis'](0.45)[1]*255)), int(np.round(new_cmaps.cmaps['viridis'](0.45)[2]*255)))
-                self.parent.electron_color ="#{0:02x}{1:02x}{2:02x}".format(int(np.round(new_cmaps.cmaps['viridis'](0.75)[0]*255)), int(np.round(new_cmaps.cmaps['viridis'](0.75)[1]*255)), int(np.round(new_cmaps.cmaps['viridis'](0.75)[2]*255)))
+                self.oengus.MainParamDict['ion_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.45)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[2]*255)))
+                sself.oengus.MainParamDict['electron_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.75)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[2]*255)))
 
-                self.parent.ion_fit_color = 'mediumturquoise'
-                self.parent.electron_fit_color = 'lime'
+                self.oengus.MainParamDict['ion_fit_color'] = 'mediumturquoise'
+                self.oengus.MainParamDict['electron_fit_color'] = 'lime'
 
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
 
-            self.parent.RenewCanvas(ForceRedraw = True)
 
     def DivCmapChanged(self, *args):
     # Note here that Tkinter passes an event object to onselect()
@@ -432,7 +440,10 @@ class SettingsFrame(Tk.Toplevel):
             pass
         else:
             self.main_params['DivColorMap'] = self.div_cmapvar.get()
-            self.parent.RenewCanvas(ForceRedraw = True)
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
+
 
 
     def SkipSizeChanged(self, *args):
@@ -455,7 +466,9 @@ class SettingsFrame(Tk.Toplevel):
                 self.rowNum.set(self.main_params['MaxRows'])
             if int(self.rowNum.get()) != self.main_params['NumOfRows']:
                 self.main_params['NumOfRows'] = int(self.rowNum.get())
-                self.parent.UpdateGridSpec()
+                self.oengus.figure.clf()
+                self.oengus.create_graphs()
+                self.oengus.canvas.draw()
         except ValueError:
             self.rowNum.set(self.main_params['NumOfRows'])
 
@@ -469,8 +482,10 @@ class SettingsFrame(Tk.Toplevel):
                 self.columnNum.set(self.main_params['MaxCols'])
             if int(self.columnNum.get()) != self.main_params['NumOfCols']:
                 self.main_params['NumOfCols'] = int(self.columnNum.get())
-                self.parent.UpdateGridSpec()
-
+                #self.parent.UpdateGridSpec()
+                self.oengus.figure.clf()
+                self.oengus.create_graphs()
+                self.oengus.canvas.draw()
         except ValueError:
             self.columnNum.set(self.main_params['NumOfCols'])
 
@@ -486,16 +501,16 @@ class SettingsFrame(Tk.Toplevel):
 
     def CheckIfLimsChanged(self):
         to_reload = False
-        tmplist = [self.xleft, self.xright, self.yleft, self.yright, self.kleft, self.kright]
-        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop', 'kLeft', 'kRight']
-        setKeys = ['SetxLim', 'SetyLim', 'SetkLim']
-        for j in range(6):
+        tmplist = [self.xleft, self.xright, self.yleft, self.yright]#, self.kleft, self.kright]
+        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop']#, 'kLeft', 'kRight']
+        setKeys = ['SetxLim', 'SetyLim']#, 'SetkLim']
+        for j in range(len(tmplist)):
             setlims = self.main_params[setKeys[j//2]]
             tmpkey = limkeys[j]
 
             try:
             #make sure the user types in a a number and that it has changed.
-                if np.abs(float(tmplist[j].get()) - self.main_params[tmpkey]) > 1E-4:
+                if abs(float(tmplist[j].get()) - self.main_params[tmpkey]) > 1E-4:
                     self.main_params[tmpkey] = float(tmplist[j].get())
                     to_reload += setlims
 
@@ -503,19 +518,6 @@ class SettingsFrame(Tk.Toplevel):
                 #if they type in random stuff, just set it ot the param value
                 tmplist[j].set(str(self.main_params[tmpkey]))
         return to_reload
-
-    def CheckIfGammaChanged(self):
-        to_reload = False
-        try:
-        #make sure the user types in a float
-            if np.abs(float(self.GammaVar.get()) - self.main_params['GammaBoost']) > 1E-8:
-                self.main_params['GammaBoost'] = float(self.GammaVar.get())
-                to_reload += True
-
-        except ValueError:
-            #if they type in random stuff, just set it to the param value
-            self.GammaVar.set(str(self.main_params['GammaBoost']))
-        return to_reload*self.main_params['DoLorentzBoost']
 
     def CheckIfStrideChanged(self):
         to_reload = False
@@ -579,30 +581,29 @@ class SettingsFrame(Tk.Toplevel):
             pass
         else:
             self.main_params['SetxLim'] = self.LimVar.get()
-            self.parent.RenewCanvas()
+            self.oengus.draw_output()
 
     def yLimChanged(self, *args):
         if self.yLimVar.get()==self.main_params['SetyLim']:
             pass
         else:
             self.main_params['SetyLim'] = self.yLimVar.get()
-            self.parent.RenewCanvas()
+            self.oengus.draw_output()
 
-    def kLimChanged(self, *args):
-        if self.kLimVar.get()==self.main_params['SetkLim']:
-            pass
-        else:
-            self.main_params['SetkLim'] = self.kLimVar.get()
-            self.parent.RenewCanvas()
+    #def kLimChanged(self, *args):
+    #    if self.kLimVar.get()==self.main_params['SetkLim']:
+    #        pass
+    #    else:
+    #        self.main_params['SetkLim'] = self.kLimVar.get()
+    #        self.parent.RenewCanvas()
 
 
     def SettingsCallback(self, e):
         to_reload = self.CheckIfLimsChanged()
-        to_reload += self.CheckIfGammaChanged()
         to_reload += self.CheckIfStrideChanged()
-        to_reload += self.CheckIfSliceChanged()
+        #to_reload += self.CheckIfSliceChanged()
         if to_reload:
-            self.parent.RenewCanvas()
+            self.oengus.draw_output()
 
 
 

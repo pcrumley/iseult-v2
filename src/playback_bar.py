@@ -14,7 +14,7 @@ class playbackBar(Tk.Frame):
         Tk.Frame.__init__(self)
         self.oengus = oengus
         self.play_pressed = False
-
+        self.settings_window = None
         # This param should be the time-step of the simulation
         self.param = tstep_param
 
@@ -62,13 +62,13 @@ class playbackBar(Tk.Frame):
         self.rec_var = Tk.IntVar()
         self.rec_var.set(self.oengus.MainParamDict['Recording'])
         self.rec_var.trace('w', self.rec_changed)
-        ttk.Checkbutton(new_frame, text = 'Record',
-                        variable = self.rec_var).pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
+        #ttk.Checkbutton(new_frame, text = 'Record',
+        #                variable = self.rec_var).pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         new_frame.pack(side= Tk.LEFT, fill = Tk.BOTH, expand =0)
 
         # a measurement button that should lauch a window to take measurements.
-        self.measuresB= ttk.Button(self, text='FFT', command=self.open_measures)
-        self.measuresB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        #self.measuresB= ttk.Button(self, text='FFT', command=self.open_measures)
+        #self.measuresB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
 
         # a settings button that should lauch some global settings.
@@ -76,21 +76,26 @@ class playbackBar(Tk.Frame):
         self.settingsB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
         # a reload button that reloads the files and then refreshes the plot
-        ttk.Button(self, text = 'Reload', command = self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        #ttk.Button(self, text = 'Reload', command = self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
         # a refresh button that refreshing the current timestep
-        ttk.Button(self, text = 'Refresh', command = self.on_refresh).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        ttk.Button(self, text = 'Clear Cache', command = self.on_refresh).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
         #attach the parameter to the Playbackbar
         self.param.attach(self)
     def open_settings(self):
-        SettingsFrame(self.oengus)
-        print('open_settings')
+        if self.settings_window is None:
+            self.settings_window = SettingsFrame(self.oengus)
+        else:
+            self.settings_window.destroy()
+            self.settings_window = SettingsFrame(self.oengus)
+
+        #print('open_settings')
     def on_reload(self, *args):
         print('on_reload')
     #    self.parent.ReloadPath()
     #    self.parent.RenewCanvas()
 
     def on_refresh(self, *args):
-        print('on_refresh')
+        self.parent.sim.clear_caches()
     #    self.parent.RefreshTimeStep()
     #    self.parent.RenewCanvas()
 
@@ -104,12 +109,11 @@ class playbackBar(Tk.Frame):
         #        self.parent.PrintFig()
 
     def loop_changed(self, *args):
-        print('loop_changed')
-        #if self.LoopVar.get() == self.parent.MainParamDict['LoopPlayback']:
-        #    pass
-        #else:
-        #    self.parent.MainParamDict['LoopPlayback'] = self.LoopVar.get()
-
+        if self.loop_var.get() == self.oengus.MainParamDict['LoopPlayback']:
+            pass
+        else:
+            self.oengus.MainParamDict['LoopPlayback'] = self.loop_var.get()
+            self.param.loop = self.oengus.MainParamDict['LoopPlayback']
     def skip_left(self, e = None):
         self.param.set(self.param.value - self.oengus.MainParamDict['SkipSize'])
 

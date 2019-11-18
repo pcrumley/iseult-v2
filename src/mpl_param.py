@@ -29,7 +29,8 @@ class Param:
       - the other knobs in the knob list have a "set" method which gets
         called for the others.
     """
-    def __init__(self, initial_value=None, minimum=0., maximum=1.):
+    def __init__(self, initial_value=None, minimum=0., maximum=1., loop=True):
+        self.loop = loop
         self.minimum = minimum
         self.maximum = maximum
         if initial_value != self.constrain(initial_value):
@@ -49,18 +50,18 @@ class Param:
                     feedback_knob.set_knob(self.value)
         # Adding a new feature that allows one to loop backwards or forwards:
         elif self.maximum != self.minimum:
+            if self.loop:
+                if self.value == self.maximum:
+                    self.value = self.minimum
+                    for feedback_knob in self.knobs:
+                        if feedback_knob != knob:
+                            feedback_knob.set_knob(self.value)
 
-            if self.value == self.maximum:
-                self.value = self.minimum
-                for feedback_knob in self.knobs:
-                    if feedback_knob != knob:
-                        feedback_knob.set_knob(self.value)
-
-            elif self.value == self.minimum:
-                self.value = self.maximum
-                for feedback_knob in self.knobs:
-                    if feedback_knob != knob:
-                        feedback_knob.set_knob(self.value)
+                elif self.value == self.minimum:
+                    self.value = self.maximum
+                    for feedback_knob in self.knobs:
+                        if feedback_knob != knob:
+                            feedback_knob.set_knob(self.value)
         return self.value
 
     def set_max(self, max_arg, knob=None):
