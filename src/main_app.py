@@ -81,7 +81,7 @@ class MainApp(Tk.Tk):
         self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
         # Make the object hold the timestep info
         self.time_step = Param(1, minimum=1, maximum=1000)
-        self.playbackbar = playbackBar(self.oengus, self.time_step, canvas = self.oengus.canvas)
+        self.playbackbar = playbackBar(self.oengus, self.time_step)
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         self.time_step.attach(self)
         self.time_step.set_max(len(self.sim))
@@ -90,6 +90,7 @@ class MainApp(Tk.Tk):
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
 
 
+        self.popups_dict = {}
 
         self.config(menu=menubar)
         self.protocol("WM_DELETE_WINDOW", sys.exit)
@@ -123,8 +124,11 @@ class MainApp(Tk.Tk):
             col_array = np.sort(np.append(sub_plots[2], sub_plots[3]))
             i = int((len(row_array)-row_array.searchsorted(y_loc))/2)
             j = int(col_array.searchsorted(x_loc)//2)
+            if f'{i,j}' in self.popups_dict:
+                if self.popups_dict[f'{i,j}'] is not None:
+                    self.popups_dict[f'{i,j}'].destroy()
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
-                ScalarFieldsSettings(self,(i,j))
+                self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self,(i,j))
 
 
     def txt_enter(self, e):

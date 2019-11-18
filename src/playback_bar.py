@@ -1,5 +1,6 @@
 import tkinter as Tk
 from tkinter import ttk
+from main_settings_window import SettingsFrame
 
 class playbackBar(Tk.Frame):
 
@@ -9,7 +10,7 @@ class playbackBar(Tk.Frame):
     playbar, and a settings button.
     """
 
-    def __init__(self, oengus, tstep_param, canvas = None):
+    def __init__(self, oengus, tstep_param):
         Tk.Frame.__init__(self)
         self.oengus = oengus
         self.play_pressed = False
@@ -81,6 +82,7 @@ class playbackBar(Tk.Frame):
         #attach the parameter to the Playbackbar
         self.param.attach(self)
     def open_settings(self):
+        SettingsFrame(self.oengus)
         print('open_settings')
     def on_reload(self, *args):
         print('on_reload')
