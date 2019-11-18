@@ -1,5 +1,6 @@
 import tkinter as Tk
 from tkinter import ttk
+import new_cmaps
 
 class ScalarFieldsSettings(Tk.Toplevel):
     def __init__(self, parent, loc):
@@ -38,7 +39,6 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 variable = self.TwoDVar,
                 command = self.Change2d)
         cb.grid(row = 1, sticky = Tk.W)
-        print([key for key in self.parent.sim.get_available_quantities()['scalar_flds']])
         # the Radiobox Control to choose the Field Type
         self.quantity  = Tk.StringVar(self)
         self.quantity.set(self.params['flds_type'])
@@ -57,7 +57,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
         # show shock
         self.ShockVar = Tk.IntVar()
-        self.ShockVar.set(self.parent.GetPlotParam('show_shock'))
+        self.ShockVar.set(self.params['show_shock'])
         cb = ttk.Checkbutton(frm, text = "Show Shock",
                         variable = self.ShockVar,
                         command = self.ShockVarHandler)
@@ -112,7 +112,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
         # Now the gamma of the pow norm
         self.powGamma = Tk.StringVar()
-        self.powGamma.set(str(self.parent.GetPlotParam('cpow_num')))
+        self.powGamma.set(str(self.params['cpow_num']))
         ttk.Label(frm, text ='gamma =').grid(row = 7, column = 2, sticky =Tk.E)
         ttk.Label(frm, text ='If cnorm is Pow =>').grid(row = 8, column = 2,columnspan = 2, sticky =Tk.W)
         ttk.Label(frm, text ='sign(data)*|data|**gamma').grid(row = 9, column = 2,columnspan = 2, sticky =Tk.E)
@@ -123,20 +123,20 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
         # Now the field lim
         self.setZminVar = Tk.IntVar()
-        self.setZminVar.set(self.parent.GetPlotParam('set_v_min'))
+        self.setZminVar.set(self.params['set_v_min'])
         self.setZminVar.trace('w', self.setZminChanged)
 
         self.setZmaxVar = Tk.IntVar()
-        self.setZmaxVar.set(self.parent.GetPlotParam('set_v_max'))
+        self.setZmaxVar.set(self.params['set_v_max'])
         self.setZmaxVar.trace('w', self.setZmaxChanged)
 
 
 
         self.Zmin = Tk.StringVar()
-        self.Zmin.set(str(self.parent.GetPlotParam('v_min')))
+        self.Zmin.set(str(self.params['v_min']))
 
         self.Zmax = Tk.StringVar()
-        self.Zmax.set(str(self.parent.GetPlotParam('v_max')))
+        self.Zmax.set(str(self.params['v_max']))
 
 
         cb = ttk.Checkbutton(frm, text ='Set flds min',
@@ -153,95 +153,60 @@ class ScalarFieldsSettings(Tk.Toplevel):
         self.ZmaxEnter.grid(row = 4, column = 3)
 
     def ShockVarHandler(self, *args):
-        if self.parent.GetPlotParam('show_shock')== self.ShockVar.get():
+        if self.params['show_shock']== self.ShockVar.get():
             pass
         else:
-            if self.parent.GetPlotParam('twoD'):
-                self.parent.shockline_2d.set_visible(self.ShockVar.get())
-            else:
-                self.parent.shock_line.set_visible(self.ShockVar.get())
-
-            self.parent.SetPlotParam('show_shock', self.ShockVar.get())
+            print('Not Implemented Yet')
+            #if self.params['twoD']:
+            #    self.subplot.shockline_2d.set_visible(self.ShockVar.get())
+            #else:
+            #    self.subplot.shock_line.set_visible(self.ShockVar.get())
+            self.params['show_shock'] = self.ShockVar.get()
+            self.parent.oengus.canvas.draw()
 
     def CbarHandler(self, *args):
-        if self.parent.GetPlotParam('show_cbar')== self.CbarVar.get():
+        if self.params['show_cbar'] == self.CbarVar.get():
             pass
         else:
-            if self.parent.GetPlotParam('twoD'):
-                self.parent.axC.set_visible(self.CbarVar.get())
+            self.params['show_cbar'] = self.CbarVar.get()
+            if self.params['twoD']:
+                self.subplot.axC.set_visible(self.CbarVar.get())
+                self.parent.oengus.canvas.draw()
 
-            self.parent.SetPlotParam('show_cbar', self.CbarVar.get(), update_plot =self.parent.GetPlotParam('twoD'))
 
     def DivHandler(self, *args):
-        if self.parent.GetPlotParam('UseDivCmap')== self.DivVar.get():
+        if self.params['UseDivCmap'] == self.DivVar.get():
             pass
-        elif self.parent.GetPlotParam('twoD'):
-            self.parent.SetPlotParam('UseDivCmap', self.DivVar.get(),  NeedsRedraw = True)
         else:
-            self.parent.SetPlotParam('UseDivCmap', self.DivVar.get(),  update_plot = False)
-
+            self.params['UseDivCmap'] = self.DivVar.get()
+            if self.params['twoD']:
+                tmp_cmap = None
+                if self.params['UseDivCmap']:
+                    tmp_cmap  = self.parent.oengus.MainParamDict['DivColorMap']
+                else:
+                    tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
+                self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
+                self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
+                self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
-        if self.parent.GetPlotParam('stretch_colors')== self.StretchVar.get():
+        if self.params['stretch_colors'] == self.StretchVar.get():
             pass
-        elif self.parent.GetPlotParam('twoD'):
-            self.parent.SetPlotParam('stretch_colors', self.StretchVar.get(), NeedsRedraw = True)
         else:
-            self.parent.SetPlotParam('stretch_colors', self.StretchVar.get(), update_plot = False)
+            self.params['stretch_colors'] = self.StretchVar.get()
+            if self.params['twoD']:
+                self.remove()
+                self.redraw()
 
     def cnormChanged(self, *args):
-        if self.parent.GetPlotParam('cnorm_type')== self.cnormvar.get():
+        if self.params['cnorm_type'] == self.cnormvar.get():
             pass
-        elif self.parent.GetPlotParam('twoD'):
-            self.parent.SetPlotParam('cnorm_type', self.cnormvar.get(), NeedsRedraw = True)
         else:
-            self.parent.SetPlotParam('cnorm_type', self.cnormvar.get(), update_plot = False)
+            self.params['cnorm_type'] = self.cnormvar.get()
+            if self.params['twoD']:
+                self.remove()
+                self.redraw()
 
-
-    def NormPPCHandler(self, *args):
-        if self.parent.GetPlotParam('normalize_density')== self.NormDVar.get():
-            pass
-        elif np.isnan(self.parent.ppc0):
-            self.NormDVar.set(self.parent.GetPlotParam('normalize_density'))
-        else:
-            # First see if the plot is 2d and change the labels if necessary
-            if self.parent.GetPlotParam('twoD')==1:
-                tmp_str = ''
-                if self.parent.GetPlotParam('dens_type') == 0:
-                    tmp_str += r'$n$'
-                if self.parent.GetPlotParam('dens_type') == 1:
-                    tmp_str += r'$n_i$'
-                if self.parent.GetPlotParam('dens_type') == 2:
-                    tmp_str += r'$n_e$'
-                if self.parent.GetPlotParam('dens_type') == 3:
-                    tmp_str += r'$\rho$'
-                if self.NormDVar.get():
-                    tmp_str += r'$\ [n_0]$'
-                self.parent.an_2d.set_text(tmp_str)
-            # Now for the 1d label
-            else:
-                if self.parent.GetPlotParam('dens_type') == 0:
-                    if self.NormDVar.get():
-                        self.parent.axes.set_ylabel(r'${\rm density}\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel('density', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                if self.parent.GetPlotParam('dens_type') == 1:
-                    if self.NormDVar.get():
-                        self.parent.axes.set_ylabel(r'$n_i\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$n_i$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                if self.parent.GetPlotParam('dens_type') == 2:
-                    if self.NormDVar.get():
-                        self.parent.axes.set_ylabel(r'$n_e\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$n_e$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                if self.parent.GetPlotParam('dens_type') == 3:
-                    if self.NormDVar.get():
-                        self.parent.axes.set_ylabel(r'$\rho\ [n_0]$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.parent.axes.set_ylabel(r'$\rho$', size = self.parent.parent.MainParamDict['AxLabelSize'])
-
-            self.parent.SetPlotParam('normalize_density', self.NormDVar.get())#, update_plot = self.parent.GetPlotParam('dens_type')==0)
 
     def LabelHandler(self, *args):
         if self.parent.GetPlotParam('show_labels')== self.ShowLabels.get():
@@ -265,39 +230,43 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.parent.parent.canvas.get_tk_widget().update_idletasks()
 
     def Change2d(self):
-        if self.TwoDVar.get() == self.parent.GetPlotParam('twoD'):
+        if self.TwoDVar.get() == self.params['twoD']:
             pass
         else:
-            self.parent.SetPlotParam('spatial_y', self.TwoDVar.get(), update_plot = False)
-            self.parent.SetPlotParam('twoD', self.TwoDVar.get())
-
-
+            self.params['twoD'] = self.TwoDVar.get()
+            self.params['spatial_y'] = self.TwoDVar.get()
+            self.remove()
+            self.redraw()
     def ctypeChanged(self, *args):
-        if self.ctypevar.get() == self.parent.chartType:
+        if self.ctypevar.get() == self.subplot.chart_type:
             pass
         else:
-            self.parent.ChangePlotType(self.ctypevar.get())
-            self.destroy()
+            print('Not yet implemented')
+            #self.parent.ChangePlotType(self.ctypevar.get())
+            #self.destroy()
 
     def InterpolChanged(self, *args):
-        if self.InterpolVar.get() == self.parent.GetPlotParam('interpolation'):
+        if self.InterpolVar.get() == self.params['interpolation']:
             pass
         else:
-            if self.parent.GetPlotParam('twoD'):
-                self.parent.cax.set_interpolation(self.InterpolVar.get())
-            self.parent.SetPlotParam('interpolation', self.InterpolVar.get())
-
+            if self.params['twoD']:
+                self.subplot.image.set_interpolation(self.InterpolVar.get())
+            self.params['interpolation'] = self.InterpolVar.get()
+            self.parent.oengus.canvas.draw()
     def setZminChanged(self, *args):
-        if self.setZminVar.get() == self.parent.GetPlotParam('set_v_min'):
+        if self.setZminVar.get() == self.params['set_v_min']:
             pass
         else:
-            self.parent.SetPlotParam('set_v_min', self.setZminVar.get())
+            self.params['set_v_min'] = self.setZminVar.get()
+            self.parent.oengus.canvas.draw()
+
 
     def setZmaxChanged(self, *args):
-        if self.setZmaxVar.get() == self.parent.GetPlotParam('set_v_max'):
+        if self.setZmaxVar.get() == self.params['set_v_max']:
             pass
         else:
-            self.parent.SetPlotParam('set_v_max', self.setZmaxVar.get())
+            self.params['set_v_max'] = self.setZmaxVar.get()
+            self.parent.oengus.canvas.draw()
 
     def TxtEnter(self, e):
         self.FieldsCallback()
@@ -393,6 +362,17 @@ class ScalarFieldsSettings(Tk.Toplevel):
 
             self.parent.SetPlotParam('dens_type', self.DensTypeVar.get())
 
+    def remove(self):
+        try:
+            self.subplot.axC.remove()
+        except AttributeError:
+            pass
+        except KeyError:
+            pass
+        self.subplot.axes.remove()
+    def redraw(self):
+        self.subplot.draw(self.parent.sim, self.parent.time_step.value - 1)
+        self.parent.oengus.canvas.draw()
 
     def OnClosing(self):
         self.destroy()

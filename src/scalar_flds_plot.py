@@ -47,6 +47,7 @@ class scalarFldsPlot:
         self.param_dict.update(param_dict)
         self.pos = pos
         self.chart_type = 'ScalarFlds'
+        self.changedD = False
         self.parent = parent
         self.figure = self.parent.figure
         self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
@@ -152,6 +153,7 @@ class scalarFldsPlot:
             #self.shockline_2d = self.axes.axvline(self.parent.shock_loc,
             #                                        linewidth = 1.5,
             #                                        linestyle = '--',
+
             #                                        color = self.parent.shock_color,
             #                                        path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
             #                                        PathEffects.Normal()])
