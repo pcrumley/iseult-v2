@@ -134,7 +134,8 @@ class MainApp(Tk.Tk):
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
-        self.oengus.draw_output(value-1)
+        self.oengus.cur_time = value - 1
+        self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
 
 def runMe(cmd_args):

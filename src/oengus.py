@@ -25,6 +25,7 @@ class Oengus():
         self.dirname = ''
         #self.tkApp = tkApp
         self.interactive = interactive
+        self.cur_time = -1
         #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
@@ -239,7 +240,7 @@ class Oengus():
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].draw(self.sim, -1)
+                self.SubPlotList[i][j].draw()#self.sim, -1)
         if self.showingCPUs:
             if 'my' in self.sim._h5Key2FileDict.keys():
                 cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
@@ -326,14 +327,14 @@ class Oengus():
         """
         #self.canvas.draw()
 
-    def draw_output(self, n):
+    def draw_output(self):
         #for i in range(self.MainParamDict['NumOfRows']):
         #    for j in range(self.MainParamDict['NumOfCols']):
         #        self.SubPlotList[i][j].update_data(o)
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].refresh(self.sim, n)
+                self.SubPlotList[i][j].refresh()
         #if self.showingCPUs:
         #    if 'my' in self.sim._h5Key2FileDict.keys():
         #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp

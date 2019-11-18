@@ -198,8 +198,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
                 self.subplot.remove()
-                self.subplot.redraw()
-
+                self.subplot.draw()
+                self.parent.oengus.canvas.draw()
     def cnormChanged(self, *args):
         if self.params['cnorm_type'] == self.cnormvar.get():
             pass
@@ -207,8 +207,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.params['cnorm_type'] = self.cnormvar.get()
             if self.params['twoD']:
                 self.subplot.remove()
-                self.subplot.redraw()
-
+                self.subplot.draw()
+                self.parent.oengus.canvas.draw()
 
     def quantityChanged(self, *args):
         if self.params['flds_type'] == self.quantity.get():
@@ -216,30 +216,31 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['flds_type'] = self.quantity.get()
             self.subplot.remove()
-            self.subplot.redraw()
-
+            self.subplot.draw()
+            self.parent.oengus.canvas.draw()
 
 
     def LabelHandler(self, *args):
-        if self.parent.GetPlotParam('show_labels')== self.ShowLabels.get():
+        if self.params['show_labels'] == self.ShowLabels.get():
             pass
         else:
-            if self.parent.GetPlotParam('twoD'):
-                self.parent.an_2d.set_visible(self.ShowLabels.get())
+            self.params['show_labels'] = self.ShowLabels.get()
+            if self.params['twoD']:
+                self.subplot.an_2d.set_visible(self.ShowLabels.get())
+                self.parent.oengus.canvas.draw()
 
-            self.parent.SetPlotParam('show_labels', self.ShowLabels.get(), update_plot =self.parent.GetPlotParam('twoD'))
 
-    def CPUVarHandler(self, *args):
-        if self.parent.GetPlotParam('show_cpu_domains')== self.CPUVar.get():
-            pass
-        else:
-            self.parent.SetPlotParam('show_cpu_domains', self.CPUVar.get(), update_plot = False)
-            if self.parent.GetPlotParam('show_cpu_domains'):
-                self.parent.FigWrap.SetCpuDomainLines()
-            else: # We need to get remove of the cpu lines. Pop them out of the array and remove them from the list.
-                self.parent.FigWrap.RemoveCpuDomainLines()
-            self.parent.parent.canvas.draw()
-            self.parent.parent.canvas.get_tk_widget().update_idletasks()
+    #def CPUVarHandler(self, *args):
+    #    if self.parent.GetPlotParam('show_cpu_domains')== self.CPUVar.get():
+    #        pass
+    #    else:
+    #        self.parent.SetPlotParam('show_cpu_domains', self.CPUVar.get(), update_plot = False)
+    #        if self.parent.GetPlotParam('show_cpu_domains'):
+    #            self.parent.FigWrap.SetCpuDomainLines()
+    #        else: # We need to get remove of the cpu lines. Pop them out of the array and remove them from the list.
+    #            self.parent.FigWrap.RemoveCpuDomainLines()
+    #        self.parent.parent.canvas.draw()
+    #        self.parent.parent.canvas.get_tk_widget().update_idletasks()
 
     def Change2d(self):
         if self.TwoDVar.get() == self.params['twoD']:
@@ -248,7 +249,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.params['twoD'] = self.TwoDVar.get()
             self.params['spatial_y'] = self.TwoDVar.get()
             self.subplot.remove()
-            self.subplot.redraw()
+            self.subplot.draw()
+            self.parent.oengus.canvas.draw()
     def ctypeChanged(self, *args):
         if self.ctypevar.get() == self.subplot.chart_type:
             pass
@@ -293,8 +295,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 self.params['cpow_num'] = float(self.powGamma.get())
                 if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
                     self.subplot.remove()
-                    self.subplot.redraw()
-
+                    self.subplot.draw()
+                    self.parent.oengus.canvas.draw()
         except ValueError:
             #if they type in random stuff, just set it ot the param value
             self.powGamma.set(str(self.params['cpow_num']))

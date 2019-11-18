@@ -2,6 +2,16 @@ import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 import new_cmaps
 
+class Spinbox(ttk.Entry):
+    def __init__(self, master=None, **kw):
+        ttk.Entry.__init__(self, master, "ttk::spinbox", **kw)
+
+    def current(self, newindex=None):
+        return self.tk.call(self._w, 'current', index)
+
+    def set(self, value):
+        return self.tk.call(self._w, 'set', value)
+
 class SettingsFrame(Tk.Toplevel):
     def __init__(self, oengus):
 
@@ -155,6 +165,7 @@ class SettingsFrame(Tk.Toplevel):
                             value=1)
         self.xzbutton.pack(side = Tk.LEFT, expand = 0)
         framecb.grid(row = 12, columnspan = 4)
+        """
         framey = ttk.Frame(frm)
         self.ySliceVar = Tk.IntVar()
         self.ySliceVar.set(self.parent.ySlice)
@@ -218,7 +229,7 @@ class SettingsFrame(Tk.Toplevel):
 
 
         framez.grid(row = 14, columnspan =4)
-
+        """
         cb = ttk.Checkbutton(frm, text = "Show Title",
                         variable = self.TitleVar)
         cb.grid(row = 15, sticky = Tk.W)
@@ -273,17 +284,6 @@ class SettingsFrame(Tk.Toplevel):
         cb = ttk.Checkbutton(frm, text = "Share k-axes",
                                 variable = self.LinkKVar)
         cb.grid(row = 16, column =1, sticky = Tk.W)
-
-
-
-        self.LorentzBoostVar = Tk.IntVar()
-        self.LorentzBoostVar.set(self.main_params['DoLorentzBoost'])
-        self.LorentzBoostVar.trace('w', self.LorentzBoostChanged)
-        cb = ttk.Checkbutton(frm, text='Boost PhasePlots', variable =  self.LorentzBoostVar).grid(row = 17, sticky = Tk.W)
-        ttk.Label(frm, text='Gamma/Beta = \r (- for left boost)').grid(row= 17, rowspan = 2,column =1, sticky = Tk.E)
-        self.GammaVar = Tk.StringVar()
-        self.GammaVar.set(str(self.main_params['GammaBoost']))
-        ttk.Entry(frm, textvariable=self.GammaVar, width = 7).grid(row = 17, column = 2, sticky = Tk.N)
 
     def yScaleHandler(self, e):
         # if changing the scale will change the value of the parameter, do so
@@ -607,94 +607,5 @@ class SettingsFrame(Tk.Toplevel):
 
 
     def OnClosing(self):
-        self.parent.settings_window = None
-        self.destroy()
-
-class MeasureFrame(Tk.Toplevel):
-    def __init__(self, parent):
-
-        Tk.Toplevel.__init__(self)
-        self.wm_title('Take Measurements')
-        self.protocol('WM_DELETE_WINDOW', self.OnClosing)
-
-
-        self.parent = parent
-
-        self.bind('<Return>', self.TxtEnter)
-        frm = ttk.Frame(self)
-        frm.pack(fill=Tk.BOTH, expand=True)
-
-
-        ttk.Label(frm, text='NOTE: Spectral Measurements have been moved ' +'\r' + 'to the spectral subplot settings window.').grid(row = 0, rowspan = 2,columnspan = 3, sticky = Tk.W)
-
-
-
-        # Make an entry to change the integration region
-        # A StringVar for a box to type in a value for the left ion region
-        self.FFTLVar = Tk.StringVar()
-        # set it to the left value
-        self.FFTLVar.set(str(self.main_params['FFTLeft']))
-
-        # A StringVar for a box to type in a value for the right ion region
-        self.FFTRVar = Tk.StringVar()
-        # set it to the right value
-        self.FFTRVar.set(str(self.main_params['FFTRight']))
-
-        ttk.Label(frm, text='left').grid(row = 2, column = 1, sticky = Tk.N)
-        ttk.Label(frm, text='right').grid(row = 2, column = 2, sticky = Tk.N)
-
-        ttk.Label(frm, text='FFT region:').grid(row = 3, sticky = Tk.W)
-        ttk.Entry(frm, textvariable=self.FFTLVar, width=7).grid(row =3, column = 1, sticky = Tk.W + Tk.E)
-
-        ttk.Entry(frm, textvariable=self.FFTRVar, width=7).grid(row = 3, column =2, sticky = Tk.W + Tk.E)
-
-        self.FFTRelVar = Tk.IntVar()
-        self.FFTRelVar.set(self.main_params['FFTRelative'])
-        self.FFTRelVar.trace('w', self.FFTRelChanged)
-        cb = ttk.Checkbutton(frm, text = "FFT Region relative to shock?",
-                        variable = self.FFTRelVar)
-        cb.grid(row = 4, columnspan = 3, sticky = Tk.W)
-
-
-    def CheckIfFloatChanged(self, tkVar, paramKey):
-        to_reload = False
-        try:
-            #make sure the user types in a int
-            if np.abs(float(tkVar.get())- self.main_params[paramKey])>1E-6:
-                self.main_params[paramKey] = float(tkVar.get())
-                to_reload = True
-            return to_reload
-
-        except ValueError:
-            #if they type in random stuff, just set it to the param value
-            tkVar.set(str(self.main_params[paramKey]))
-            return to_reload
-
-    def TxtEnter(self, e):
-        self.MeasuresCallback()
-
-
-    def FFTRelChanged(self, *args):
-        if self.FFTRelVar.get()==self.main_params['FFTRelative']:
-            pass
-        else:
-            self.main_params['FFTRelative'] = self.FFTRelVar.get()
-            self.parent.RenewCanvas()
-
-
-
-    def MeasuresCallback(self):
-        tkvarIntList = [self.FFTLVar, self.FFTRVar]
-        IntValList = ['FFTLeft', 'FFTRight']
-
-        to_reload = False
-
-        for j in range(len(tkvarIntList)):
-            to_reload += self.CheckIfFloatChanged(tkvarIntList[j], IntValList[j])
-
-        if to_reload:
-            self.parent.RenewCanvas()
-
-    def OnClosing(self):
-        self.parent.settings_window = None
+        #self.parent.settings_window = None
         self.destroy()

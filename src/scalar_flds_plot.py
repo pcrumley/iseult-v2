@@ -46,7 +46,7 @@ class scalarFldsPlot:
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
         self.pos = pos
-        self.cur_time = 0
+
         self.chart_type = 'ScalarFlds'
         self.changedD = False
         self.parent = parent
@@ -67,8 +67,11 @@ class scalarFldsPlot:
             return PowerNormWithNeg(self.GetPlotParam('cpow_num'), vmin, vmax, div_cmap = self.GetPlotParam('UseDivCmap'),midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
 
 
-    def draw(self, sim, n):
-        self.cur_time = n
+    def draw(self, sim = None, n = None):
+        if sim is None:
+            sim = self.parent.sim
+        if n is None:
+            n = self.parent.cur_time
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -348,14 +351,17 @@ class scalarFldsPlot:
                     self.cbar.set_extent([0,1,clim[0],clim[1]])
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self, sim, n):
+    def refresh(self, sim = None, n = None):
 
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
         time, is that we won't actually do any drawing in the plot. The plot
         will be redrawn after all subplots data is changed. '''
-        self.cur_time = n
+        if sim is None:
+            sim = self.parent.sim
+        if n is None:
+            n = self.parent.cur_time
         self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
@@ -472,10 +478,6 @@ class scalarFldsPlot:
         except KeyError:
             pass
         self.axes.remove()
-    def redraw(self):
-
-        self.draw(self.parent.sim, self.cur_time)
-        self.parent.canvas.draw()
 
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
