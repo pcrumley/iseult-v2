@@ -11,30 +11,33 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
 
-class scalarFldsPlot:
+class vectorFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
     plot_param_dict = {'twoD': 0,
-                       'flds_type': 'B_total',
+                       'field_type': 'J', #0 = B-Field, 1 = E-field, 2 Currents, 3 = UserDefined quantity
+                       'OneDOnly': [False, False, False],
+                       'show_x' : 1,
+                       'show_y' : 1,
+                       'show_z' : 1,
                        'show_cbar': True,
-                       'set_color_limits': False,
                        'v_min': 0,
                        'v_max' : 10,
                        'set_v_min': False,
                        'set_v_max': False,
-                       'show_labels' : True,
                        'show_shock' : False,
+                       'show_FFT_region': False,
                        'OutlineText': True,
                        'spatial_x': True,
                        'spatial_y': False,
+                       'normalize_fields': True, # Normalize fields to their upstream values
+                       'cnorm_type': 'Linear', # Colormap norm;  options are Log, Pow or Linear
+                       'cpow_num': 1.0, # Used in the PowerNorm
+                       'div_midpoint': 0.0, # The cpow color norm normalizes data to [0,1] using np.sign(x-midpoint)*np.abs(x-midpoint)**(-cpow_num) -> [0,midpoint,1] if it is a divering cmap or [0,1] if it is not a divering cmap
                        'interpolation': 'none',
-                       'normalize_density': True, # Normalize density to it's upstream values
-                       'cnorm_type': 'Linear', # Colormap norm;  options are Pow or Linear
-                       'cpow_num': 0.6, # Used in the PowerNorm
-                       'UseDivCmap': False,
-                       'div_midpoint': 0.0,
-                       'stretch_colors': False,
-                       'cmap': 'None', # If cmap is none, the plot will inherit the parent's cmap
+                       'cmap': 'none', # If cmap is none, the plot will inherit the parent's cmap
+                       'UseDivCmap': True, # Use a diverging cmap for the 2d plots
+                       'stretch_colors': False, # If stretch colors is false, then for a diverging cmap the plot ensures -b and b are the same distance from the midpoint of the cmap.
                        'show_cpu_domains': False, # plots lines showing how the CPUs are divvying up the computational region
                        'face_color': 'gainsboro'}
 
@@ -47,7 +50,7 @@ class scalarFldsPlot:
         self.param_dict.update(param_dict)
         self.pos = pos
 
-        self.chart_type = 'ScalarFlds'
+        self.chart_type = 'VectorFlds'
         self.changedD = False
         self.parent = parent
         self.figure = self.parent.figure
@@ -81,7 +84,9 @@ class scalarFldsPlot:
         else:
             self.cmap = self.GetPlotParam('cmap')
 
-        self.dens_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
+        self.x_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.2)
+        self.y_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
+        self.z_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.8)
                 # get c_omp and istep to convert cells to physical units
 
         # FIND THE SLICE
@@ -92,11 +97,12 @@ class scalarFldsPlot:
         self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
         self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
 
-        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+
 
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
         self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
-        if self.GetPlotParam('OutlineText'):
+
+        if self.param_dict['OutlineText']:
             self.annotate_kwargs = {'horizontalalignment': 'right',
             'verticalalignment': 'top',
             'size' : self.parent.MainParamDict['annotateTextSize'],
@@ -115,22 +121,26 @@ class scalarFldsPlot:
 
         # Now that the data is loaded, start making the plots
         if self.GetPlotParam('twoD'):
-            # Link up the spatial axes if desired
+            if self.param_dict['show_x']:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+            if self.param_dict['show_y']:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+            else:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')            # Link up the spatial axes if desired
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
 
-
-            if self.parent.MainParamDict['2DSlicePlane'] ==0: # x-y plane
+            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
                 if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower')
+                    self.image = self.axes.imshow(self.vec_2d['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower')
                 else:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower',
+                    self.image = self.axes.imshow(self.vec_2d['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower',
                                                 aspect = 'auto')
-            elif self.parent.MainParamDict['2DSlicePlane'] ==1: # x-z plane
+            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
                 if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower')
+                    self.image = self.axes.imshow(self.vec_2d['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower')
                 else:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower',
+                    self.image = self.axes.imshow(self.vec_2['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower',
                                                 aspect = 'auto')
 
             self.ymin = 0
@@ -140,17 +150,17 @@ class scalarFldsPlot:
             self.xmax =  self.image.get_array().shape[1]#/self.c_omp*self.istep
 
             self.vmin = self.image.get_array().min()
-            if self.GetPlotParam('set_v_min'):
-                self.vmin = self.GetPlotParam('v_min')
+            if self.param_dict['set_v_min']:
+                self.vmin = self.param_dict['v_min']
             self.vmax = self.image.get_array().max()
-            if self.GetPlotParam('set_v_max'):
-                self.vmax = self.GetPlotParam('v_max')
-            if self.GetPlotParam('UseDivCmap') and not self.GetPlotParam('stretch_colors'):
+            if self.param_dict['set_v_max']:
+                self.vmax = self.param_dict['v_max']
+            if self.param_dict['UseDivCmap'] and not self.param_dict['stretch_colors']:
                 self.vmax = max(np.abs(self.vmin), self.vmax)
                 self.vmin = -self.vmax
             self.image.norm.vmin = self.vmin
             self.image.norm.vmax = self.vmax
-            self.image.set_interpolation(self.GetPlotParam('interpolation'))
+            self.image.set_interpolation(self.param_dict['interpolation'])
             self.image.set_cmap(new_cmaps.cmaps[self.cmap])
             self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
 
@@ -163,12 +173,12 @@ class scalarFldsPlot:
             #                                        PathEffects.Normal()])
             #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
 
-            self.an_2d = self.axes.annotate(self.scalar_fld['cbar_label'],
+            self.an_2d = self.axes.annotate(self.vec_2d['cbar_label'],
                                             xy = (0.9,.9),
                                             xycoords= 'axes fraction',
                                             color = 'white',
                                             **self.annotate_kwargs)
-            self.an_2d.set_visible(self.GetPlotParam('show_labels'))
+            self.an_2d.set_visible(self.param_dict['show_labels'])
 
 
             self.axC = self.figure.add_subplot(self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1], self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
@@ -208,7 +218,7 @@ class scalarFldsPlot:
                                 labelright = True,
                                 labelsize = self.parent.MainParamDict['NumFontSize'])
 
-            if not self.GetPlotParam('show_cbar'):
+            if not self.param_dict['show_cbar']:
                 self.axC.set_visible(False)
             else:
                 self.CbarTickFormatter()
@@ -245,12 +255,19 @@ class scalarFldsPlot:
 
         else:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+            if self.param_dict['show_x']:
+                self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+            if self.param_dict['show_y']:
+                self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+            if self.param_dict['show_y']:
+                self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
             # Do the 1D Plots
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
             # Make the 1-D plots
             if self.parent.MainParamDict['Average1D']:
-                self.linedens = self.axes.plot(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0), color = self.dens_color)
+                if self.param_dict['show_x']:
+                    self.line_x = self.axes.plot(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0), color = self.x_color)
             else:
                 self.linedens = self.axes.plot(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:], color = self.dens_color)
 
@@ -439,11 +456,9 @@ class scalarFldsPlot:
                 self.axes.set_ylim(self.ymin,self.ymax)
 
             if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                #self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$y$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+                self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                #self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$z$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+                self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
 
             #if self.GetPlotParam('show_shock'):

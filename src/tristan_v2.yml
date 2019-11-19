@@ -294,18 +294,18 @@ vec_flds:
     x:
       1d_label: $J_x$
       axis_label: $J$
-      cbar_label: $J$
+      cbar_label: $J_x$
       h5attr: jx
       h5file: flds.tot.
     y:
       1d_label: $J_y$
       axis_label: $J$
-      cbar_label: $J$
+      cbar_label: $J_y$
       h5attr: jy
       h5file: flds.tot.
     z:
       1d_label: $J_z$
       axis_label: $J$
-      cbar_label: $J$
+      cbar_label: $J_z$
       h5attr: jz
       h5file: flds.tot.
