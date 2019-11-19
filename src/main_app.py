@@ -3,6 +3,7 @@ import time, os, sys
 from custom_toolbar import myCustomToolbar
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog
+from save_config import SaveDialog
 from oengus import Oengus
 from pic_sim import picSim
 import tkinter as Tk
@@ -47,7 +48,7 @@ class MainApp(Tk.Tk):
 
         fileMenu.add_command(label="Exit", underline=1,
                              command=quit, accelerator="Ctrl+Q")
-        #fileMenu.add_command(label= 'Save Current State', command = self.OpenSaveDialog)
+        fileMenu.add_command(label= 'Save Current State', command = self.OpenSaveDialog)
         #fileMenu.add_command(label= 'Make a Movie', command = self.OpenMovieDialog)
         #fileMenu.add_command(label= 'Reset Session', command = self.ResetSession)
 
@@ -131,7 +132,8 @@ class MainApp(Tk.Tk):
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self,(i,j))
 
-
+    def OpenSaveDialog(self):
+        SaveDialog(self)
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
