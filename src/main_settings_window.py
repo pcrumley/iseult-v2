@@ -424,7 +424,7 @@ class SettingsFrame(Tk.Toplevel):
 
             else:
                 self.oengus.MainParamDict['ion_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.45)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[2]*255)))
-                sself.oengus.MainParamDict['electron_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.75)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[2]*255)))
+                self.oengus.MainParamDict['electron_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.75)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[2]*255)))
 
                 self.oengus.MainParamDict['ion_fit_color'] = 'mediumturquoise'
                 self.oengus.MainParamDict['electron_fit_color'] = 'lime'
@@ -528,10 +528,8 @@ class SettingsFrame(Tk.Toplevel):
                 self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
             if int(self.PrtlStrideVar.get()) != self.main_params['PrtlStride']:
                 self.main_params['PrtlStride'] = int(self.PrtlStrideVar.get())
-                self.parent.stride = self.main_params['PrtlStride']
-                self.parent.StrideChanged()
-                to_reload += True
-
+                self.oengus.xtra_stride = self.main_params['PrtlStride']
+                self.oengus.draw_output()
         except ValueError:
             #if they type in random stuff, just set it to the param value
             self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))

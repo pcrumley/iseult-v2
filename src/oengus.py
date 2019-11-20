@@ -114,7 +114,7 @@ class Oengus():
         #self.create_graphs()
     def open_sim(self, sim):
         self.sim = sim
-    def GenMainParamDict(self, config_file = None):
+    def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
             It also sets all of the plots parameters.'''
 
@@ -165,7 +165,7 @@ class Oengus():
                                 'Rainbow + White',
                                 'Blue/Green/Red/Yellow',
                                 'Cube YF',
-                                'Linear_L'], 
+                                'Linear_L'],
                               'HSubPlotParams': {'right': 0.95,
                                                  'bottom': 0.06,
                                                  'top': 0.91,

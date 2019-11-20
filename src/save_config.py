@@ -49,7 +49,7 @@ def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
 
             cfgDict[tmp_str] = oengus.SubPlotList[i][j].param_dict
             cfgDict[tmp_str]['chart_type'] = oengus.SubPlotList[i][j].chart_type
-
+    cfgDict['MainParamDict'] = oengus.MainParamDict
     #print(yaml.dump(cfgDict))
     # Writing our configuration file to 'example.cfg'
 
@@ -158,7 +158,7 @@ class SaveDialog(Tk.Toplevel):
 
     def apply(self):
         ''' Save the config file'''
-        w_size = f'{self.parent.winfo_width()}x{self.winfo_height()}'
+        w_size = f'{self.parent.winfo_width()}x{self.parent.winfo_height()}'
         new_cfg_file = os.path.join(self.parent.IseultDir, '.iseult_configs', str(self.e1.get()).strip().replace(' ', '_') +'.yml')
         save_iseult_cfg(self.parent.oengus, w_size,
             new_cfg_file, str(self.e1.get()).strip())

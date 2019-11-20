@@ -95,7 +95,7 @@ class playbackBar(Tk.Frame):
     #    self.parent.RenewCanvas()
 
     def on_refresh(self, *args):
-        self.parent.sim.clear_caches()
+        self.oengus.sim.clear_caches()
     #    self.parent.RefreshTimeStep()
     #    self.parent.RenewCanvas()
 

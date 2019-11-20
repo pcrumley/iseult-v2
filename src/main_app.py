@@ -1,11 +1,12 @@
 #! /usr/bin/env python
-import time, os, sys
+import time, os, sys, yaml
 from custom_toolbar import myCustomToolbar
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog
 from save_config import SaveDialog
 from oengus import Oengus
 from pic_sim import picSim
+from functools import partial
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 from mpl_param import Param
@@ -25,8 +26,6 @@ class MainApp(Tk.Tk):
         #self.update_idletasks()
         menubar = Tk.Menu(self)
         self.wm_title(name)
-        self.settings_window = None
-        self.measure_window = None
 
 
         self.cmd_args = cmd_args
@@ -51,7 +50,8 @@ class MainApp(Tk.Tk):
         fileMenu.add_command(label= 'Save Current State', command = self.OpenSaveDialog)
         #fileMenu.add_command(label= 'Make a Movie', command = self.OpenMovieDialog)
         #fileMenu.add_command(label= 'Reset Session', command = self.ResetSession)
-
+        self.preset_menu = Tk.Menu(menubar, tearoff=False, postcommand=self.viewsUpdate)
+        menubar.add_cascade(label='Preset Views', underline=0, menu = self.preset_menu)
 
         self.bind_all("<Control-q>", self.quit)
         #self.bind_all("<Command-o>", self.OnOpen)
@@ -102,6 +102,27 @@ class MainApp(Tk.Tk):
         #self.bind('r', self.playbackbar.OnReload)
         self.bind('<space>', self.playbackbar.play_handler)
         self.update()
+    def viewsUpdate(self):
+        tmpdir = list(os.listdir(os.path.join(self.IseultDir, '.iseult_configs')))
+        tmpdir.sort()
+        for cfile in tmpdir:
+
+
+            if cfile.split('.')[-1]=='yml':
+                with open(os.path.join(os.path.join(self.IseultDir, '.iseult_configs'), cfile), 'r') as f:
+                    cfgDict=yaml.safe_load(f)
+                try:
+                    if 'general' in cfgDict.keys():
+                        if 'ConfigName'  in cfgDict['general'].keys():
+                            tmpstr = cfgDict['general']['ConfigName']
+                            try:
+                                self.preset_menu.delete(tmpstr)
+                            except:
+                                pass
+                            self.preset_menu.add_command(label = tmpstr, command = partial(self.LoadConfig, str(os.path.join(self.IseultDir,'.iseult_configs', cfile))))
+                except:
+                    print('hi')
+                    pass
     def GetPlotParam(self, val):
         return 1
     def onclick(self, event):
@@ -134,6 +155,47 @@ class MainApp(Tk.Tk):
 
     def OpenSaveDialog(self):
         SaveDialog(self)
+    def LoadConfig(self, config_file):
+        # First get rid of any & all pop up windows:
+        if self.playbackbar.settings_window is not None:
+            self.playbackbar.settings_window.destroy()
+        #if self.measure_window is not None:
+        #    self.measure_window.destroy()
+        # Go through each sub-plot destroying any pop-up and
+        # restoring to default params
+        for key, val in self.popups_dict.items():
+            try:
+                val.destroy()
+            except:
+                pass
+        # Read in the config file
+        #config = configparser.RawConfigParser()
+        #config.read(config_file)
+        cfgDict = {}
+        with open(config_file, 'r') as f:
+            cfgDict = yaml.safe_load(f)
+        # Generate the Main Param Dict
+        self.oengus.cfgDict = cfgDict
+        self.oengus.GenMainParamDict()
+
+        #Loading a config file may change the stride... watch out!
+        if self.sim.xtra_stride != self.oengus.MainParamDict['PrtlStride']:
+            self.stride = self.oengus.MainParamDict['PrtlStride']
+
+        # There are a few parameters that need to be loaded separately, mainly in the playbackbar.
+        self.playbackbar.rec_var.set(self.oengus.MainParamDict['Recording'])
+        self.playbackbar.loop_var.set(self.oengus.MainParamDict['LoopPlayback'])
+
+        self.oengus.figure.clf()
+
+        self.oengus.create_graphs()
+        self.geometry(self.oengus.MainParamDict['WindowSize'])
+        self.oengus.canvas.draw()
+        # refresh the geometry
+
+        self.geometry(self.oengus.MainParamDict['WindowSize'])
+
+
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
