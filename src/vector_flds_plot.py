@@ -59,15 +59,15 @@ class vectorFldsPlot:
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def norm(self, vmin=None, vmax=None):
-        if self.GetPlotParam('cnorm_type') =="Linear":
-            if self.GetPlotParam('UseDivCmap'):
-                return PowerNormWithNeg(1.0, vmin, vmax, midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
+        if self.param_dict['cnorm_type'] == "Linear":
+            if self.param_dict['UseDivCmap']:
+                return PowerNormWithNeg(1.0, vmin, vmax, midpoint = self.param_dict['div_midpoint'], stretch_colors = self.param_dict['stretch_colors'])
             else:
                 return mcolors.Normalize(vmin, vmax)
-        elif self.GetPlotParam('cnorm_type') == "Log":
+        elif self.param_dict['cnorm_type'] == "Log":
             return  mcolors.LogNorm(vmin, vmax)
         else:
-            return PowerNormWithNeg(self.GetPlotParam('cpow_num'), vmin, vmax, div_cmap = self.GetPlotParam('UseDivCmap'),midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
+            return PowerNormWithNeg(self.param_dict['cpow_num'], vmin, vmax, div_cmap = self.param_dict['UseDivCmap'], midpoint = self.param_dict['div_midpoint'], stretch_colors = self.param_dict['stretch_colors'])
 
 
     def draw(self, sim = None, n = None):
@@ -75,14 +75,14 @@ class vectorFldsPlot:
             sim = self.parent.sim
         if n is None:
             n = self.parent.cur_time
-        if self.GetPlotParam('cmap') == 'None':
-            if self.GetPlotParam('UseDivCmap'):
+        if self.param_dict['cmap') == 'None':
+            if self.param_dict['UseDivCmap']:
                 self.cmap = self.parent.MainParamDict['DivColorMap']
             else:
                 self.cmap = self.parent.MainParamDict['ColorMap']
 
         else:
-            self.cmap = self.GetPlotParam('cmap')
+            self.cmap = self.param_dict['cmap']
 
         self.x_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.2)
         self.y_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
@@ -120,7 +120,7 @@ class vectorFldsPlot:
         self.gs = gridspec.GridSpecFromSubplotSpec(100,100, subplot_spec = self.parent.gs0[self.pos])#, bottom=0.2,left=0.1,right=0.95, top = 0.95)
 
         # Now that the data is loaded, start making the plots
-        if self.GetPlotParam('twoD'):
+        if self.param_dict['twoD']:
             if self.param_dict['show_x']:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
             if self.param_dict['show_y']:
@@ -224,9 +224,9 @@ class vectorFldsPlot:
                 self.CbarTickFormatter()
 
             if int(matplotlib.__version__[0]) < 2:
-                self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
+                self.axes.set_axis_bgcolor(self.param_dict['face_color'])
             else:
-                self.axes.set_facecolor(self.GetPlotParam('face_color'))
+                self.axes.set_facecolor(self.param_dict['face_color'])
 
             self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
 
@@ -285,9 +285,9 @@ class vectorFldsPlot:
             #self.shock_line.set_visible(self.GetPlotParam('show_shock'))
 
             if int(matplotlib.__version__[0]) < 2:
-                self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
+                self.axes.set_axis_bgcolor(self.param_dict['face_color'])
             else:
-                self.axes.set_facecolor(self.GetPlotParam('face_color'))
+                self.axes.set_facecolor(self.param_dict['face_color'])
 
             self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
 
@@ -300,10 +300,10 @@ class vectorFldsPlot:
             #else:
             self.axes.set_xlim(self.xaxis['data'][0],self.xaxis['data'][-1])
 
-            if self.GetPlotParam('set_v_min'):
-                self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
-            if self.GetPlotParam('set_v_max'):
-                self.axes.set_ylim(top = self.GetPlotParam('v_max'))
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(bottom = self.param_dict['v_min'])
+            if self.param_dict['set_v_max']:
+                self.axes.set_ylim(top = self.param_dict['v_max'])
 
             # Handle the axes labeling
 
@@ -322,17 +322,17 @@ class vectorFldsPlot:
         easier, but because I am no longer using the colorbar class i have to do
         stuff manually.'''
         clim = np.copy(self.image.get_clim())
-        if self.GetPlotParam('show_cbar'):
-            if self.GetPlotParam('cnorm_type') == "Log":
+        if self.param_dict['show_cbar']:
+            if self.param_dict['cnorm_type'] == "Log":
                 self.cbar.set_extent([np.log10(clim[0]),np.log10(clim[1]),0,1])
                 self.axC.set_xlim(np.log10(clim[0]),np.log10(clim[1]))
 
-            elif self.GetPlotParam('cnorm_type') == "Pow":
+            elif self.param_dict['cnorm_type'] == "Pow":
                 # re-create the gradient with the data values
                 # First make a colorbar in the negative region that is linear in the pow_space
                 data_range = np.linspace(clim[0],clim[1],512)
 
-                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = self.GetPlotParam('cpow_num'), midpoint = self.GetPlotParam('div_midpoint'), div_cmap = self.GetPlotParam('UseDivCmap'), stretch_colors = self.GetPlotParam('stretch_colors'))
+                    cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = self.param_dict['cpow_num'], midpoint = self.param_dict['div_midpoint'], div_cmap = self.param_dict['UseDivCmap'], stretch_colors = self.param_dict['stretch_colors'])
                 cbardata = np.vstack((cbardata,cbardata))
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_data(cbardata)
@@ -344,12 +344,12 @@ class vectorFldsPlot:
                     self.axC.set_ylim(clim[0],clim[1])
                     self.axC.locator_params(axis='y',nbins=6)
 
-            elif self.GetPlotParam('cnorm_type') == "Linear" and self.GetPlotParam('UseDivCmap'):
+            elif self.param_dict['cnorm_type'] == "Linear" and self.param_dict['UseDivCmap']:
                 # re-create the gradient with the data values
                 # First make a colorbar in the negative region that is linear in the pow_space
                 data_range = np.linspace(clim[0],clim[1],512)
 
-                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = 1.0, div_cmap = self.GetPlotParam('UseDivCmap'), midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
+                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = 1.0, div_cmap = self.param_dict['UseDivCmap'], midpoint = self.param_dict['div_midpoint'], stretch_colors = self.param_dict['stretch_colors'])
                 cbardata = np.vstack((cbardata,cbardata))
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_data(cbardata)
@@ -382,7 +382,7 @@ class vectorFldsPlot:
             sim = self.parent.sim
         if n is None:
             n = self.parent.cur_time
-        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
+        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.param_dict['flds_type'])
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
         self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
@@ -396,7 +396,7 @@ class vectorFldsPlot:
 
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
-        if self.GetPlotParam('twoD') == 0:
+        if self.param_dict['twoD'] == 0:
 
             if self.parent.MainParamDict['Average1D']:
                 self.linedens[0].set_data(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0))
@@ -409,10 +409,10 @@ class vectorFldsPlot:
             min_max[0] -= 0.04*dist
             min_max[1] += 0.04*dist
             self.axes.set_ylim(min_max)
-            if self.GetPlotParam('set_v_min'):
-                self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
-            if self.GetPlotParam('set_v_max'):
-                self.axes.set_ylim(top = self.GetPlotParam('v_max'))
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(bottom = self.param_dict['v_min'])
+            if self.param_dict['set_v_max']:
+                self.axes.set_ylim(top = self.param_dict['v_max'])
             #if self.GetPlotParam('show_shock'):
             #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
 
@@ -499,8 +499,6 @@ class vectorFldsPlot:
             pass
         self.axes.remove()
 
-    def GetPlotParam(self, keyname):
-        return self.param_dict[keyname]
 
 if __name__== '__main__':
     import os
