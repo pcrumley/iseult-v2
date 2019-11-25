@@ -213,14 +213,6 @@ class vectorFldsPlot:
 
         else:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
-
-            if self.param_dict['show_x']:
-                self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
-            if self.param_dict['show_y']:
-                self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
-            if self.param_dict['show_y']:
-                self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
-            # Do the 1D Plots
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
             # Make the 1-D plots
@@ -228,6 +220,7 @@ class vectorFldsPlot:
 
             self.line_y = self.axes.plot([1,1], [-.5,.5], color = self.y_color)
             self.line_z = self.axes.plot([1,1], [-.5,.5], color = self.z_color)
+
             self.line_x[0].set_visible(self.param_dict['show_x'])
             self.line_y[0].set_visible(self.param_dict['show_x'])
             self.line_z[0].set_visible(self.param_dict['show_x'])
@@ -236,6 +229,25 @@ class vectorFldsPlot:
             self.key_list = ['show_x', 'show_y', 'show_z']
             self.line_list = [self.line_x[0], self.line_y[0], self.line_z[0]]
 
+            self.annotate_pos = [0.8,0.9]
+            self.anx = self.axes.annotate('', xy = self.annotate_pos,
+                        xycoords= 'axes fraction',
+                        color = self.x_color,
+                        **self.annotate_kwargs)
+            self.annotate_pos[0] += .08
+            self.any = self.axes.annotate('', xy = self.annotate_pos,
+                        xycoords= 'axes fraction',
+                        color = self.y_color,
+                        **self.annotate_kwargs)
+            self.annotate_pos[0] += .08
+            self.anz = self.axes.annotate('', xy = self.annotate_pos,
+                        xycoords= 'axes fraction',
+                        color = self.z_color,
+                        **self.annotate_kwargs)
+
+            self.anx.set_visible(self.param_dict['show_x'])
+            self.any.set_visible(self.param_dict['show_y'])
+            self.anz.set_visible(self.param_dict['show_z'])
             #### Set the ylims... there is a problem where it scales the ylims for the invisible lines:
 
             #self.shock_line =self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
@@ -381,11 +393,13 @@ class vectorFldsPlot:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+                self.anx.set_text(self.vec_x['1d_label'])
             if self.param_dict['show_y']:
                 self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+                self.any.set_text(self.vec_y['1d_label'])
             if self.param_dict['show_z']:
                 self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
-
+                self.anz.set_text(self.vec_z['1d_label'])
             if self.parent.MainParamDict['Average1D']:
                 if self.param_dict['show_x']:
                     self.line_x[0].set_data(self.xaxis['data'], np.average(self.vec_x['data'].reshape(-1, self.vec_x['data'].shape[-1]), axis = 0))
