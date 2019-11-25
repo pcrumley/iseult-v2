@@ -195,7 +195,12 @@ class MainApp(Tk.Tk):
 
         self.geometry(self.oengus.MainParamDict['WindowSize'])
 
+    def changePlotType(self, pos, new_plot_type):
+        self.oengus.SubPlotList[pos[0]][pos[1]] = self.oengus.plot_types_dict[new_plot_type](self.oengus, pos, {})
+        self.oengus.figure.clf()
 
+        self.oengus.create_graphs()
+        self.oengus.canvas.draw()
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):

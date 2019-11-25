@@ -255,9 +255,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
         if self.ctypevar.get() == self.subplot.chart_type:
             pass
         else:
-            print('Not yet implemented')
-            #self.parent.ChangePlotType(self.ctypevar.get())
-            #self.destroy()
+            self.parent.changePlotType(self.loc, self.ctypevar.get())
+            self.destroy()
 
     def InterpolChanged(self, *args):
         if self.InterpolVar.get() == self.params['interpolation']:

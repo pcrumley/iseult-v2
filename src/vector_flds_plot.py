@@ -10,15 +10,15 @@ import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
+import matplotlib.transforms as mtransforms
 
 class vectorFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
-    plot_param_dict = {'twoD': 1,
+    plot_param_dict = {'twoD': 0,
                        'field_type': 'B',
-                       'OneDOnly': [False, False, False],
-                       'show_x' : 0,
-                       'show_y' : 0,
+                       'show_x': 1,
+                       'show_y' : 1,
                        'show_z' : 1,
                        'show_cbar': True,
                        'v_min': 0,
@@ -122,48 +122,16 @@ class vectorFldsPlot:
 
         # Now that the data is loaded, start making the plots
         if self.param_dict['twoD']:
-            if self.param_dict['show_x']:
-                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
-            elif self.param_dict['show_y']:
-                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
-            else:
-                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')            # Link up the spatial axes if desired
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-            print(self.vec_2d)
-            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.vec_2d['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower')
-                else:
-                    self.image = self.axes.imshow(self.vec_2d['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower',
-                                                aspect = 'auto')
-            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.vec_2d['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower')
-                else:
-                    self.image = self.axes.imshow(self.vec_2['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower',
-                                                aspect = 'auto')
+            self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower')
 
-            self.ymin = 0
-            self.ymax =  self.image.get_array().shape[0]#/self.c_omp*self.istep
+            if not self.parent.MainParamDict['ImageAspect']:
+                self.axes.set_aspect='auto'
 
-            self.xmin = 0
-            self.xmax =  self.image.get_array().shape[1]#/self.c_omp*self.istep
-
-            self.vmin = self.image.get_array().min()
-            if self.param_dict['set_v_min']:
-                self.vmin = self.param_dict['v_min']
-            self.vmax = self.image.get_array().max()
-            if self.param_dict['set_v_max']:
-                self.vmax = self.param_dict['v_max']
-            if self.param_dict['UseDivCmap'] and not self.param_dict['stretch_colors']:
-                self.vmax = max(np.abs(self.vmin), self.vmax)
-                self.vmin = -self.vmax
-            self.image.norm.vmin = self.vmin
-            self.image.norm.vmax = self.vmax
             self.image.set_interpolation(self.param_dict['interpolation'])
             self.image.set_cmap(new_cmaps.cmaps[self.cmap])
-            self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
+
 
             #self.shockline_2d = self.axes.axvline(self.parent.shock_loc,
             #                                        linewidth = 1.5,
@@ -174,7 +142,8 @@ class vectorFldsPlot:
             #                                        PathEffects.Normal()])
             #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
 
-            self.an_2d = self.axes.annotate(self.vec_2d['cbar_label'],
+            #self.an_2d = self.axes.annotate(self.vec_2d['cbar_label'],
+            self.an_2d = self.axes.annotate('',
                                             xy = (0.9,.9),
                                             xycoords= 'axes fraction',
                                             color = 'white',
@@ -221,8 +190,8 @@ class vectorFldsPlot:
 
             if not self.param_dict['show_cbar']:
                 self.axC.set_visible(False)
-            else:
-                self.CbarTickFormatter()
+            #else:
+            #    self.CbarTickFormatter()
 
             if int(matplotlib.__version__[0]) < 2:
                 self.axes.set_axis_bgcolor(self.param_dict['face_color'])
@@ -231,19 +200,7 @@ class vectorFldsPlot:
 
             self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
 
-            if self.parent.MainParamDict['SetxLim']:
-                if self.parent.MainParamDict['xLimsRelative']:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                else:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xmin,self.xmax)
 
-            if self.parent.MainParamDict['SetyLim']:
-                self.axes.set_ylim(self.parent.MainParamDict['yBottom']*self.c_omp/self.istep, self.parent.MainParamDict['yTop']*self.c_omp/self.istep)
-            else:
-                self.axes.set_ylim(self.ymin, self.ymax)
             #self.axes.set_xlabel(r'$x\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             self.axes.set_xlabel(r'$x$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 0:
@@ -267,21 +224,20 @@ class vectorFldsPlot:
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
             # Make the 1-D plots
-            if self.parent.MainParamDict['Average1D']:
-                if self.param_dict['show_x']:
-                    self.line_x = self.axes.plot(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0), color = self.x_color)
-            else:
-                self.linedens = self.axes.plot(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:], color = self.dens_color)
+            self.line_x = self.axes.plot([1,1], [-.5,.5], color = self.x_color)
 
-            #if self.GetPlotParam('normalize_density'):
-            #    self.linedens[0].set_data(self.linedens[0].get_data()[0], self.linedens[0].get_data()[1]*self.ppc0**(-1))
+            self.line_y = self.axes.plot([1,1], [-.5,.5], color = self.y_color)
+            self.line_z = self.axes.plot([1,1], [-.5,.5], color = self.z_color)
+            self.line_x[0].set_visible(self.param_dict['show_x'])
+            self.line_y[0].set_visible(self.param_dict['show_x'])
+            self.line_z[0].set_visible(self.param_dict['show_x'])
+            # fancy code to make sure that matplotlib sets its limits
+            # only based on visible lines
+            self.key_list = ['show_x', 'show_y', 'show_z']
+            self.line_list = [self.line_x[0], self.line_y[0], self.line_z[0]]
 
             #### Set the ylims... there is a problem where it scales the ylims for the invisible lines:
-            min_max = [self.linedens[0].get_data()[1].min(), self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
+
             #self.shock_line =self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
             #        PathEffects.Normal()])
             #self.shock_line.set_visible(self.GetPlotParam('show_shock'))
@@ -313,9 +269,9 @@ class vectorFldsPlot:
             #if self.GetPlotParam('normalize_density'):
             #    tmp_str += r'$\ [n_0]$'
             self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            #self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
-
+        self.refresh(sim = sim, n = n)
         #if self.GetPlotParam('show_cpu_domains'):
         #    self.parent.SetCpuDomainLines()
 
@@ -384,10 +340,6 @@ class vectorFldsPlot:
             sim = self.parent.sim
         if n is None:
             n = self.parent.cur_time
-        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.param_dict['flds_type'])
-        self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
-        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
-        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
         # FIND THE SLICE
         MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
         MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
@@ -395,16 +347,61 @@ class vectorFldsPlot:
 
         self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
         self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
+        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
+        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
 
+
+        # Now that the data is loaded, start making the plots
+        if self.param_dict['twoD']:
+            if self.param_dict['show_x']:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+            elif self.param_dict['show_y']:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+            else:
+                self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')            # Link up the spatial axes if desired
+            self.an_2d.set_text(self.vec_2d['cbar_label'])
+            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
+                self.image.set_data(self.vec_2d['data'][self.zSlice,:,:])
+            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
+                self.image.set_data(self.vec_2['data'][:,self.ySlice,:])
+
+            self.ymin = 0
+            self.ymax =  self.image.get_array().shape[0]#/self.c_omp*self.istep
+
+            self.xmin = 0
+            self.xmax =  self.image.get_array().shape[1]#/self.c_omp*self.istep
+
+            #self.image.set_interpolation(self.param_dict['interpolation'])
+            #self.image.set_cmap(new_cmaps.cmaps[self.cmap])
+            self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
+            self.set_v_max_min()
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
-        if self.param_dict['twoD'] == 0:
+        else:
+            self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+            if self.param_dict['show_x']:
+                self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+            if self.param_dict['show_y']:
+                self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+            if self.param_dict['show_z']:
+                self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
 
             if self.parent.MainParamDict['Average1D']:
-                self.linedens[0].set_data(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0))
+                if self.param_dict['show_x']:
+                    self.line_x[0].set_data(self.xaxis['data'], np.average(self.vec_x['data'].reshape(-1, self.vec_x['data'].shape[-1]), axis = 0))
+                if self.param_dict['show_y']:
+                    self.line_y[0].set_data(self.xaxis['data'], np.average(self.vec_y['data'].reshape(-1, self.vec_y['data'].shape[-1]), axis = 0))
+                if self.param_dict['show_z']:
+                    self.line_z[0].set_data(self.xaxis['data'], np.average(self.vec_z['data'].reshape(-1, self.vec_z['data'].shape[-1]), axis = 0))
             else: # x-y plane
-                self.linedens[0].set_data(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:])
+                if self.param_dict['show_x']:
+                    self.line_x[0].set_data(self.xaxis['data'], self.vec_x['data'][self.zSlice,self.ySlice,:])
+                if self.param_dict['show_y']:
+                    self.line_y[0].set_data(self.xaxis['data'], self.vec_y['data'][self.zSlice,self.ySlice,:])
+                if self.param_dict['show_z']:
+                    self.line_z[0].set_data(self.xaxis['data'], self.vec_z['data'][self.zSlice,self.ySlice,:])
 
+            """
             #### Set the ylims...
             min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
             dist = min_max[1]-min_max[0]
@@ -417,7 +414,8 @@ class vectorFldsPlot:
                 self.axes.set_ylim(top = self.param_dict['v_max'])
             #if self.GetPlotParam('show_shock'):
             #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-
+            """
+            self.set_v_max_min()
             if self.parent.MainParamDict['SetxLim']:
                 #if self.parent.MainParamDict['xLimsRelative']:
                 #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
@@ -427,7 +425,7 @@ class vectorFldsPlot:
             else:
                 self.axes.set_xlim(self.xaxis['data'][0], self.xaxis['data'][-1])
 
-
+        """
         else: # Now refresh the plot if it is 2D
             if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
                 self.image.set_data(self.scalar_fld['data'][self.zSlice,:,:])
@@ -465,19 +463,20 @@ class vectorFldsPlot:
 
             #if self.GetPlotParam('show_shock'):
             #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-        self.set_v_max_min()
+        """
+
+
     def set_v_max_min(self):
         if not self.param_dict['twoD']:
-            #### Set the ylims...
-            min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
-            if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom = self.param_dict['v_min'])
-            if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top = self.param_dict['v_max'])
+            self.axes.dataLim = mtransforms.Bbox.unit()
+            self.axes.dataLim.update_from_data_xy(xy = np.vstack(self.line_list[0].get_data()).T, ignore=True)
+            for line, key in zip(self.line_list, self.key_list):
+
+                if self.param_dict[key]:
+
+                    xy = np.vstack(line.get_data()).T
+                    self.axes.dataLim.update_from_data_xy(xy, ignore=False)
+            self.axes.autoscale('y')
         else:
             self.vmin = self.image.get_array().min()
             if self.param_dict['set_v_min']:
