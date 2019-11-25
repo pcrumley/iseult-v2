@@ -8,6 +8,7 @@ from collections import deque
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 from scalar_flds_plot import scalarFldsPlot
+from vector_flds_plot import vectorFldsPlot
 #from spectra_panel import SpectralPanel
 #from mag_panel import BPanel
 #from energy_panel import EnergyPanel
@@ -73,6 +74,7 @@ class Oengus():
         self.showingTotEnergy = False
         self.plot_types_dict = {
             'ScalarFlds': scalarFldsPlot,
+            'VectorFlds': vectorFldsPlot
             #'EnergyPlot': EnergyPanel,
             #'FieldsPlot': FieldsPanel,
             #'DensityPlot': DensPanel,

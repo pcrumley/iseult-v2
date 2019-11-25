@@ -256,38 +256,38 @@ vec_flds:
     x:
       1d_label: $B_x$
       axis_label: $B$
-      cbar_label: $B$
+      cbar_label: $B_x$
       h5attr: bx
       h5file: flds.tot.
     y:
       1d_label: $B_y$
       axis_label: $B$
-      cbar_label: $B$
+      cbar_label: $B_y$
       h5attr: by
       h5file: flds.tot.
     z:
       1d_label: $B_z$
       axis_label: $B$
-      cbar_label: $B$
+      cbar_label: $B_z$
       h5attr: bz
       h5file: flds.tot.
   E:
     x:
       1d_label: $E_x$
       axis_label: $E$
-      cbar_label: $E$
+      cbar_label: $E_x$
       h5attr: ex
       h5file: flds.tot.
     y:
       1d_label: $E_y$
       axis_label: $E$
-      cbar_label: $E$
+      cbar_label: $E_y$
       h5attr: ey
       h5file: flds.tot.
     z:
       1d_label: $E_z$
       axis_label: $E$
-      cbar_label: $E$
+      cbar_label: $E_z$
       h5attr: ez
       h5file: flds.tot.
   J:

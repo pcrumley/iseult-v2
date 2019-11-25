@@ -14,11 +14,11 @@ from matplotlib.ticker import FuncFormatter
 class vectorFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
-    plot_param_dict = {'twoD': 0,
-                       'field_type': 'J', #0 = B-Field, 1 = E-field, 2 Currents, 3 = UserDefined quantity
+    plot_param_dict = {'twoD': 1,
+                       'field_type': 'B',
                        'OneDOnly': [False, False, False],
-                       'show_x' : 1,
-                       'show_y' : 1,
+                       'show_x' : 0,
+                       'show_y' : 0,
                        'show_z' : 1,
                        'show_cbar': True,
                        'v_min': 0,
@@ -30,12 +30,13 @@ class vectorFldsPlot:
                        'OutlineText': True,
                        'spatial_x': True,
                        'spatial_y': False,
+                       'show_labels': True,
                        'normalize_fields': True, # Normalize fields to their upstream values
                        'cnorm_type': 'Linear', # Colormap norm;  options are Log, Pow or Linear
                        'cpow_num': 1.0, # Used in the PowerNorm
                        'div_midpoint': 0.0, # The cpow color norm normalizes data to [0,1] using np.sign(x-midpoint)*np.abs(x-midpoint)**(-cpow_num) -> [0,midpoint,1] if it is a divering cmap or [0,1] if it is not a divering cmap
                        'interpolation': 'none',
-                       'cmap': 'none', # If cmap is none, the plot will inherit the parent's cmap
+                       'cmap': 'None', # If cmap is none, the plot will inherit the parent's cmap
                        'UseDivCmap': True, # Use a diverging cmap for the 2d plots
                        'stretch_colors': False, # If stretch colors is false, then for a diverging cmap the plot ensures -b and b are the same distance from the midpoint of the cmap.
                        'show_cpu_domains': False, # plots lines showing how the CPUs are divvying up the computational region
@@ -75,7 +76,7 @@ class vectorFldsPlot:
             sim = self.parent.sim
         if n is None:
             n = self.parent.cur_time
-        if self.param_dict['cmap') == 'None':
+        if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:
                 self.cmap = self.parent.MainParamDict['DivColorMap']
             else:
@@ -123,13 +124,13 @@ class vectorFldsPlot:
         if self.param_dict['twoD']:
             if self.param_dict['show_x']:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
-            if self.param_dict['show_y']:
+            elif self.param_dict['show_y']:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
             else:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')            # Link up the spatial axes if desired
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-
+            print(self.vec_2d)
             if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
                 if self.parent.MainParamDict['ImageAspect']:
                     self.image = self.axes.imshow(self.vec_2d['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower')
@@ -255,6 +256,7 @@ class vectorFldsPlot:
 
         else:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
             if self.param_dict['show_y']:
@@ -332,7 +334,7 @@ class vectorFldsPlot:
                 # First make a colorbar in the negative region that is linear in the pow_space
                 data_range = np.linspace(clim[0],clim[1],512)
 
-                    cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = self.param_dict['cpow_num'], midpoint = self.param_dict['div_midpoint'], div_cmap = self.param_dict['UseDivCmap'], stretch_colors = self.param_dict['stretch_colors'])
+                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = self.param_dict['cpow_num'], midpoint = self.param_dict['div_midpoint'], div_cmap = self.param_dict['UseDivCmap'], stretch_colors = self.param_dict['stretch_colors'])
                 cbardata = np.vstack((cbardata,cbardata))
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_data(cbardata)
@@ -505,7 +507,7 @@ if __name__== '__main__':
     from oengus import Oengus
     from pic_sim import picSim
     import matplotlib.pyplot as plt
-    oengus = Oengus(interactive=False)
+    oengus = Oengus(interactive=False,preset_view='test')
 
 
     oengus.open_sim(picSim(os.path.join(os.path.dirname(__file__),'../output')))
