@@ -126,8 +126,10 @@ class vectorFldsPlot:
 
             self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower')
 
-            if not self.parent.MainParamDict['ImageAspect']:
-                self.axes.set_aspect='auto'
+            if self.parent.MainParamDict['ImageAspect']:
+                self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower')
+            else:
+                self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower', aspect='auto')
 
             self.image.set_interpolation(self.param_dict['interpolation'])
             self.image.set_cmap(new_cmaps.cmaps[self.cmap])

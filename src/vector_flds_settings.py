@@ -47,7 +47,30 @@ class VectorFieldsSettings(Tk.Toplevel):
         ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky = Tk.W)
         quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['field_type'], *tuple(self.parent.sim.get_available_quantities()['vec_flds'].keys()))
         quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
+        # the Check boxes for the dimension
+        self.label = ttk.Label(frm, text='Dimension:')
+        self.label.grid(row = 2, column = 1, sticky = Tk.W)
 
+        self.ShowXVar = Tk.IntVar(self) # Create a var to track whether or not to show X
+        self.ShowXVar.set(self.params['show_x'])
+        self.cbx = ttk.Checkbutton(frm, text = "Show x",
+            variable = self.ShowXVar,
+            command = self.Selector)
+        self.cbx.grid(row = 3, column = 1, sticky = Tk.W)
+
+        self.ShowYVar = Tk.IntVar(self) # Create a var to track whether or not to plot Y
+        self.ShowYVar.set(self.params['show_y'])
+        self.cby = ttk.Checkbutton(frm, text = "Show y",
+            variable = self.ShowYVar,
+            command = self.Selector)
+        self.cby.grid(row = 4, column = 1, sticky = Tk.W)
+
+        self.ShowZVar = Tk.IntVar(self) # Create a var to track whether or not to plot Z
+        self.ShowZVar.set(self.params['show_z'])
+        self.cbz = ttk.Checkbutton(frm, text = "Show z",
+            variable = self.ShowZVar,
+            command = self.Selector)
+        self.cbz.grid(row = 5, column = 1, sticky = Tk.W)
         # Control whether or not Cbar is shown
         self.CbarVar = Tk.IntVar()
         self.CbarVar.set(self.params['show_cbar'])
@@ -320,7 +343,60 @@ class VectorFieldsSettings(Tk.Toplevel):
         if to_reload:
             self.subplot.set_v_max_min()
             self.parent.oengus.canvas.draw()
+    def Selector(self):
+        # First check if it is 2-D:
+        if self.params['twoD']:
 
 
+            if self.params['show_x'] != self.ShowXVar.get():
+                # set the other plot values to zero in the PlotParams
+                self.params['show_y'] = 0
+                self.params['show_z'] = 0
+
+                # Uncheck the boxes
+                self.ShowYVar.set(self.params['show_y'])
+                self.ShowZVar.set(self.params['show_z'])
+                self.params['show_x'] = self.ShowXVar.get()
+
+
+            elif self.params['show_y'] != self.ShowYVar.get():
+                # set the other plot values to zero in the PlotParams
+                self.params['show_x'] = 0
+                self.params['show_z'] = 0
+
+                # Uncheck the boxes
+                self.ShowXVar.set(self.params['show_x'])
+                self.ShowZVar.set(self.params['show_z'])
+                self.params['show_y'] = self.ShowYVar.get()
+
+
+            elif self.parent.GetPlotParam('show_z') != self.ShowZVar.get():
+                # set the other plot values to zero in the PlotParams
+                self.params['show_x'] = 0
+                self.params['show_y'] = 0
+
+                # Uncheck the boxes
+                self.ShowXVar.set(self.params['show_x'])
+                self.ShowYVar.set(self.params['show_y'])
+                self.params['show_z'] = self.ShowZVar.get()
+
+
+        else:
+            if self.params['show_x'] != self.ShowXVar.get():
+                self.subplot.line_x[0].set_visible(self.ShowXVar.get())
+                self.subplot.anx.set_visible(self.ShowXVar.get())
+                self.params['show_x'] = self.ShowXVar.get()
+
+            elif self.params['show_y'] != self.ShowYVar.get():
+                self.subplot.line_y[0].set_visible(self.ShowYVar.get())
+                self.subplot.any.set_visible(self.ShowYVar.get())
+                self.params['show_y'] =  self.ShowYVar.get()
+
+            elif self.params['show_z'] != self.ShowZVar.get():
+                self.subplot.line_z[0].set_visible(self.ShowZVar.get())
+                self.subplot.anz.set_visible(self.ShowZVar.get())
+                self.params['show_z'] =  self.ShowZVar.get()
+        self.subplot.refresh()
+        self.parent.oengus.canvas.draw()
     def OnClosing(self):
         self.destroy()
