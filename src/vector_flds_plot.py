@@ -375,7 +375,7 @@ class vectorFldsPlot:
             if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
                 self.image.set_data(self.vec_2d['data'][self.zSlice,:,:])
             elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                self.image.set_data(self.vec_2['data'][:,self.ySlice,:])
+                self.image.set_data(self.vec_2d['data'][:,self.ySlice,:])
 
             self.ymin = 0
             self.ymax =  self.image.get_array().shape[0]#/self.c_omp*self.istep
@@ -415,61 +415,8 @@ class vectorFldsPlot:
                 if self.param_dict['show_z']:
                     self.line_z[0].set_data(self.xaxis['data'], self.vec_z['data'][self.zSlice,self.ySlice,:])
 
-            """
-            #### Set the ylims...
-            min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
-            if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom = self.param_dict['v_min'])
-            if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top = self.param_dict['v_max'])
-            #if self.GetPlotParam('show_shock'):
-            #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-            """
         self.set_v_max_min()
 
-        """
-        else: # Now refresh the plot if it is 2D
-            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                self.image.set_data(self.scalar_fld['data'][self.zSlice,:,:])
-            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                self.image.set_data(self.scalar_fld['data'][:,self.ySlice,:])
-
-            #if self.GetPlotParam('normalize_density'):
-            #    self.image.set_data(self.image.get_array()/self.ppc0)
-
-
-            self.ymin = 0
-            self.ymax =  self.image.get_array().shape[0]/self.c_omp*self.istep
-            self.xmin = 0
-            self.xmax =  self.xaxis['data'][-1]
-            self.image.set_extent([self.xmin,self.xmax, self.ymin, self.ymax])
-            if self.parent.MainParamDict['SetxLim']:
-                #if self.parent.MainParamDict['xLimsRelative']:
-                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                #else:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xmin,self.xmax)
-
-            if self.parent.MainParamDict['SetyLim']:
-                self.axes.set_ylim(self.parent.MainParamDict['yBottom'],self.parent.MainParamDict['yTop'])
-            else:
-                self.axes.set_ylim(self.ymin,self.ymax)
-
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-
-
-            #if self.GetPlotParam('show_shock'):
-            #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-        """
 
 
     def set_v_max_min(self):
