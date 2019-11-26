@@ -238,8 +238,8 @@ class VectorFieldsSettings(Tk.Toplevel):
             pass
         else:
             self.params['field_type'] = self.quantity.get()
-            self.subplot.remove()
-            self.subplot.draw()
+            self.subplot.update_labels_and_colors()
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
 
 

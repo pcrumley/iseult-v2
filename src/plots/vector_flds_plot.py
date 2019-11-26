@@ -75,18 +75,7 @@ class vectorFldsPlot:
             sim = self.parent.sim
         if n is None:
             n = self.parent.cur_time
-        if self.param_dict['cmap'] == 'None':
-            if self.param_dict['UseDivCmap']:
-                self.cmap = self.parent.MainParamDict['DivColorMap']
-            else:
-                self.cmap = self.parent.MainParamDict['ColorMap']
 
-        else:
-            self.cmap = self.param_dict['cmap']
-
-        self.x_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.2)
-        self.y_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
-        self.z_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.8)
                 # get c_omp and istep to convert cells to physical units
 
         # FIND THE SLICE
@@ -131,7 +120,7 @@ class vectorFldsPlot:
                 self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower', aspect='auto')
 
             self.image.set_interpolation(self.param_dict['interpolation'])
-            self.image.set_cmap(new_cmaps.cmaps[self.cmap])
+
 
 
             #self.shockline_2d = self.axes.axvline(self.parent.shock_loc,
@@ -155,8 +144,7 @@ class vectorFldsPlot:
             self.axC = self.figure.add_subplot(self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1], self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
 
             if self.parent.MainParamDict['HorizontalCbars']:
-                self.cbar = self.axC.imshow(self.gradient, aspect='auto',
-                                            cmap=new_cmaps.cmaps[self.cmap])
+                self.cbar = self.axC.imshow(self.gradient, aspect='auto')
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
                 self.axC.tick_params(axis='x',
@@ -171,7 +159,7 @@ class vectorFldsPlot:
                                 labelleft=False)
             else: #Cbar is on the vertical
                 self.cbar = self.axC.imshow(np.transpose(self.gradient)[::-1], aspect='auto',
-                                            cmap=new_cmaps.cmaps[self.cmap], origin='upper')
+                                            origin='upper')
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
                 self.axC.tick_params(axis='x',
@@ -214,13 +202,20 @@ class vectorFldsPlot:
 
         else:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+            if self.param_dict['show_x']:
+                self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+            if self.param_dict['show_y']:
+                self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+            if self.param_dict['show_z']:
+                self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
+
             self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
             # Make the 1-D plots
-            self.line_x = self.axes.plot([1,1], [-.5,.5], color = self.x_color)
+            self.line_x = self.axes.plot([1,1], [-.5,.5])
 
-            self.line_y = self.axes.plot([1,1], [-.5,.5], color = self.y_color)
-            self.line_z = self.axes.plot([1,1], [-.5,.5], color = self.z_color)
+            self.line_y = self.axes.plot([1,1], [-.5,.5])
+            self.line_z = self.axes.plot([1,1], [-.5,.5])
 
             self.line_x[0].set_visible(self.param_dict['show_x'])
             self.line_y[0].set_visible(self.param_dict['show_y'])
@@ -233,17 +228,14 @@ class vectorFldsPlot:
             self.annotate_pos = [0.8,0.9]
             self.anx = self.axes.annotate('', xy = self.annotate_pos,
                         xycoords= 'axes fraction',
-                        color = self.x_color,
                         **self.annotate_kwargs)
             self.annotate_pos[0] += .08
             self.any = self.axes.annotate('', xy = self.annotate_pos,
                         xycoords= 'axes fraction',
-                        color = self.y_color,
                         **self.annotate_kwargs)
             self.annotate_pos[0] += .08
             self.anz = self.axes.annotate('', xy = self.annotate_pos,
                         xycoords= 'axes fraction',
-                        color = self.z_color,
                         **self.annotate_kwargs)
 
             self.anx.set_visible(self.param_dict['show_x'])
@@ -283,7 +275,7 @@ class vectorFldsPlot:
             #    tmp_str += r'$\ [n_0]$'
             self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             #self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-
+        self.update_labels_and_colors(sim, n)
         self.refresh(sim = sim, n = n)
         #if self.GetPlotParam('show_cpu_domains'):
         #    self.parent.SetCpuDomainLines()
@@ -394,13 +386,10 @@ class vectorFldsPlot:
             self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
-                self.anx.set_text(self.vec_x['1d_label'])
             if self.param_dict['show_y']:
                 self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
-                self.any.set_text(self.vec_y['1d_label'])
             if self.param_dict['show_z']:
                 self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
-                self.anz.set_text(self.vec_z['1d_label'])
             if self.parent.MainParamDict['Average1D']:
                 if self.param_dict['show_x']:
                     self.line_x[0].set_data(self.xaxis['data'], np.average(self.vec_x['data'].reshape(-1, self.vec_x['data'].shape[-1]), axis = 0))
@@ -419,6 +408,45 @@ class vectorFldsPlot:
         self.set_v_max_min()
 
 
+    def update_labels_and_colors(self, sim = None, n = None):
+        if sim is None:
+            sim = self.parent.sim
+        if n is None:
+            n = self.parent.cur_time
+
+        if self.param_dict['cmap'] == 'None':
+            if self.param_dict['UseDivCmap']:
+                cmap = self.parent.MainParamDict['DivColorMap']
+            else:
+                cmap = self.parent.MainParamDict['ColorMap']
+
+        else:
+            cmap = self.param_dict['cmap']
+
+
+        if self.param_dict['twoD']:
+            self.image.set_cmap(new_cmaps.cmaps[cmap])
+            self.cbar.set_cmap(new_cmaps.cmaps[cmap])
+        else:
+            x_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.2)
+            y_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
+            z_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.8)
+            if self.param_dict['show_x']:
+                self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
+                self.anx.set_text(self.vec_x['1d_label'])
+                self.line_x[0].set_color(x_color)
+                self.anx.set_color(x_color)
+            if self.param_dict['show_y']:
+                self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
+                self.any.set_text(self.vec_y['1d_label'])
+                self.line_y[0].set_color(y_color)
+                self.any.set_color(y_color)
+
+            if self.param_dict['show_z']:
+                self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
+                self.anz.set_text(self.vec_z['1d_label'])
+                self.line_z[0].set_color(z_color)
+                self.anz.set_color(z_color)
 
     def set_v_max_min(self):
         if not self.param_dict['twoD']:
