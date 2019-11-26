@@ -12,6 +12,7 @@ from tkinter import ttk, filedialog, messagebox
 from mpl_param import Param
 import numpy as np
 from scalar_flds_settings import ScalarFieldsSettings
+from vector_flds_settings import VectorFieldsSettings
 from playback_bar import playbackBar
 
 def destroy(e):
@@ -152,6 +153,8 @@ class MainApp(Tk.Tk):
                     self.popups_dict[f'{i,j}'].destroy()
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self,(i,j))
+            elif self.oengus.SubPlotList[i][j].chart_type == 'VectorFlds':
+                self.popups_dict[f'{i,j}'] = VectorFieldsSettings(self,(i,j))
 
     def OpenSaveDialog(self):
         SaveDialog(self)

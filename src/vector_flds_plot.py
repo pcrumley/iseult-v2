@@ -386,7 +386,7 @@ class vectorFldsPlot:
             #self.image.set_interpolation(self.param_dict['interpolation'])
             #self.image.set_cmap(new_cmaps.cmaps[self.cmap])
             self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
-            self.set_v_max_min()
+
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         else:
@@ -429,15 +429,7 @@ class vectorFldsPlot:
             #if self.GetPlotParam('show_shock'):
             #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
             """
-            self.set_v_max_min()
-            if self.parent.MainParamDict['SetxLim']:
-                #if self.parent.MainParamDict['xLimsRelative']:
-                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                #else:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xaxis['data'][0], self.xaxis['data'][-1])
+        self.set_v_max_min()
 
         """
         else: # Now refresh the plot if it is 2D
@@ -491,6 +483,19 @@ class vectorFldsPlot:
                     xy = np.vstack(line.get_data()).T
                     self.axes.dataLim.update_from_data_xy(xy, ignore=False)
             self.axes.autoscale('y')
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(bottom=self.param_dict['v_min'])
+            if self.param_dict['set_v_max']:
+                self.axes.set_ylim(top=self.param_dict['v_max'])
+            if self.parent.MainParamDict['SetxLim']:
+                #if self.parent.MainParamDict['xLimsRelative']:
+                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
+                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+                #else:
+                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+            else:
+                self.axes.set_xlim(self.xaxis['data'][0], self.xaxis['data'][-1])
+
         else:
             self.vmin = self.image.get_array().min()
             if self.param_dict['set_v_min']:
