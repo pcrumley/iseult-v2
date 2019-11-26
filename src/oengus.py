@@ -1,5 +1,8 @@
 import os,sys, subprocess, yaml, time
 import numpy as np
+sys.path.append(os.path.join(os.path.dirname(__file__), 'popup_windows'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'plots'))
 import matplotlib.pyplot as plt
 import matplotlib.colors as cm
 import new_cmaps
@@ -9,12 +12,7 @@ import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 from scalar_flds_plot import scalarFldsPlot
 from vector_flds_plot import vectorFldsPlot
-#from spectra_panel import SpectralPanel
-#from mag_panel import BPanel
-#from energy_panel import EnergyPanel
-#from fft_panel import FFTPanel
-#from total_energy_panel import TotEnergyPanel
-#from moments_panel import MomentsPanel
+
 
 from PIL import Image
 

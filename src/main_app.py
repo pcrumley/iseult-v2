@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import time, os, sys, yaml
 sys.path.append(os.path.join(os.path.dirname(__file__), 'popup_windows'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from custom_toolbar import myCustomToolbar
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog
