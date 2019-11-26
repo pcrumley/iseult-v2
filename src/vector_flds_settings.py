@@ -271,6 +271,16 @@ class VectorFieldsSettings(Tk.Toplevel):
         else:
             self.params['twoD'] = self.TwoDVar.get()
             self.params['spatial_y'] = self.TwoDVar.get()
+            # Make sure only one dimension checked
+            if self.params['twoD']:
+                if self.params['show_x']:
+                    self.ShowYVar.set(0)
+                    self.params['show_y'] = 0
+                    self.ShowZVar.set(0)
+                    self.params['show_z'] = 0
+                elif self.params['show_y']:
+                    self.ShowZVar.set(0)
+                    self.params['show_z'] = 0
             self.subplot.remove()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
@@ -346,6 +356,9 @@ class VectorFieldsSettings(Tk.Toplevel):
     def Selector(self):
         # First check if it is 2-D:
         if self.params['twoD']:
+            if self.ShowXVar.get() == 0 and self.ShowYVar.get() == 0 and self.ShowZVar.get() == 0:
+                # All are zero, something must be selected for this plot
+                self.ShowXVar.set(1)
 
 
             if self.params['show_x'] != self.ShowXVar.get():
@@ -370,7 +383,7 @@ class VectorFieldsSettings(Tk.Toplevel):
                 self.params['show_y'] = self.ShowYVar.get()
 
 
-            elif self.parent.GetPlotParam('show_z') != self.ShowZVar.get():
+            elif self.params['show_z'] != self.ShowZVar.get():
                 # set the other plot values to zero in the PlotParams
                 self.params['show_x'] = 0
                 self.params['show_y'] = 0
@@ -379,7 +392,6 @@ class VectorFieldsSettings(Tk.Toplevel):
                 self.ShowXVar.set(self.params['show_x'])
                 self.ShowYVar.set(self.params['show_y'])
                 self.params['show_z'] = self.ShowZVar.get()
-
 
         else:
             if self.params['show_x'] != self.ShowXVar.get():

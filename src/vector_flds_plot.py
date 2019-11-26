@@ -224,8 +224,8 @@ class vectorFldsPlot:
             self.line_z = self.axes.plot([1,1], [-.5,.5], color = self.z_color)
 
             self.line_x[0].set_visible(self.param_dict['show_x'])
-            self.line_y[0].set_visible(self.param_dict['show_x'])
-            self.line_z[0].set_visible(self.param_dict['show_x'])
+            self.line_y[0].set_visible(self.param_dict['show_y'])
+            self.line_z[0].set_visible(self.param_dict['show_z'])
             # fancy code to make sure that matplotlib sets its limits
             # only based on visible lines
             self.key_list = ['show_x', 'show_y', 'show_z']
