@@ -204,14 +204,14 @@ scalar_flds:
     1d_label: $n$
     axis_label: $n$
     cbar_label: $n$
-    h5attr: null
-    h5file: null
+    h5attr: dens
+    h5file: flds.tot.
   electron_density:
     1d_label: $n_e$
     axis_label: $n_e$
     cbar_label: $n_e$
-    h5attr: dense
-    h5file: flds.tot.
+    h5attr: null
+    h5file: null
   ion_density:
     1d_label: $n_i$
     axis_label: $n_i$

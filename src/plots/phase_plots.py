@@ -21,7 +21,7 @@ class PhasePanel:
                        'prtl_type': 'ions',
                        'x_val': 'x',
                        'y_val': 'px',
-                       'weights': None,
+                       'weights': 'charge',
                        'cpow_num': 0.6,
                        'show_cbar': True,
                        'weighted': False,
@@ -49,27 +49,17 @@ class PhasePanel:
 
     gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
     gradient = np.vstack((gradient, gradient))
+
     def __init__(self, parent, pos, param_dict):
         self.param_dict = {}
-        for key, val in self.plot_param_dict.items():
-            self.param_dict[key] = val
-        for key, val in param_dict.items():
-            self.param_dict[key] = val
+        self.param_dict.update(self.plot_param_dict)
+        self.param_dict.update(param_dict)
         self.pos = pos
-        self.parent = parent
-        self._cache = {}
         self.chartType = 'PhasePlot'
         self.figure = self.parent.figure
         self.InterpolationMethods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
-
-
-        if self.GetPlotParam('prtl_type') == 1: #electons
-            self.energy_color = self.parent.electron_color
-        else:
-            self.energy_color = self.parent.ion_color
-        # A list that will hold any lines for the integration region
 
 
     def norm(self, vmin=None, vmax=None):

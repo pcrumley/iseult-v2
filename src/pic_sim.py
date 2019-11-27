@@ -165,6 +165,12 @@ class picSim(object):
                                             fld = 'ion_density')['data'] - self.get_data(n,
                                             data_class = 'scalar_flds',
                                             fld = 'electron_density')['data']
+                        elif lookup['fld'] == 'electron_density':
+                            self._data_dictionary[hash_key] = -self.get_data(n,
+                                        data_class = 'scalar_flds',
+                                        fld = 'ion_density')['data'] + self.get_data(n,
+                                        data_class = 'scalar_flds',
+                                        fld = 'density')['data']
                         elif lookup['fld'] == 'B_total':
 
                             tmp = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data']**2
