@@ -61,17 +61,28 @@ class MainApp(Tk.Tk):
         #self.bind_all("S", self.OpenSettings)
         self.oengus = Oengus(interactive=True, tkApp = self)
         # open a sim
-        self.sim = picSim(os.curdir)
+        self.sim = picSim(os.curdir, 'tristan_v2.yml')
         if len(self.sim) == 0:
-            self.sim.outdir = os.path.join(os.curdir, 'output')
+            self.sim.outdir = os.path.join(self.sim.outdir, 'output')
         if len(self.sim) == 0:
-            self.sim.outdir = filedialog.askdirectory(
+            self.sim = picSim(os.curdir, 'tristan_v1.yml')
+        if len(self.sim) == 0:
+            self.sim.outdir = os.path.join(self.sim.outdir, 'output')
+        if len(self.sim) == 0:
+            self.sim = picSim(os.curdir, 'tristan_v2.yml')
+            tmp_dir = filedialog.askdirectory(
                 title = 'Choose the directory of the output files',
                 initialdir = os.curdir,
                 mustexist = True,
                 parent = self)
+            self.sim.outdir = tmp_dir
             if len(self.sim) == 0:
                 self.sim.outdir = os.path.join(self.sim.outdir, 'output')
+            if len(self.sim) == 0:
+                self.sim = picSim(tmp_dir, 'tristan_v1.yml')
+            if len(self.sim) == 0:
+                self.sim.outdir = os.path.join(self.sim.outdir, 'output')
+
         self.oengus.open_sim(self.sim)#os.path.join(os.path.dirname(__file__),'../output')))
 
         self.oengus.create_graphs()

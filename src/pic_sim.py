@@ -221,22 +221,28 @@ class picSim(object):
                     if lookup['attribute'] == 'x':
                         ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[2])
                         ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans /= self.get_data(n, data_class='param', attribute = 'c_omp')
+                        ans = ans / self.get_data(n, data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
                     elif lookup['attribute'] == 'y':
                         ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[1])
                         ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans /= self.get_data(n, data_class='param', attribute = 'c_omp')
+                        ans = ans / self.get_data(n, data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
                     elif lookup['attribute'] == 'z':
                         ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[0])
                         ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans /= self.get_data(n,data_class='param', attribute = 'c_omp')
+                        ans = ans / self.get_data(n,data_class='param', attribute = 'c_omp')
                         self._data_dictionary[hash_key] = ans
 
                 return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict['axes'][lookup['attribute']]['axis_label']}
             elif lookup['data_class'] == 'param':
-                return 1.0
+                if self._cfgDict['param'][lookup['attribute']]['h5attr'] is not None:
+                    fpath = self._cfgDict['param'][lookup['attribute']]['h5file']
+                    fpath = os.path.join(self.outdir, fpath) + f_end
+                    return h5_getter(fpath,
+                        self._cfgDict['param'][lookup['attribute']]['h5attr'])[0]
+                else:
+                    return 1.0
             else:
                 return response_dir
         except KeyError:

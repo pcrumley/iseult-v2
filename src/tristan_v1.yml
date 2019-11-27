@@ -1,8 +1,8 @@
 h5_files_list:
   - prtl.tot.*
   - flds.tot.*
-  - domain.*
-  - spec.tot.*
+  - param.*
+  - spect.*
 axes:
   x:
     axis_label: $x$
@@ -18,32 +18,32 @@ axes:
     h5file: null
 param:
   c_omp:
-    h5attr: null
-    h5file: null
+    h5attr: c_omp
+    h5file: param.
   istep:
-    h5attr: null
-    h5file: null
+    h5attr: istep
+    h5file: param.
   me:
-    h5attr: null
-    h5file: null
+    h5attr: me
+    h5file: param.
   mi:
-    h5attr: null
-    h5file: null
+    h5attr: mi
+    h5file: param.
   ppc0:
-    h5attr: null
-    h5file: null
+    h5attr: ppc0
+    h5file: param.
   qi:
-    h5attr: null
-    h5file: null
+    h5attr: qi
+    h5file: param.
   sigma:
     h5attr: null
     h5file: null
   stride:
-    h5attr: null
-    h5file: null
+    h5attr: stride
+    h5file: param.
   time:
-    h5attr: null
-    h5file: null
+    h5attr: time
+    h5file: param.
   btheta:
     h5attr: null
     h5file: null
@@ -88,49 +88,49 @@ prtls:
     index:
       1d_label: $\mathrm{ind}_i$
       axis_label: $\mathrm{ind}_i$
-      h5attr: ind1
+      h5attr: inde
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     proc:
       1d_label: $\mathrm{proc}_i$
       axis_label: $\mathrm{proc}_i$
-      h5attr: proc1
+      h5attr: proce
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     px:
       1d_label: $\gamma_e\beta_{e,x}$
       axis_label: $\gamma_e\beta_{e,x}$
-      h5attr: u1
+      h5attr: ue
       h5file: prtl.tot.
       hist_cbar_label: $f_e (p)$
     py:
       1d_label: $\gamma_e\beta_{e,y}$
       axis_label: $\gamma_e\beta_{e,y}$
-      h5attr: v1
+      h5attr: ve
       h5file: prtl.tot.
       hist_cbar_label: $f_e (p)$
     pz:
       1d_label: $\gamma_e\beta_{e,z}$
       axis_label: $\gamma_e\beta_{e,z}$
-      h5attr: w1
+      h5attr: we
       h5file: prtl.tot.
       hist_cbar_label: $f_e (p)$
     x:
       1d_label: $x$
       axis_label: $x$
-      h5attr: x1
+      h5attr: xe
       h5file: prtl.tot.
       hist_cbar_label: $f_e (p)$
     y:
       1d_label: $y$
       axis_label: $y$
-      h5attr: y1
+      h5attr: ye
       h5file: prtl.tot.
       hist_cbar_label: $f_e (p)$
     z:
       1d_label: $z$
       axis_label: $z$
-      h5attr: z1
+      h5attr: ze
       h5file: prtl.tot.
       hist_cbar_label: $f_d (p)$
   ions:
@@ -148,49 +148,49 @@ prtls:
     index:
       1d_label: $\mathrm{ind}_i$
       axis_label: $\mathrm{ind}_i$
-      h5attr: ind2
+      h5attr: indi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     proc:
       1d_label: $\mathrm{proc}_i$
       axis_label: $\mathrm{proc}_i$
-      h5attr: proc2
+      h5attr: proci
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     px:
       1d_label: $\gamma_i\beta_{i,x}$
       axis_label: $\gamma_i\beta_{i,x}$
-      h5attr: u2
+      h5attr: ui
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     py:
       1d_label: $\gamma_i\beta_{i,y}$
       axis_label: $\gamma_i\beta_{i,y}$
-      h5attr: v2
+      h5attr: vi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     pz:
       1d_label: $\gamma_i\beta_{i,z}$
       axis_label: $\gamma_i\beta_{i,z}$
-      h5attr: w2
+      h5attr: wi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     x:
       1d_label: $x$
       axis_label: $x$
-      h5attr: x2
+      h5attr: xi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     y:
       1d_label: $y$
       axis_label: $y$
-      h5attr: y2
+      h5attr: yi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
     z:
       1d_label: $z$
       axis_label: $z$
-      h5attr: z2
+      h5attr: zi
       h5file: prtl.tot.
       hist_cbar_label: $f_i (p)$
 scalar_flds:
@@ -210,13 +210,13 @@ scalar_flds:
     1d_label: $n_e$
     axis_label: $n_e$
     cbar_label: $n_e$
-    h5attr: dens1
+    h5attr: dense
     h5file: flds.tot.
   ion_density:
     1d_label: $n_i$
     axis_label: $n_i$
     cbar_label: $n_i$
-    h5attr: dens2
+    h5attr: densi
     h5file: flds.tot.
   rho:
     1d_label: $\rho$
