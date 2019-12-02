@@ -56,9 +56,9 @@ class phasePlot:
         self.param_dict.update(param_dict)
         self.pos = pos
         self.parent = parent
-        self.chartType = 'PhasePlot'
+        self.chart_type = 'PhasePlot'
         self.figure = self.parent.figure
-        self.InterpolationMethods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
+        self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
@@ -302,82 +302,5 @@ class phasePlot:
                     self.axC.locator_params(axis='y', nbins=6)
                     self.axC.yaxis.set_label_position("right")
                     self.axC.set_ylabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
-    """
-    def calc_hist_2D(self, sim = None, n = None):
-
-
-        # Choose the particle type and px, py, or pz
-        if self.GetPlotParam('prtl_type') == 0: #protons
-            self.x_values = getattr(output,'xi')/self.c_omp
-                    self.weights = getattr(output,'che')
-                if self.GetPlotParam('mom_dim') == 0:
-                    self.y_values = getattr(output,'ue')
-                if self.GetPlotParam('mom_dim') == 1:
-                    self.y_values = getattr(output,'ve')
-                if self.GetPlotParam('mom_dim') == 2:
-                    self.y_values = getattr(output,'we')
-
-            pmin = 0.0 if len(self.y_values) == 0 else min(self.y_values)
-            self.pmax = 0.0 if len(self.y_values) == 0 else max(self.y_values)
-            self.pmax = self.pmax if (self.pmax != self.pmin) else self.pmin + 1
-
-            self.xmax = self.xmax if (self.xmax != self.xmin) else self.xmin + 1
-
-            if self.GetPlotParam('set_E_min') or self.GetPlotParam('set_E_max'):
-                # We need to calculate the total energy of each particle in
-                # units m_e c^2
-
-                # First load the data. We require all 3 dimensions of momentum
-                # to determine the energy in the downstream frame
-                if self.GetPlotParam('prtl_type') == 0:
-                    u = getattr(output,'ui')
-                    v = getattr(output,'vi')
-                    w = getattr(output,'wi')
-
-                if self.GetPlotParam('prtl_type') == 1: #electons
-                    self.x_values = getattr(output,'xe')/self.c_omp
-                    u = getattr(output,'ue')
-                    v = getattr(output,'ve')
-                    w = getattr(output,'we')
-
-                # Now calculate LF of the particles in downstream restframe
-                energy = np.sqrt(u**2+v**2+w**2+1)
-                # If they are electrons this already the energy in units m_e c^2.
-                # Otherwise...
-                if self.GetPlotParam('prtl_type')==0:
-                    energy *= getattr(output,'mi')/getattr(output,'me')
-
-                # Now find the particles that fall in our range
-                if self.GetPlotParam('set_E_min'):
-                    inRange = energy >= self.GetPlotParam('E_min')
-                    if self.GetPlotParam('set_E_max'):
-                        inRange *= energy <= self.GetPlotParam('E_max')
-                elif self.GetPlotParam('set_E_max'):
-                    inRange = energy <= self.GetPlotParam('E_max')
-                if self.GetPlotParam('weighted'):
-                    self.hist2d = Fast2DWeightedHist(self.y_values[inRange], self.x_values[inRange], self.weights[inRange], self.pmin,self.pmax, self.GetPlotParam('pbins'), self.xmin,self.xmax, self.GetPlotParam('xbins')), [self.pmin, self.pmax], [self.xmin, self.xmax]
-                else:
-                    self.hist2d = Fast2DHist(self.y_values[inRange], self.x_values[inRange], self.pmin,self.pmax, self.GetPlotParam('pbins'), self.xmin,self.xmax, self.GetPlotParam('xbins')), [self.pmin, self.pmax], [self.xmin, self.xmax]
-            else:
-                if self.GetPlotParam('weighted'):
-                    self.hist2d = Fast2DWeightedHist(self.y_values, self.x_values, self.weights, self.pmin,self.pmax, self.GetPlotParam('pbins'), self.xmin,self.xmax, self.GetPlotParam('xbins')), [self.pmin, self.pmax], [self.xmin, self.xmax]
-                else:
-                    self.hist2d = Fast2DHist(self.y_values, self.x_values, self.pmin,self.pmax, self.GetPlotParam('pbins'), self.xmin,self.xmax, self.GetPlotParam('xbins')), [self.pmin, self.pmax], [self.xmin, self.xmax]
-
-            try:
-                if self.GetPlotParam('masked'):
-                    zval = ma.masked_array(self.hist2d[0])
-                    zval[zval == 0] = ma.masked
-                    zval *= float(zval.max())**(-1)
-                    tmplist = [zval[~zval.mask].min(), zval.max()]
-                else:
-                    zval = np.copy(self.hist2d[0])
-                    zval[zval==0] = 0.5
-                    zval *= float(zval.max())**(-1)
-                    tmplist = [zval.min(), zval.max()]
-            except ValueError:
-                tmplist = [0.1,1]
-            self.hist2d = zval, self.hist2d[1], self.hist2d[2], tmplist
-    """
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]

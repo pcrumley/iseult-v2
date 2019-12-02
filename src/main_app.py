@@ -15,6 +15,7 @@ from mpl_param import Param
 import numpy as np
 from scalar_flds_settings import ScalarFieldsSettings
 from vector_flds_settings import VectorFieldsSettings
+from phase_settings import phaseSettings
 from playback_bar import playbackBar
 
 def destroy(e):
@@ -168,6 +169,8 @@ class MainApp(Tk.Tk):
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self,(i,j))
             elif self.oengus.SubPlotList[i][j].chart_type == 'VectorFlds':
                 self.popups_dict[f'{i,j}'] = VectorFieldsSettings(self,(i,j))
+            elif self.oengus.SubPlotList[i][j].chart_type == 'PhasePlot':
+                self.popups_dict[f'{i,j}'] = phaseSettings(self,(i,j))
 
     def OpenSaveDialog(self):
         SaveDialog(self)
