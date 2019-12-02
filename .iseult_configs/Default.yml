@@ -20,7 +20,7 @@ Chart0_0:
   spatial_x: true
   spatial_y: 0
   stretch_colors: false
-  twoD: 1
+  twoD: 0
   v_max: 10
   v_min: 0
 Chart1_0:

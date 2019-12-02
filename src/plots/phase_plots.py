@@ -93,47 +93,47 @@ class PhasePanel:
         self.IntRegionLines = []
         # Figure out the color and ylabel
         # Choose the particle type and px, py, or pz
-        self.UpdateLabelsandColors()
-
-        self.xmin = self.hist2d[2][0]
-        self.xmax = self.hist2d[2][-1]
-
-        self.ymin = self.hist2d[1][0]
-        self.ymax = self.hist2d[1][-1]
 
 
-        if self.GetPlotParam('masked'):
-            self.tick_color = 'k'
-        else:
-            self.tick_color = 'white'
+        self.xmin = 0
+        self.xmax = 1
+
+        self.ymin = 0
+        self.ymax = 1
 
 
-        self.clim = list(self.hist2d[3])
+        #if self.GetPlotParam('masked'):
+        #    self.tick_color = 'k'
+        #else:
+        #    self.tick_color = 'white'
 
-        if self.GetPlotParam('set_v_min'):
-            self.clim[0] = 10**self.GetPlotParam('v_min')
-        if self.GetPlotParam('set_v_max'):
-            self.clim[1] = 10**self.GetPlotParam('v_max')
+
+        self.clim = [0,1]
+
+        #if self.GetPlotParam('set_v_min'):
+        #    self.clim[0] = 10**self.GetPlotParam('v_min')
+        #if self.GetPlotParam('set_v_max'):
+        #    self.clim[1] = 10**self.GetPlotParam('v_max')
 
 
         self.gs = gridspec.GridSpecFromSubplotSpec(100,100, subplot_spec = self.parent.gs0[self.pos])#, bottom=0.2,left=0.1,right=0.95, top = 0.95)
 
         self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-        self.cax = self.axes.imshow(self.hist2d[0],
+        self.image = self.axes.imshow(self.hist2d[0],
                                     cmap = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
                                     norm = self.norm(), origin = 'lower',
                                     aspect = 'auto',
                                     interpolation=self.GetPlotParam('interpolation'))
 
-        self.cax.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
+        self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
 
-        self.cax.set_clim(self.clim)
+        self.image.set_clim(self.clim)
 
-        self.shock_line = self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-                   PathEffects.Normal()])
-        if not self.GetPlotParam('show_shock'):
-            self.shock_line.set_visible(False)
+        #self.shock_line = self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
+        #           PathEffects.Normal()])
+        #if not self.GetPlotParam('show_shock'):
+        #    self.shock_line.set_visible(False)
 
 
 
@@ -189,7 +189,7 @@ class PhasePanel:
         self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=self.tick_color)
         self.axes.set_xlabel(self.x_label, labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
         self.axes.set_ylabel(self.y_label, labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-
+        self.update_labels_and_colors()
         self.refresh()
 
     def refresh(self):
@@ -225,7 +225,7 @@ class PhasePanel:
         ymax = ymax if ymax > ymin else ymin + 1
 
         if self.param_dict['weighted']:
-            hist2d = Fast2DWeightedHist(sy_values['data'], x_values['data'], weights['data'], ymin, ymax, self.param_dict['pbins'], xmin, xmax, self.param_dict['xbins'])
+            hist2d = Fast2DWeightedHist(y_values['data'], x_values['data'], weights['data'], ymin, ymax, self.param_dict['pbins'], xmin, xmax, self.param_dict['xbins'])
         else:
             hist2d = Fast2DHist(y_values['data'], x_values['data'], ymin, ymax, self.param_dict['pbins'], xmin, xmax, self.param_dict['xbins'])
         # Main goal, only change what is showing..
