@@ -6,12 +6,12 @@ import numpy as np
 import numpy.ma as ma
 import new_cmaps
 from new_cnorms import PowerNormWithNeg
-from Numba2DHist import Fast2DHist, Fast2DWeightedHist
+from prtl_hists import Fast2DHist, Fast2DWeightedHist
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 
-class PhasePanel:
+class phasePlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
     plot_param_dict = {'twoD' : 1,
@@ -55,6 +55,7 @@ class PhasePanel:
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
         self.pos = pos
+        self.parent = parent
         self.chartType = 'PhasePlot'
         self.figure = self.parent.figure
         self.InterpolationMethods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
@@ -71,46 +72,27 @@ class PhasePanel:
 
 
     def update_labels_and_colors(self):
-        # set the colors
-        if self.GetPlotParam('prtl_type') == 0: #protons
+        if self.param_dict['prtl_type'] == 'ions': #protons
             self.energy_color = self.parent.ion_color
         else: #electons
             self.energy_color = self.parent.electron_color
 
-        for line in self.IntRegionLines:
-            line.set_color(self.energy_color)
+        #for line in self.IntRegionLines:
+        #    line.set_color(self.energy_color)
         #set the xlabels
-        if self.parent.MainParamDict['DoLorentzBoost'] and np.abs(self.parent.MainParamDict['GammaBoost'])>1E-8:
-            self.x_label = r'$x\prime\ [c/\omega_{\rm pe}]$'
-        else:
-            self.x_label = r'$x\ [c/\omega_{\rm pe}]$'
-        #set the ylabel
-        self.y_label  = self.ylabel_list[self.parent.MainParamDict['DoLorentzBoost']][self.GetPlotParam('prtl_type')][self.GetPlotParam('mom_dim')]
+        #if self.parent.MainParamDict['DoLorentzBoost'] and np.abs(self.parent.MainParamDict['GammaBoost'])>1E-8:
+        #    self.x_label = r'$x\prime\ [c/\omega_{\rm pe}]$'
 
-    def draw(self):
-        # In order to speed up the plotting, we only recalculate everything
-        # if necessary.
+        self.axes.set_xlabel(self.x_values['axis_label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+        self.axes.set_ylabel(self.y_values['axis_label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+    def draw(self, sim = None, n = None):
+        # set the colors):
         self.IntRegionLines = []
         # Figure out the color and ylabel
         # Choose the particle type and px, py, or pz
 
+        tick_color = 'black'
 
-        self.xmin = 0
-        self.xmax = 1
-
-        self.ymin = 0
-        self.ymax = 1
-
-
-        #if self.GetPlotParam('masked'):
-        #    self.tick_color = 'k'
-        #else:
-        #    self.tick_color = 'white'
-
-
-        self.clim = [0,1]
-
-        #if self.GetPlotParam('set_v_min'):
         #    self.clim[0] = 10**self.GetPlotParam('v_min')
         #if self.GetPlotParam('set_v_max'):
         #    self.clim[1] = 10**self.GetPlotParam('v_max')
@@ -120,15 +102,15 @@ class PhasePanel:
 
         self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-        self.image = self.axes.imshow(self.hist2d[0],
+        self.image = self.axes.imshow([[0,1],[0,1]],
                                     cmap = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
                                     norm = self.norm(), origin = 'lower',
                                     aspect = 'auto',
-                                    interpolation=self.GetPlotParam('interpolation'))
+                                    interpolation=self.param_dict['interpolation'])
 
-        self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
+        self.image.set_extent([0, 1, 0, 1])
 
-        self.image.set_clim(self.clim)
+        self.image.set_clim([0, 1])
 
         #self.shock_line = self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
         #           PathEffects.Normal()])
@@ -183,16 +165,25 @@ class PhasePanel:
             self.axC.set_visible(False)
 
         if int(matplotlib.__version__[0]) < 2:
-            self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
+            self.axes.set_axis_bgcolor(self.param_dict['face_color'])
         else:
-            self.axes.set_facecolor(self.GetPlotParam('face_color'))
-        self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=self.tick_color)
-        self.axes.set_xlabel(self.x_label, labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-        self.axes.set_ylabel(self.y_label, labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_facecolor(self.param_dict['face_color'])
+        self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
+        if sim is None:
+            sim = self.parent.sim
+        if n is None:
+            n = self.parent.cur_time
+        # Generate the X-axis values
+        self.x_values = sim.get_data(n, data_class = 'prtls',
+                prtl_type = self.param_dict['prtl_type'],
+                attribute = self.param_dict['x_val'])
+        self.y_values = sim.get_data(n, data_class = 'prtls',
+                prtl_type = self.param_dict['prtl_type'],
+                attribute = self.param_dict['y_val'])
         self.update_labels_and_colors()
         self.refresh()
 
-    def refresh(self):
+    def refresh(self, sim = None, n = None):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown. If
         hasn't changed, or isn't viewed, don't touch it. The difference between this and last
@@ -206,62 +197,68 @@ class PhasePanel:
         # Generate the X-axis values
         c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
 
-        x_values = sim.get_data(n, data_class = 'prtls',
+        self.x_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
                 attribute = self.param_dict['x_val'])
-        y_values = sim.get_data(n, data_class = 'prtls',
+        self.y_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
                 attribute = self.param_dict['y_val'])
         if self.param_dict['weighted']:
-            weights = sim.get_data(n, data_class = 'prtls',
+            self.weights = sim.get_data(n, data_class = 'prtls',
                     prtl_type = self.param_dict['prtl_type'],
                     attribute = self.param_dict['weights'])
-        xmin = np.min(x_values['data'])
-        xmax = np.max(x_values['data'])
+        xmin = np.min(self.x_values['data'])
+        xmax = np.max(self.x_values['data'])
         xmax = xmax if xmax > xmin else xmin + 1
 
-        ymin = np.min(y_values['data'])
-        ymax = np.max(y_values['data'])
+        ymin = np.min(self.y_values['data'])
+        ymax = np.max(self.y_values['data'])
         ymax = ymax if ymax > ymin else ymin + 1
 
         if self.param_dict['weighted']:
-            hist2d = Fast2DWeightedHist(y_values['data'], x_values['data'], weights['data'], ymin, ymax, self.param_dict['pbins'], xmin, xmax, self.param_dict['xbins'])
+            hist2d = Fast2DWeightedHist(self.y_values['data'], self.x_values['data'], self.weights['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
         else:
-            hist2d = Fast2DHist(y_values['data'], x_values['data'], ymin, ymax, self.param_dict['pbins'], xmin, xmax, self.param_dict['xbins'])
+            hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
         # Main goal, only change what is showing..
-        self.xmin = self.hist2d[2][0]
-        self.xmax = self.hist2d[2][-1]
-        self.ymin = self.hist2d[1][0]
-        self.ymax = self.hist2d[1][-1]
-        self.clim = list(self.hist2d[3])
+        #if self.GetPlotParam('masked'):
+        #                zval = ma.masked_array(self.hist2d[0])
+        #                zval[zval == 0] = ma.masked
+        #                zval *= float(zval.max())**(-1)
+        #                tmplist = [zval[~zval.mask].min(), zval.max()]
+        #            else:
+        #                zval = np.copy(self.hist2d[0])
+        #                zval[zval==0] = 0.5
+        #                zval *= float(zval.max())**(-1)
+        #                tmplist = [zval.min(), zval.max()]
+        #self.clim = [np.min(hist2d),  np.max(hist2d)]
+        self.clim = [1,  1000]
 
-        self.cax.set_data(self.hist2d[0])
+        # set the colors
+        self.image.set_data(hist2d)
 
-        self.cax.set_extent([self.xmin,self.xmax, self.ymin, self.ymax])
+        self.image.set_extent([xmin, xmax, ymin, ymax])
 
 
         if self.GetPlotParam('set_v_min'):
-            self.clim[0] =  10**self.GetPlotParam('v_min')
+            self.clim[0] =  10**self.param_dict['v_min']
         if self.GetPlotParam('set_v_max'):
-            self.clim[1] =  10**self.GetPlotParam('v_max')
+            self.clim[1] =  10**self.param_dict['v_max']
 
-        self.cax.set_clim(self.clim)
-        if self.GetPlotParam('show_cbar'):
+        self.image.set_clim(self.clim)
+        if self.param_dict['show_cbar']:
             self.CbarTickFormatter()
 
 
-        if self.GetPlotParam('show_shock'):
+        if self.param_dict['show_shock']:
             self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
 
-        self.UpdateLabelsandColors()
-        self.axes.set_xlabel(self.x_label, labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-        self.axes.set_ylabel(self.y_label, labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
-        if self.GetPlotParam('set_p_min'):
-            self.ymin = self.GetPlotParam('p_min')
-        if self.GetPlotParam('set_p_max'):
-            self.ymax = self.GetPlotParam('p_max')
-        self.axes.set_ylim(self.ymin, self.ymax)
+
+        if self.param_dict['set_p_min']:
+            ymin = self.param_dict['p_min']
+        if self.param_dict['set_p_max']:
+            ymax = self.param_dict['p_max']
+        self.axes.set_ylim(ymin, ymax)
 
         if self.parent.MainParamDict['SetxLim'] and self.parent.MainParamDict['LinkSpatial'] == 1:
             if self.parent.MainParamDict['xLimsRelative']:
@@ -271,53 +268,41 @@ class PhasePanel:
                 self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
 
         else:
-            self.axes.set_xlim(self.xmin,self.xmax)
+            self.axes.set_xlim(xmin, xmax)
 
     def CbarTickFormatter(self):
         ''' A helper function that sets the cbar ticks & labels. This used to be
         easier, but because I am no longer using the colorbar class i have to do
         stuff manually.'''
-        clim = np.copy(self.cax.get_clim())
+        clim = np.copy(self.image.get_clim())
         if self.GetPlotParam('show_cbar'):
             if self.GetPlotParam('cnorm_type') == "Log":
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_extent([np.log10(clim[0]),np.log10(clim[1]),0,1])
                     self.axC.set_xlim(np.log10(clim[0]),np.log10(clim[1]))
                     self.axC.xaxis.set_label_position("top")
-                    if self.GetPlotParam('prtl_type') ==0:
-                        self.axC.set_xlabel(r'$\log{\ \ f_i(p)}$', size = self.parent.MainParamDict['AxLabelSize'])#, labelpad =15, rotation = -90)
-                    else:
-                        self.axC.set_xlabel(r'$\log{\ \ f_e(p)}$', size = self.parent.MainParamDict['AxLabelSize'])#, size = 12,labelpad =15, rotation = -90)
+                    self.axC.set_xlabel('$\log\ $' + self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], size = self.parent.MainParamDict['AxLabelSize'])
 
                 else:
                     self.cbar.set_extent([0,1,np.log10(clim[0]),np.log10(clim[1])])
                     self.axC.set_ylim(np.log10(clim[0]),np.log10(clim[1]))
                     self.axC.locator_params(axis='y',nbins=6)
                     self.axC.yaxis.set_label_position("right")
-                    if self.GetPlotParam('prtl_type') ==0:
-                        self.axC.set_ylabel(r'$\log{\ \ f_i(p)}$', labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.axC.set_ylabel(r'$\log{\ \ f_e(p)}$', labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
+                    self.axC.set_ylabel('$\log\ $' +  self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
 
             else:# self.GetPlotParam('cnorm_type') == "Linear":
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_extent([clim[0], clim[1], 0, 1])
                     self.axC.set_xlim(clim[0], clim[1])
-                    if self.GetPlotParam('prtl_type') ==0:
-                        self.axC.set_xlabel(r'$f_i(p)$', size = self.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.axC.set_xlabel(r'$f_e(p)$', size = self.parent.MainParamDict['AxLabelSize'])
+                    self.axC.set_xlabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], size = self.parent.MainParamDict['AxLabelSize'])
 
                 else:
                     self.cbar.set_extent([0, 1, clim[0], clim[1]])
                     self.axC.set_ylim(clim[0], clim[1])
                     self.axC.locator_params(axis='y', nbins=6)
                     self.axC.yaxis.set_label_position("right")
-                    if self.GetPlotParam('prtl_type') ==0:
-                        self.axC.set_ylabel(r'$f_i(p)$', labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
-                    else:
-                        self.axC.set_ylabel(r'$f_e(p)$', labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
-
+                    self.axC.set_ylabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
+    """
     def calc_hist_2D(self, sim = None, n = None):
 
 
@@ -393,6 +378,6 @@ class PhasePanel:
             except ValueError:
                 tmplist = [0.1,1]
             self.hist2d = zval, self.hist2d[1], self.hist2d[2], tmplist
-
+    """
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]

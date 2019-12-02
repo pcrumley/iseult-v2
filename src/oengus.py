@@ -12,6 +12,7 @@ import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 from scalar_flds_plot import scalarFldsPlot
 from vector_flds_plot import vectorFldsPlot
+from phase_plot import phasePlot
 
 
 from PIL import Image
@@ -72,8 +73,8 @@ class Oengus():
         self.showingTotEnergy = False
         self.plot_types_dict = {
             'ScalarFlds': scalarFldsPlot,
-            'VectorFlds': vectorFldsPlot
-            #'EnergyPlot': EnergyPanel,
+            'VectorFlds': vectorFldsPlot,
+            'PhasePlot': phasePlot
             #'FieldsPlot': FieldsPanel,
             #'DensityPlot': DensPanel,
             #'SpectraPlot': SpectralPanel,
