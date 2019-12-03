@@ -5,10 +5,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
 def h5_getter(filepath, attribute, prtl_stride = None):
     with h5py.File(filepath, 'r') as f:
-        if prtl_stride is not None:
-            return f[attribute][::prtl_stride]
-        else:
-            return f[attribute][:]
+        #if prtl_stride is not None:
+        #    return f[attribute][::prtl_stride]
+        #else:
+        return f[attribute][:]
 
 class picSim(object):
     def __init__(self, dirpath=None, cfg_file ='tristan_v2.yml'):
@@ -16,6 +16,7 @@ class picSim(object):
         cfg_file = os.path.join(os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg_file))
         with open(cfg_file, 'r') as f:
             self._cfgDict=yaml.safe_load(f)
+        self.sim_type = self._cfgDict['name']
         self._xtra_stride = 1
         self._fnum = self.get_f_numbers()
         self._data_dictionary = {}
@@ -113,8 +114,7 @@ class picSim(object):
                                 fpath = self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5file']
                                 fpath = os.path.join(self.outdir, fpath) + f_end
                                 self._data_dictionary[hash_key] = h5_getter(fpath,
-                                    self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'],
-                                    prtl_stride = self.xtra_stride)
+                                    self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'])
                             elif lookup['attribute'] == 'gamma':
                                 self._data_dictionary[hash_key] = np.sqrt(
                                     self.get_data(n,
@@ -131,7 +131,16 @@ class picSim(object):
                                 self._data_dictionary[hash_key] = self.get_data(n,
                                                 data_class = 'prtls', prtl_type = lookup['prtl_type'],
                                                 attribute = 'gamma')['data'] - 1
-                        response_dir['data'] = self._data_dictionary[hash_key]
+                        if self.xtra_stride > 1:
+                            fpath = self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5file']
+                            fpath = os.path.join(self.outdir, fpath) + f_end
+                            indices = h5_getter(fpath, self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5attr'])
+                            if self.sim_type == 'Tristan_MP':
+                                indices = indices//2
+
+                            response_dir['data'] = self._data_dictionary[hash_key][np.mod(indices,self.xtra_stride) == 0]
+                        else:
+                            response_dir['data'] = self._data_dictionary[hash_key]
                         response_dir['axis_label'] = self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['axis_label']
                         response_dir['1d_label'] =  self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['1d_label']
                         response_dir['hist_cbar_label'] =  self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['hist_cbar_label']
