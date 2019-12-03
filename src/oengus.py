@@ -22,10 +22,12 @@ class Oengus():
     def __init__(self, preset_view='Default', interactive = True, tkApp = None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
+        self.sims = [ [], [], [], [] ]
+        self.cur_times = [-1, -1, -1, -1]
         self.dirname = ''
         #self.tkApp = tkApp
         self.interactive = interactive
-        self.cur_time = -1
+
         #self.dirname = sim.dir
         try:
             with open(os.path.join(self.IseultDir, '.iseult_configs', preset_view.strip().replace(' ', '_') +'.yml')) as f:
@@ -113,9 +115,9 @@ class Oengus():
 
 
         #self.create_graphs()
-    def open_sim(self, sim):
-        self.sim = sim
-        self.sim.xtra_stride = self.MainParamDict['PrtlStride']
+    def open_sim(self, sim, num = 0):
+        self.sims[num] = sim
+        self.sims[num].xtra_stride = self.MainParamDict['PrtlStride']
     def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
             It also sets all of the plots parameters.'''
@@ -248,34 +250,34 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()#self.sim, -1)
-        if self.showingCPUs:
-            if 'my' in self.sim._h5Key2FileDict.keys():
-                cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
-            else:
-                tmpSize = ((self.MaxYInd+1)*o.istep)//(o.my0-5)
-                cpu_y_locs = np.cumsum(np.ones(tmpSize)*(o.my0)-5)/o.c_omp
-            if 'mx' in self.sim._h5Key2FileDict.keys():
-                cpu_x_locs = np.cumsum(o.mx-5)/o.c_omp
-            else:
-                tmpSize = ((self.MaxXInd+1)*o.istep)//(o.mx0-5)
-                cpu_x_locs = np.cumsum(np.ones(tmpSize)*(o.mx0)-5)/o.c_omp
+        #if self.showingCPUs:
+        #    if 'my' in self.sim._h5Key2FileDict.keys():
+        #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
+        #    else:
+        #        tmpSize = ((self.MaxYInd+1)*o.istep)//(o.my0-5)
+        #        cpu_y_locs = np.cumsum(np.ones(tmpSize)*(o.my0)-5)/o.c_omp
+        #    if 'mx' in self.sim._h5Key2FileDict.keys():
+        #        cpu_x_locs = np.cumsum(o.mx-5)/o.c_omp
+        #    else:
+        #        tmpSize = ((self.MaxXInd+1)*o.istep)//(o.mx0-5)
+        #        cpu_x_locs = np.cumsum(np.ones(tmpSize)*(o.mx0)-5)/o.c_omp
 
 
-            for i in range(self.MainParamDict['NumOfRows']):
-                for j in range(self.MainParamDict['NumOfCols']):
-                    try:
-                        if self.SubPlotList[i][j].param_dict['show_cpu_domains']:
-                            for k in range(len(self.parent.cpu_x_locs)):
-                                self.SubPlotList[i][j].axes.axvline(cpu_x_locs[k], linewidth = 1, linestyle = ':',color = 'w')
-                            for k in range(len(self.parent.cpu_y_locs)):
-                                self.SubPlotList[i][j].axes.axvline(cpu_y_locs[k], linewidth = 1, linestyle = ':',color = 'w')
+        #    for i in range(self.MainParamDict['NumOfRows']):
+        #        for j in range(self.MainParamDict['NumOfCols']):
+        #            try:
+        #                if self.SubPlotList[i][j].param_dict['show_cpu_domains']:
+        #                    for k in range(len(self.parent.cpu_x_locs)):
+        #                        self.SubPlotList[i][j].axes.axvline(cpu_x_locs[k], linewidth = 1, linestyle = ':',color = 'w')
+        #                    for k in range(len(self.parent.cpu_y_locs)):
+        #                        self.SubPlotList[i][j].axes.axvline(cpu_y_locs[k], linewidth = 1, linestyle = ':',color = 'w')
 
-                    except KeyError:
-                        pass
+        #            except KeyError:
+        #                pass
 
         if self.MainParamDict['ShowTitle']:
             if len(self.sim_name) == 0:
-                self.figure.suptitle(f'{os.path.abspath(self.sim.outdir)}/*.{self.sim.file_list[self.cur_time]}', size = 15)
+                self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)
                 #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
             else:
                 self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
@@ -370,7 +372,7 @@ class Oengus():
         #                pass
         if self.MainParamDict['ShowTitle']:
             if len(self.sim_name) == 0:
-                self.figure.suptitle(f'{os.path.abspath(self.sim.outdir)}/*.{self.sim.file_list[self.cur_time]}', size = 15)
+                self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)
                 #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
             else:
                 self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)

@@ -14,6 +14,7 @@ class scalarFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
     plot_param_dict = {'twoD': 0,
+                       'sim_num': 0,
                        'flds_type': 'B_total',
                        'show_cbar': True,
                        'set_color_limits': False,
@@ -68,9 +69,9 @@ class scalarFldsPlot:
 
     def draw(self, sim = None, n = None):
         if sim is None:
-            sim = self.parent.sim
+            sim = self.parent.sims[self.param_dict['sim_num']]
         if n is None:
-            n = self.parent.cur_time
+            n = self.parent.cur_times[self.param_dict['sim_num']]
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -361,9 +362,9 @@ class scalarFldsPlot:
         time, is that we won't actually do any drawing in the plot. The plot
         will be redrawn after all subplots data is changed. '''
         if sim is None:
-            sim = self.parent.sim
+            sim = self.parent.sims[self.param_dict['sim_num']]
         if n is None:
-            n = self.parent.cur_time
+            n = self.parent.cur_times[self.param_dict['sim_num']]
         self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')

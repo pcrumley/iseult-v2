@@ -14,7 +14,8 @@ import matplotlib.patheffects as PathEffects
 class phasePlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
-    plot_param_dict = {'twoD' : 1,
+    plot_param_dict = {'twoD': 1,
+                       'sim_num': 0,
                        'mom_dim': 0,
                        'masked': 1,
                        'cnorm_type': 'Log', #Colormap normalization. Opts are Log or Linear
@@ -170,9 +171,9 @@ class phasePlot:
             self.axes.set_facecolor(self.param_dict['face_color'])
         self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
         if sim is None:
-            sim = self.parent.sim
+            sim = self.parent.sims[self.param_dict['sim_num']]
         if n is None:
-            n = self.parent.cur_time
+            n = self.parent.cur_times[self.param_dict['sim_num']]
         # Generate the X-axis values
         self.x_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
@@ -191,9 +192,9 @@ class phasePlot:
         will be redrawn after all subplots data is changed. '''
 
         if sim is None:
-            sim = self.parent.sim
+            sim = self.parent.sims[self.param_dict['sim_num']]
         if n is None:
-            n = self.parent.cur_time
+            n = self.parent.cur_times[self.param_dict['sim_num']]
         # Generate the X-axis values
         c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
 
@@ -226,6 +227,7 @@ class phasePlot:
             else:
                 hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
 
+            #hist2d *= len(self.x_values['data'])**(-1)
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
 

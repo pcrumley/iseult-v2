@@ -225,7 +225,7 @@ class MainApp(Tk.Tk):
     def set_knob(self, value):
         self.sim.refresh_directory()
         self.time_step.set_max(len(self.sim))
-        self.oengus.cur_time = value - 1
+        self.oengus.cur_times[0] = value - 1
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
 
