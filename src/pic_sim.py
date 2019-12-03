@@ -1,5 +1,7 @@
 import re, sys, os, h5py, yaml
 import numpy as np
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+
 
 def h5_getter(filepath, attribute, prtl_stride = None):
     with h5py.File(filepath, 'r') as f:
@@ -9,9 +11,9 @@ def h5_getter(filepath, attribute, prtl_stride = None):
             return f[attribute][:]
 
 class picSim(object):
-    def __init__(self, dirpath=None, cfg_file = 'tristan_v2.yml'):
+    def __init__(self, dirpath=None, cfg_file ='tristan_v2.yml'):
         self._outdir = dirpath
-        cfg_file = os.path.join(os.path.dirname(__file__), cfg_file)
+        cfg_file = os.path.join(os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg_file))
         with open(cfg_file, 'r') as f:
             self._cfgDict=yaml.safe_load(f)
         self._xtra_stride = 1
