@@ -33,14 +33,14 @@ class phasePlot:
                        'v_max' : 0,
                        'set_v_min': False,
                        'set_v_max': False,
-                       'p_min': -2.0,
-                       'p_max' : 2,
+                       'y_min': -2.0,
+                       'y_max' : 2,
                        'set_E_min' : False,
                        'E_min': 1.0,
                        'set_E_max': False,
                        'E_max': 200.0,
-                       'set_p_min': False,
-                       'set_p_max': False,
+                       'set_y_min': False,
+                       'set_y_max': False,
                        'spatial_x': True,
                        'spatial_y': False,
                        'interpolation': 'nearest',
@@ -102,7 +102,7 @@ class phasePlot:
 
         self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-        self.image = self.axes.imshow([[0,1],[0,1]],
+        self.image = self.axes.imshow([[np.nan,np.nan],[np.nan,np.nan]],
                                     cmap = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
                                     norm = self.norm(), origin = 'lower',
                                     aspect = 'auto',
@@ -110,7 +110,7 @@ class phasePlot:
 
         self.image.set_extent([0, 1, 0, 1])
 
-        self.image.set_clim([0, 1])
+        self.image.set_clim([1, 10])
 
         #self.shock_line = self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
         #           PathEffects.Normal()])
@@ -203,72 +203,66 @@ class phasePlot:
         self.y_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
                 attribute = self.param_dict['y_val'])
+        is_good = len(self.y_values['data']) == len(self.x_values['data'])
+        is_good &= len(self.y_values['data']) > 0
+
         if self.param_dict['weighted']:
             self.weights = sim.get_data(n, data_class = 'prtls',
                     prtl_type = self.param_dict['prtl_type'],
                     attribute = self.param_dict['weights'])
-        xmin = np.min(self.x_values['data'])
-        xmax = np.max(self.x_values['data'])
-        xmax = xmax if xmax > xmin else xmin + 1
+            is_good &= len(self.weights['data']) != 0
+            is_good &= len(self.weights['data']) == len(self.y_values['data'])
 
-        ymin = np.min(self.y_values['data'])
-        ymax = np.max(self.y_values['data'])
-        ymax = ymax if ymax > ymin else ymin + 1
+        if is_good:
+            xmin = np.min(self.x_values['data'])
+            xmax = np.max(self.x_values['data'])
+            xmax = xmax if xmax > xmin else xmin + 1
 
-        if self.param_dict['weighted']:
-            hist2d = Fast2DWeightedHist(self.y_values['data'], self.x_values['data'], self.weights['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
-        else:
-            hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
-        # Main goal, only change what is showing..
-        #if self.GetPlotParam('masked'):
-        #                zval = ma.masked_array(self.hist2d[0])
-        #                zval[zval == 0] = ma.masked
-        #                zval *= float(zval.max())**(-1)
-        #                tmplist = [zval[~zval.mask].min(), zval.max()]
-        #            else:
-        #                zval = np.copy(self.hist2d[0])
-        #                zval[zval==0] = 0.5
-        #                zval *= float(zval.max())**(-1)
-        #                tmplist = [zval.min(), zval.max()]
-        #self.clim = [np.min(hist2d),  np.max(hist2d)]
-        self.clim = [1,  1000]
-
-        # set the colors
-        self.image.set_data(hist2d)
-
-        self.image.set_extent([xmin, xmax, ymin, ymax])
-
-
-        if self.GetPlotParam('set_v_min'):
-            self.clim[0] =  10**self.param_dict['v_min']
-        if self.GetPlotParam('set_v_max'):
-            self.clim[1] =  10**self.param_dict['v_max']
-
-        self.image.set_clim(self.clim)
-        if self.param_dict['show_cbar']:
-            self.CbarTickFormatter()
-
-
-        if self.param_dict['show_shock']:
-            self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-
-
-
-        if self.param_dict['set_p_min']:
-            ymin = self.param_dict['p_min']
-        if self.param_dict['set_p_max']:
-            ymax = self.param_dict['p_max']
-        self.axes.set_ylim(ymin, ymax)
-
-        if self.parent.MainParamDict['SetxLim'] and self.parent.MainParamDict['LinkSpatial'] == 1:
-            if self.parent.MainParamDict['xLimsRelative']:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                   self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+            ymin = np.min(self.y_values['data'])
+            ymax = np.max(self.y_values['data'])
+            ymax = ymax if ymax > ymin else ymin + 1
+            if self.param_dict['weighted']:
+                hist2d = Fast2DWeightedHist(self.y_values['data'], self.x_values['data'], self.weights['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
             else:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+                hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
+            self.clim = [1,  1000]
 
-        else:
+            # set the colors
+            self.image.set_data(hist2d)
+
+            self.image.set_extent([xmin, xmax, ymin, ymax])
+
+
+            if self.GetPlotParam('set_v_min'):
+                self.clim[0] =  10**self.param_dict['v_min']
+            if self.GetPlotParam('set_v_max'):
+                self.clim[1] =  10**self.param_dict['v_max']
+
+            self.image.set_clim(self.clim)
+            if self.param_dict['show_cbar']:
+                self.CbarTickFormatter()
+
+
+            if self.param_dict['show_shock']:
+                self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+
+
+
+            if self.param_dict['set_y_min']:
+                ymin = self.param_dict['y_min']
+            if self.param_dict['set_y_max']:
+                ymax = self.param_dict['y_max']
+            self.axes.set_ylim(ymin, ymax)
             self.axes.set_xlim(xmin, xmax)
+            #if self.parent.MainParamDict['SetxLim'] and self.parent.MainParamDict['LinkSpatial'] == 1:
+            #    if self.parent.MainParamDict['xLimsRelative']:
+            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
+            #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
+            #else:
+            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
+
+            #else:
+
 
     def CbarTickFormatter(self):
         ''' A helper function that sets the cbar ticks & labels. This used to be
