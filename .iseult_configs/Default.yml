@@ -1,13 +1,79 @@
 Chart0_0:
-  chart_type: ScalarFlds
+  E_max: 200.0
+  E_min: 1.0
+  chart_type: PhasePlot
+  cnorm_type: Log
+  cpow_num: 0.6
+  face_color: gainsboro
+  interpolation: nearest
+  masked: 1
+  mom_dim: 0
+  prtl_type: ions
+  set_E_max: false
+  set_E_min: false
+  set_v_max: false
+  set_v_min: false
+  set_y_max: false
+  set_y_min: false
+  show_cbar: true
+  show_int_region: true
+  show_shock: false
+  spatial_x: true
+  spatial_y: false
+  twoD: 1
+  v_max: 0
+  v_min: -2.0
+  weighted: false
+  weights: null
+  x_bins: 200
+  x_val: x
+  y_bins: 200
+  y_max: 2
+  y_min: -2.0
+  y_val: px
+Chart0_1:
+  E_max: 200.0
+  E_min: 1.0
+  chart_type: PhasePlot
+  cnorm_type: Log
+  cpow_num: 0.6
+  face_color: gainsboro
+  interpolation: nearest
+  masked: 1
+  mom_dim: 0
+  prtl_type: electrons
+  set_E_max: false
+  set_E_min: false
+  set_v_max: false
+  set_v_min: false
+  set_y_max: false
+  set_y_min: false
+  show_cbar: true
+  show_int_region: true
+  show_shock: false
+  spatial_x: true
+  spatial_y: false
+  twoD: 1
+  v_max: 0
+  v_min: -2.0
+  weighted: false
+  weights: null
+  x_bins: 200
+  x_val: x
+  y_bins: 200
+  y_max: 2
+  y_min: -2.0
+  y_val: px
+Chart1_0:
   OutlineText: true
   UseDivCmap: false
+  chart_type: ScalarFlds
   cmap: None
   cnorm_type: Linear
   cpow_num: 0.6
-  flds_type: B_total
   div_midpoint: 0.0
   face_color: gainsboro
+  flds_type: density
   interpolation: none
   normalize_density: true
   set_color_limits: false
@@ -23,16 +89,44 @@ Chart0_0:
   twoD: 0
   v_max: 10
   v_min: 0
-Chart1_0:
-  chart_type: ScalarFlds
+Chart1_1:
+  OutlineText: true
+  UseDivCmap: true
+  chart_type: VectorFlds
+  cmap: None
+  cnorm_type: Linear
+  cpow_num: 1.0
+  div_midpoint: 0.0
+  face_color: gainsboro
+  field_type: B
+  interpolation: none
+  normalize_fields: true
+  set_v_max: false
+  set_v_min: false
+  show_FFT_region: false
+  show_cbar: true
+  show_cpu_domains: false
+  show_labels: true
+  show_shock: false
+  show_x: 1
+  show_y: 1
+  show_z: 1
+  spatial_x: true
+  spatial_y: false
+  stretch_colors: false
+  twoD: 0
+  v_max: 10
+  v_min: 0
+Chart2_0:
   OutlineText: true
   UseDivCmap: false
+  chart_type: ScalarFlds
   cmap: None
   cnorm_type: Linear
   cpow_num: 0.6
-  flds_type: B_total
   div_midpoint: 0.0
   face_color: gainsboro
+  flds_type: theta_B
   interpolation: none
   normalize_density: true
   set_color_limits: false
@@ -43,7 +137,35 @@ Chart1_0:
   show_labels: true
   show_shock: false
   spatial_x: true
-  spatial_y: 0
+  spatial_y: false
+  stretch_colors: false
+  twoD: 0
+  v_max: 10
+  v_min: 0
+Chart2_1:
+  OutlineText: true
+  UseDivCmap: true
+  chart_type: VectorFlds
+  cmap: None
+  cnorm_type: Linear
+  cpow_num: 1.0
+  div_midpoint: 0.0
+  face_color: gainsboro
+  field_type: J
+  interpolation: none
+  normalize_fields: true
+  set_v_max: false
+  set_v_min: false
+  show_FFT_region: false
+  show_cbar: true
+  show_cpu_domains: false
+  show_labels: true
+  show_shock: false
+  show_x: 1
+  show_y: 1
+  show_z: 1
+  spatial_x: true
+  spatial_y: false
   stretch_colors: false
   twoD: 0
   v_max: 10
@@ -53,12 +175,6 @@ MainParamDict:
   Average1D: 0
   AxLabelSize: 11
   ClearFig: true
-  cmaps_with_green:
-  - viridis
-  - Rainbow + White
-  - Blue/Green/Red/Yellow
-  - Cube YF
-  - Linear_L
   ColorMap: Blue/Green/Red/Yellow
   ConstantShockVel: true
   DivColorMap: Blue/Green/Red/Yellow
@@ -68,8 +184,8 @@ MainParamDict:
   FFTRight: 200.0
   FFT_color: k
   FigSize:
-  - 12.0
-  - 6.22
+  - 16.91
+  - 9.38
   GammaBoost: 0.0
   HAxesExtent:
   - 18
@@ -96,8 +212,8 @@ MainParamDict:
   MaxCols: 8
   MaxRows: 8
   NumFontSize: 11
-  NumOfCols: 1
-  NumOfRows: 1
+  NumOfCols: 2
+  NumOfRows: 3
   PrtlStride: 5
   Recording: false
   Reload2End: true
@@ -124,9 +240,15 @@ MainParamDict:
     top: 0.93
     wspace: 0.23
   WaitTime: 0.01
-  WindowSize: 1200x700
+  WindowSize: 1691x998
   annotateTextSize: 18
   cbarLabelPad: 15
+  cmaps_with_green:
+  - viridis
+  - Rainbow + White
+  - Blue/Green/Red/Yellow
+  - Cube YF
+  - Linear_L
   dpi: 100
   electron_color: '#fca636'
   electron_fit_color: yellow

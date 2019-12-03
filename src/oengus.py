@@ -115,6 +115,7 @@ class Oengus():
         #self.create_graphs()
     def open_sim(self, sim):
         self.sim = sim
+        self.sim.xtra_stride = self.MainParamDict['PrtlStride']
     def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
             It also sets all of the plots parameters.'''
@@ -463,6 +464,7 @@ def runMe(cmd_args):
         curname = ''
         if i<len(cmd_args.name):
             curname = cmd_args.name[i]
+        print()
         curSim = TristanSim(dirname, xtraStride = cfgDict['MainParamDict']['PrtlStride'])
 
         cntxt = {'preset_view':cmd_args.p,

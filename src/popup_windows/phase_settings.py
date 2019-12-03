@@ -48,29 +48,29 @@ class phaseSettings(Tk.Toplevel):
         quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['prtl_type'], *tuple(self.parent.sim.get_available_quantities()['prtls'].keys()))
         quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
-        self.label = ttk.Label(frm, text='Dimension:')
-        self.label.grid(row = 2, column = 1, sticky = Tk.W)
 
-        self.ShowXVar = Tk.IntVar(self) # Create a var to track whether or not to show X
-        self.ShowXVar.set(self.params['show_x'])
-        self.cbx = ttk.Checkbutton(frm, text = "Show x",
-            variable = self.ShowXVar,
-            command = self.Selector)
-        self.cbx.grid(row = 3, column = 1, sticky = Tk.W)
+        self.xval_var  = Tk.StringVar(self)
+        self.xval_var.set(self.params['x_val'])
+        self.xval_var.trace('w', self.x_valChanged)
 
-        self.ShowYVar = Tk.IntVar(self) # Create a var to track whether or not to plot Y
-        self.ShowYVar.set(self.params['show_y'])
-        self.cby = ttk.Checkbutton(frm, text = "Show y",
-            variable = self.ShowYVar,
-            command = self.Selector)
-        self.cby.grid(row = 4, column = 1, sticky = Tk.W)
+        ttk.Label(frm, text="Choose Particle:").grid(row=2, sticky = Tk.W)
+        quantChooser = ttk.OptionMenu(frm, self.xval_var, self.params['x_val'], *tuple(self.parent.sim.get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+        quantChooser.grid(row =5, column = 0, sticky = Tk.W + Tk.E)
+        # the Check boxes for the dimension
+        self.label = ttk.Label(frm, text='x_val:')
+        self.label.grid(row = 4, column = 0, sticky = Tk.W)
 
-        self.ShowZVar = Tk.IntVar(self) # Create a var to track whether or not to plot Z
-        self.ShowZVar.set(self.params['show_z'])
-        self.cbz = ttk.Checkbutton(frm, text = "Show z",
-            variable = self.ShowZVar,
-            command = self.Selector)
-        self.cbz.grid(row = 5, column = 1, sticky = Tk.W)
+
+        self.yval_var  = Tk.StringVar(self)
+        self.yval_var.set(self.params['y_val'])
+        self.yval_var.trace('w', self.y_valChanged)
+
+        quantChooser = ttk.OptionMenu(frm, self.yval_var, self.params['y_val'], *tuple(self.parent.sim.get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+        quantChooser.grid(row =5, column = 1, sticky = Tk.W + Tk.E)
+        # the Check boxes for the dimension
+        self.label = ttk.Label(frm, text='y_val:')
+        self.label.grid(row = 4, column = 1, sticky = Tk.W)
+
         # Control whether or not Cbar is shown
         self.CbarVar = Tk.IntVar()
         self.CbarVar.set(self.params['show_cbar'])
@@ -95,28 +95,7 @@ class phaseSettings(Tk.Toplevel):
         #                command = self.NormPPCHandler)
         #cb.grid(row = 7, sticky = Tk.W)
 
-        # show labels
-        self.ShowLabels = Tk.IntVar()
-        self.ShowLabels.set(self.params['show_labels'])
-        cb = ttk.Checkbutton(frm, text = "Show Labels 2D",
-                        variable = self.ShowLabels,
-                        command = self.LabelHandler)
-        cb.grid(row = 7, column = 1, sticky = Tk.W)
-        # Control whether or not diverging cmap is used
-        self.DivVar = Tk.IntVar()
-        self.DivVar.set(self.params['UseDivCmap'])
-        cb = ttk.Checkbutton(frm, text = "Use Diverging Cmap",
-                        variable = self.DivVar,
-                        command = self.DivHandler)
-        cb.grid(row = 8, sticky = Tk.W)
 
-        # Use full div cmap
-        self.StretchVar = Tk.IntVar()
-        self.StretchVar.set(self.params['stretch_colors'])
-        cb = ttk.Checkbutton(frm, text = "Asymmetric Color Space",
-                        variable = self.StretchVar,
-                        command = self.StretchHandler)
-        cb.grid(row = 9, column = 0, columnspan =2, sticky = Tk.W)
 
         #self.CPUVar = Tk.IntVar()
         #self.CPUVar.set(self.parent.GetPlotParam('show_cpu_domains'))
@@ -126,23 +105,23 @@ class phaseSettings(Tk.Toplevel):
         #cb.grid(row = 10, column = 0, sticky = Tk.W)
 
         # Create the OptionMenu to chooses the cnorm_type:
-        self.cnormvar = Tk.StringVar(self)
-        self.cnormvar.set(self.params['cnorm_type']) # default value
-        self.cnormvar.trace('w', self.cnormChanged)
+        #self.cnormvar = Tk.StringVar(self)
+        #self.cnormvar.set(self.params['cnorm_type']) # default value
+        #self.cnormvar.trace('w', self.cnormChanged)
 
-        ttk.Label(frm, text="Choose Color Norm:").grid(row=6, column = 2)
-        cnormChooser = ttk.OptionMenu(frm, self.cnormvar, self.params['cnorm_type'], *tuple(['Pow', 'Linear']))
-        cnormChooser.grid(row =6, column = 3, sticky = Tk.W + Tk.E)
+        #ttk.Label(frm, text="Choose Color Norm:").grid(row=6, column = 2)
+        #cnormChooser = ttk.OptionMenu(frm, self.cnormvar, self.params['cnorm_type'], *tuple(['Pow', 'Linear']))
+        #cnormChooser.grid(row =6, column = 3, sticky = Tk.W + Tk.E)
 
         # Now the gamma of the pow norm
-        self.powGamma = Tk.StringVar()
-        self.powGamma.set(str(self.params['cpow_num']))
-        ttk.Label(frm, text ='gamma =').grid(row = 7, column = 2, sticky =Tk.E)
-        ttk.Label(frm, text ='If cnorm is Pow =>').grid(row = 8, column = 2,columnspan = 2, sticky =Tk.W)
-        ttk.Label(frm, text ='sign(data)*|data|**gamma').grid(row = 9, column = 2,columnspan = 2, sticky =Tk.E)
+        #self.powGamma = Tk.StringVar()
+        #self.powGamma.set(str(self.params['cpow_num']))
+        #ttk.Label(frm, text ='gamma =').grid(row = 7, column = 2, sticky =Tk.E)
+        #ttk.Label(frm, text ='If cnorm is Pow =>').grid(row = 8, column = 2,columnspan = 2, sticky =Tk.W)
+        #ttk.Label(frm, text ='sign(data)*|data|**gamma').grid(row = 9, column = 2,columnspan = 2, sticky =Tk.E)
 
-        self.GammaEnter = ttk.Entry(frm, textvariable=self.powGamma, width=7)
-        self.GammaEnter.grid(row = 7, column = 3)
+        #self.GammaEnter = ttk.Entry(frm, textvariable=self.powGamma, width=7)
+        #self.GammaEnter.grid(row = 7, column = 3)
 
 
         # Now the field lim
@@ -163,7 +142,7 @@ class phaseSettings(Tk.Toplevel):
         self.Zmax.set(str(self.params['v_max']))
 
 
-        cb = ttk.Checkbutton(frm, text ='Set flds min',
+        cb = ttk.Checkbutton(frm, text ='Set v min',
                         variable = self.setZminVar)
         cb.grid(row = 3, column = 2, sticky = Tk.W)
         self.ZminEnter = ttk.Entry(frm, textvariable=self.Zmin, width=7)
@@ -211,7 +190,7 @@ class phaseSettings(Tk.Toplevel):
                     tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
                 self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
                 self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
-                self.subplot.set_v_max_min()
+                self.subplot.refresh()
                 self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
@@ -234,24 +213,33 @@ class phaseSettings(Tk.Toplevel):
                 self.parent.oengus.canvas.draw()
 
     def quantityChanged(self, *args):
-        if self.params['field_type'] == self.quantity.get():
+        if self.params['prtl_type'] == self.quantity.get():
             pass
         else:
-            self.params['field_type'] = self.quantity.get()
-            self.subplot.update_labels_and_colors()
+            self.params['prtl_type'] = self.quantity.get()
             self.subplot.refresh()
+            self.subplot.update_labels_and_colors()
             self.parent.oengus.canvas.draw()
 
 
-    def LabelHandler(self, *args):
-        if self.params['show_labels'] == self.ShowLabels.get():
+    def y_valChanged(self, *args):
+        if self.params['y_val'] == self.yval_var.get():
             pass
         else:
-            self.params['show_labels'] = self.ShowLabels.get()
-            if self.params['twoD']:
-                self.subplot.an_2d.set_visible(self.ShowLabels.get())
-                self.parent.oengus.canvas.draw()
+            self.params['y_val'] = self.yval_var.get()
+            self.subplot.refresh()
+            self.subplot.update_labels_and_colors()
+            self.parent.oengus.canvas.draw()
 
+    def x_valChanged(self, *args):
+        if self.params['x_val'] == self.xval_var.get():
+            pass
+        else:
+            self.params['x_val'] = self.xval_var.get()
+
+            self.subplot.refresh()
+            self.subplot.update_labels_and_colors()
+            self.parent.oengus.canvas.draw()
 
     #def CPUVarHandler(self, *args):
     #    if self.parent.GetPlotParam('show_cpu_domains')== self.CPUVar.get():
@@ -265,25 +253,6 @@ class phaseSettings(Tk.Toplevel):
     #        self.parent.parent.canvas.draw()
     #        self.parent.parent.canvas.get_tk_widget().update_idletasks()
 
-    def Change2d(self):
-        if self.TwoDVar.get() == self.params['twoD']:
-            pass
-        else:
-            self.params['twoD'] = self.TwoDVar.get()
-            self.params['spatial_y'] = self.TwoDVar.get()
-            # Make sure only one dimension checked
-            if self.params['twoD']:
-                if self.params['show_x']:
-                    self.ShowYVar.set(0)
-                    self.params['show_y'] = 0
-                    self.ShowZVar.set(0)
-                    self.params['show_z'] = 0
-                elif self.params['show_y']:
-                    self.ShowZVar.set(0)
-                    self.params['show_z'] = 0
-            self.subplot.remove()
-            self.subplot.draw()
-            self.parent.oengus.canvas.draw()
     def ctypeChanged(self, *args):
         if self.ctypevar.get() == self.subplot.chart_type:
             pass
@@ -304,7 +273,7 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_min'] = self.setZminVar.get()
-            self.subplot.set_v_max_min()
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
 
 
@@ -313,7 +282,7 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_max'] = self.setZmaxVar.get()
-            self.subplot.set_v_max_min()
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
 
     def TxtEnter(self, e):
@@ -351,64 +320,8 @@ class phaseSettings(Tk.Toplevel):
                 #if they type in random stuff, just set it ot the param value
                 tkvarLimList[j].set(str(self.params[plot_param_List[j]]))
         if to_reload:
-            self.subplot.set_v_max_min()
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
-    def Selector(self):
-        # First check if it is 2-D:
-        if self.params['twoD']:
-            if self.ShowXVar.get() == 0 and self.ShowYVar.get() == 0 and self.ShowZVar.get() == 0:
-                # All are zero, something must be selected for this plot
-                self.ShowXVar.set(1)
 
-
-            if self.params['show_x'] != self.ShowXVar.get():
-                # set the other plot values to zero in the PlotParams
-                self.params['show_y'] = 0
-                self.params['show_z'] = 0
-
-                # Uncheck the boxes
-                self.ShowYVar.set(self.params['show_y'])
-                self.ShowZVar.set(self.params['show_z'])
-                self.params['show_x'] = self.ShowXVar.get()
-
-
-            elif self.params['show_y'] != self.ShowYVar.get():
-                # set the other plot values to zero in the PlotParams
-                self.params['show_x'] = 0
-                self.params['show_z'] = 0
-
-                # Uncheck the boxes
-                self.ShowXVar.set(self.params['show_x'])
-                self.ShowZVar.set(self.params['show_z'])
-                self.params['show_y'] = self.ShowYVar.get()
-
-
-            elif self.params['show_z'] != self.ShowZVar.get():
-                # set the other plot values to zero in the PlotParams
-                self.params['show_x'] = 0
-                self.params['show_y'] = 0
-
-                # Uncheck the boxes
-                self.ShowXVar.set(self.params['show_x'])
-                self.ShowYVar.set(self.params['show_y'])
-                self.params['show_z'] = self.ShowZVar.get()
-
-        else:
-            if self.params['show_x'] != self.ShowXVar.get():
-                self.subplot.line_x[0].set_visible(self.ShowXVar.get())
-                self.subplot.anx.set_visible(self.ShowXVar.get())
-                self.params['show_x'] = self.ShowXVar.get()
-
-            elif self.params['show_y'] != self.ShowYVar.get():
-                self.subplot.line_y[0].set_visible(self.ShowYVar.get())
-                self.subplot.any.set_visible(self.ShowYVar.get())
-                self.params['show_y'] =  self.ShowYVar.get()
-
-            elif self.params['show_z'] != self.ShowZVar.get():
-                self.subplot.line_z[0].set_visible(self.ShowZVar.get())
-                self.subplot.anz.set_visible(self.ShowZVar.get())
-                self.params['show_z'] =  self.ShowZVar.get()
-        self.subplot.refresh()
-        self.parent.oengus.canvas.draw()
     def OnClosing(self):
         self.destroy()

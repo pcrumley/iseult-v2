@@ -528,7 +528,7 @@ class SettingsFrame(Tk.Toplevel):
                 self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
             if int(self.PrtlStrideVar.get()) != self.main_params['PrtlStride']:
                 self.main_params['PrtlStride'] = int(self.PrtlStrideVar.get())
-                self.oengus.xtra_stride = self.main_params['PrtlStride']
+                self.oengus.sim.xtra_stride = self.main_params['PrtlStride']
                 self.oengus.draw_output()
         except ValueError:
             #if they type in random stuff, just set it to the param value

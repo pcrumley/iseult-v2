@@ -225,7 +225,9 @@ class phasePlot:
                 hist2d = Fast2DWeightedHist(self.y_values['data'], self.x_values['data'], self.weights['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
             else:
                 hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
-            self.clim = [1,  1000]
+
+            hist2d *= float(hist2d.max())**(-1)
+            self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
 
             # set the colors
             self.image.set_data(hist2d)
