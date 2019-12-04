@@ -39,6 +39,9 @@ class MainApp(Tk.Tk):
         self.first_x = None
         self.first_y = None
 
+        # The simulation we are currently investigating.
+        self.cur_sim = 0
+
         # An int that stores the current stride
         self.stride = 0
 
@@ -84,7 +87,7 @@ class MainApp(Tk.Tk):
             if len(self.sim) == 0:
                 self.sim.outdir = os.path.join(self.sim.outdir, 'output')
 
-        self.oengus.open_sim(self.sim)#os.path.join(os.path.dirname(__file__),'../output')))
+        self.oengus.open_sim(self.sim, num = 0)#os.path.join(os.path.dirname(__file__),'../output')))
 
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
@@ -225,7 +228,7 @@ class MainApp(Tk.Tk):
     def set_knob(self, value):
         self.sim.refresh_directory()
         self.time_step.set_max(len(self.sim))
-        self.oengus.cur_times[0] = value - 1
+        self.oengus.cur_times[self.cur_sim] = value - 1
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
 

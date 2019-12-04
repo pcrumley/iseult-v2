@@ -14,13 +14,11 @@ class Spinbox(ttk.Entry):
 
 class SettingsFrame(Tk.Toplevel):
     def __init__(self, oengus):
-
         Tk.Toplevel.__init__(self)
         self.wm_title('General Settings')
         self.protocol('WM_DELETE_WINDOW', self.OnClosing)
 
         self.bind('<Return>', self.SettingsCallback)
-
         self.oengus = oengus
         self.main_params = self.oengus.MainParamDict
         frm = ttk.Frame(self)
@@ -528,7 +526,9 @@ class SettingsFrame(Tk.Toplevel):
                 self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
             if int(self.PrtlStrideVar.get()) != self.main_params['PrtlStride']:
                 self.main_params['PrtlStride'] = int(self.PrtlStrideVar.get())
-                self.oengus.sims[0].xtra_stride = self.main_params['PrtlStride']
+                for sim in self.oengus.sims:
+                    if len(sim) > 0:
+                        sim.xtra_stride = self.main_params['PrtlStride']
                 self.oengus.draw_output()
         except ValueError:
             #if they type in random stuff, just set it to the param value
