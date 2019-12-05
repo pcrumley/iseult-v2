@@ -65,29 +65,15 @@ class MainApp(Tk.Tk):
         #self.bind_all("S", self.OpenSettings)
         self.oengus = Oengus(interactive=True, tkApp = self)
         # open a sim
-        self.sim = picSim(os.curdir, 'tristan_v2.yml')
-        if len(self.sim) == 0:
-            self.sim.outdir = os.path.join(self.sim.outdir, 'output')
-        if len(self.sim) == 0:
-            self.sim = picSim(os.curdir, 'tristan_v1.yml')
-        if len(self.sim) == 0:
-            self.sim.outdir = os.path.join(self.sim.outdir, 'output')
-        if len(self.sim) == 0:
-            self.sim = picSim(os.curdir, 'tristan_v2.yml')
-            tmp_dir = filedialog.askdirectory(
-                title = 'Choose the directory of the output files',
-                initialdir = os.curdir,
-                mustexist = True,
-                parent = self)
-            self.sim.outdir = tmp_dir
-            if len(self.sim) == 0:
-                self.sim.outdir = os.path.join(self.sim.outdir, 'output')
-            if len(self.sim) == 0:
-                self.sim = picSim(tmp_dir, 'tristan_v1.yml')
-            if len(self.sim) == 0:
-                self.sim.outdir = os.path.join(self.sim.outdir, 'output')
 
-        self.oengus.open_sim(self.sim, num = 0)#os.path.join(os.path.dirname(__file__),'../output')))
+
+        for sim_type, cfg_path in self.oengus.avail_sim_types.items():
+            self.oengus.sims[0].cfg_file = cfg_path
+            self.oengus.sims[0].outdir = os.curdir
+            if len(self.oengus.sims[0]) == 0:
+                self.oengus.sims[0].outdir = os.path.join(self.oengus.sims[0].outdir, 'output')
+            if len(self.oengus.sims[0]) != 0:
+                break
 
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
@@ -104,8 +90,8 @@ class MainApp(Tk.Tk):
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         self.time_step.attach(self)
         self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
-        self.time_step.set_max(len(self.sim))
-        self.time_step.set(len(self.sim))
+        self.time_step.set_max(len(self.oengus.sims[self.cur_sim]))
+        self.time_step.set(len(self.oengus.sims[self.cur_sim]))
 
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
 
@@ -139,7 +125,6 @@ class MainApp(Tk.Tk):
                                 pass
                             self.preset_menu.add_command(label = tmpstr, command = partial(self.LoadConfig, str(os.path.join(self.IseultDir,'.iseult_configs', cfile))))
                 except:
-                    print('hi')
                     pass
     def GetPlotParam(self, val):
         return 1
@@ -201,8 +186,9 @@ class MainApp(Tk.Tk):
         self.oengus.GenMainParamDict()
 
         #Loading a config file may change the stride... watch out!
-        if self.sim.xtra_stride != self.oengus.MainParamDict['PrtlStride']:
-            self.stride = self.oengus.MainParamDict['PrtlStride']
+        for sim in self.oengus.sims:
+            if sim.xtra_stride != self.oengus.MainParamDict['PrtlStride']:
+                sim.xtra_stride = self.oengus.MainParamDict['PrtlStride']
 
         # There are a few parameters that need to be loaded separately, mainly in the playbackbar.
         self.playbackbar.rec_var.set(self.oengus.MainParamDict['Recording'])
@@ -226,8 +212,8 @@ class MainApp(Tk.Tk):
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
-        self.sim.refresh_directory()
-        self.time_step.set_max(len(self.sim))
+        self.oengus.sims[self.cur_sim].refresh_directory()
+        self.time_step.set_max(len(self.oengus.sims[self.cur_sim]))
         self.oengus.cur_times[self.cur_sim] = value - 1
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()

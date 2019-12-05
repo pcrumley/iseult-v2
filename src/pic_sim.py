@@ -11,15 +11,16 @@ def h5_getter(filepath, attribute, prtl_stride = None):
         return f[attribute][:]
 
 class picSim(object):
-    def __init__(self, dirpath=None, cfg_file ='tristan_v2.yml'):
+    def __init__(self, name = None, dirpath=None, cfg_file=os.path.join(os.path.dirname(__file__),'code_output_configs','tristan_v1.yml')):
         self._outdir = dirpath
-        cfg_file = os.path.join(os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg_file))
-        with open(cfg_file, 'r') as f:
+        self._cfg_file = cfg_file
+        with open(self._cfg_file, 'r') as f:
             self._cfgDict=yaml.safe_load(f)
         self.sim_type = self._cfgDict['name']
         self._xtra_stride = 1
         self._fnum = self.get_f_numbers()
         self._data_dictionary = {}
+        self._name = name
 
     def get_f_numbers(self):
         """A function that gets passed a directory and simulation type
@@ -57,6 +58,18 @@ class picSim(object):
     def __len__(self):
         return len(self._fnum)
 
+
+    @property
+    def cfg_file(self):
+        return cfg_file
+    @cfg_file.setter
+    def cfg_file(self, cfg):
+        self._cfg_file = cfg
+        with open(self._cfg_file, 'r') as f:
+            self._cfgDict=yaml.safe_load(f)
+        self.sim_type = self._cfgDict['name']
+        self.clear_caches()
+
     @property
     def file_list(self):
         return self._fnum
@@ -67,6 +80,15 @@ class picSim(object):
 
     def refresh_directory(self):
         self._fnum = self.get_f_numbers()
+
+    @property
+    def name(self):
+        return self._name
+
+    # setting the values
+    @name.setter
+    def name(self, name):
+        self._name = name
 
     @property
     def outdir(self):
@@ -86,7 +108,7 @@ class picSim(object):
     @xtra_stride.setter
     def xtra_stride(self, stride):
         self._xtra_stride = stride
-        self._data_dictionary = {}
+        self.clear_caches()
 
     def get_available_quantities(self):
         # Returns a hierachical dictionary structure showing

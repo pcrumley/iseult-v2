@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'plots'))
 import matplotlib.pyplot as plt
 import matplotlib.colors as cm
+from pic_sim import picSim
 import new_cmaps
 import numpy as np
 from collections import deque
@@ -22,7 +23,9 @@ class Oengus():
     def __init__(self, preset_view='Default', interactive = True, tkApp = None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
-        self.sims = [ [], [], [], [] ]
+        self.avail_sim_types = {}
+        self.get_avail_sim_types()
+        self.sims = [ picSim(name='sim0') , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
         self.cur_times = [-1, -1, -1, -1]
         self.dirname = ''
         #self.tkApp = tkApp
@@ -113,9 +116,17 @@ class Oengus():
         #if self.showingTotEnergy:
         #    self.calc_total_energy()
 
-
+    def get_avail_sim_types(self):
+        tmp_list = [os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg) for cfg in os.listdir(os.path.join(os.path.dirname(__file__), 'code_output_configs'))]
+        tmp_list = [os.path.abspath(elm) for elm in tmp_list]
+        filter(lambda x: x.split[-1]=='.yml', tmp_list)
+        for cfg in tmp_list:
+            with open(cfg, 'r') as f:
+                tmpDict = yaml.safe_load(f)
+                if 'name' in tmpDict:
+                    self.avail_sim_types[tmpDict['name']] = cfg
         #self.create_graphs()
-    def open_sim(self, sim, num = 0):
+    def open_sim(self, sim, num = 0, sim_type = 'Tristan_MP'):
         self.sims[num] = sim
         self.sims[num].xtra_stride = self.MainParamDict['PrtlStride']
     def GenMainParamDict(self):
@@ -466,7 +477,7 @@ def runMe(cmd_args):
         curname = ''
         if i<len(cmd_args.name):
             curname = cmd_args.name[i]
-        print()
+
         curSim = TristanSim(dirname, xtraStride = cfgDict['MainParamDict']['PrtlStride'])
 
         cntxt = {'preset_view':cmd_args.p,

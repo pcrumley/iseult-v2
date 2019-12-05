@@ -32,6 +32,7 @@ Chart0_0:
   y_min: -2.0
   y_val: px
 Chart0_1:
+  sim_num: 0
   E_max: 200.0
   E_min: 1.0
   chart_type: PhasePlot

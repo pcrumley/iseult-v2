@@ -16,7 +16,6 @@ class phasePlot:
 
     plot_param_dict = {'twoD': 1,
                        'sim_num': 0,
-                       'mom_dim': 0,
                        'masked': 1,
                        'cnorm_type': 'Log', #Colormap normalization. Opts are Log or Linear
                        'prtl_type': 'ions',
@@ -36,10 +35,10 @@ class phasePlot:
                        'set_v_max': False,
                        'y_min': -2.0,
                        'y_max' : 2,
-                       'set_E_min' : False,
-                       'E_min': 1.0,
-                       'set_E_max': False,
-                       'E_max': 200.0,
+                       #'set_E_min' : False,
+                       #'E_min': 1.0,
+                       #'set_E_max': False,
+                       #'E_max': 200.0,
                        'set_y_min': False,
                        'set_y_max': False,
                        'spatial_x': True,
