@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from custom_toolbar import myCustomToolbar
 from matplotlib.figure import Figure
 from movie_dialog import MovieDialog
+from open_sim_dialog import OpenSimDialog
 from save_config import SaveDialog
 from oengus import Oengus
 from pic_sim import picSim
@@ -55,6 +56,7 @@ class MainApp(Tk.Tk):
         fileMenu.add_command(label="Exit", underline=1,
                              command=quit, accelerator="Ctrl+Q")
         fileMenu.add_command(label= 'Save Current State', command = self.OpenSaveDialog)
+        fileMenu.add_command(label= 'Open Simulation', command = self.open_sim_dialog)
         #fileMenu.add_command(label= 'Make a Movie', command = self.OpenMovieDialog)
         #fileMenu.add_command(label= 'Reset Session', command = self.ResetSession)
         self.preset_menu = Tk.Menu(menubar, tearoff=False, postcommand=self.viewsUpdate)
@@ -162,6 +164,8 @@ class MainApp(Tk.Tk):
 
     def OpenSaveDialog(self):
         SaveDialog(self)
+    def open_sim_dialog(self):
+        OpenSimDialog(self)
     def LoadConfig(self, config_file):
         # First get rid of any & all pop up windows:
         if self.playbackbar.settings_window is not None:

@@ -1,17 +1,15 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
+import os
 
+class OpenSimDialog(Tk.Toplevel):
 
-class MovieDialog(Tk.Toplevel):
-
-    def __init__(self, parent, title = None):
+    def __init__(self, parent, title = 'Open Sim'):
         Tk.Toplevel.__init__(self, parent)
         self.transient(parent)
         if title:
             self.title(title)
         self.parent = parent
-
-        self.result = None
 
         body = ttk.Frame(self)
         self.initial_focus = self.body(body)
@@ -40,10 +38,50 @@ class MovieDialog(Tk.Toplevel):
     def body(self, master):
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
-        ttk.Label(master, text="Name of Movie:").grid(row=0)
-        self.e1 = ttk.Entry(master, width=17)
-        self.e1.grid(row=0, column=1, sticky = Tk.E)
+        ttk.Label(master, text="Sim #").grid(row=0, column = 0)
+        ttk.Label(master, text="name").grid(row=0, column = 1)
+        ttk.Label(master, text="directory").grid(row=0, column = 2)
+        ttk.Label(master, text="0").grid(row=1, column = 0)
+        ttk.Label(master, text="1").grid(row=2, column = 0)
+        ttk.Label(master, text="2").grid(row=3, column = 0)
+        ttk.Label(master, text="3").grid(row=4, column = 0)
 
+        self.e0name = ttk.Entry(master, width=17)
+        self.e0name.insert(0,self.parent.oengus.sims[0].name)
+        self.e0name.grid(row=1, column=1, sticky = Tk.E)
+        self.e0dir = ttk.Entry(master, width=27)
+        if self.parent.oengus.sims[0].outdir is not None:
+            self.e0dir.insert(0,self.parent.oengus.sims[0].outdir)
+        self.e0dir.grid(row=1, column=2, sticky = Tk.E)
+
+        self.e1name = ttk.Entry(master, width=17)
+        self.e1name.insert(0,self.parent.oengus.sims[1].name)
+        self.e1name.grid(row=2, column=1, sticky = Tk.E)
+
+        self.e1dir = ttk.Entry(master, width=27)
+        if self.parent.oengus.sims[1].outdir is not None:
+            self.e1dir.insert(0,self.parent.oengus.sims[1].outdir)
+        self.e1dir.grid(row=2, column=2, sticky = Tk.E)
+
+        self.e2name = ttk.Entry(master, width=17)
+        self.e2name.insert(0,self.parent.oengus.sims[2].name)
+        self.e2name.grid(row=3, column=1, sticky = Tk.E)
+        self.e2dir = ttk.Entry(master, width=27)
+        if self.parent.oengus.sims[2].outdir is not None:
+            self.e2dir.insert(0,self.parent.oengus.sims[2].outdir)
+        self.e2dir.grid(row=3, column=2, sticky = Tk.E)
+
+        self.e3name = ttk.Entry(master, width=17)
+        self.e3name.insert(0,self.parent.oengus.sims[3].name)
+        self.e3name.grid(row=4, column=1, sticky = Tk.E)
+
+        self.e3dir = ttk.Entry(master, width=27)
+        if self.parent.oengus.sims[3].outdir is not None:
+            self.e3dir.insert(0,self.parent.oengus.sims[3].outdir)
+        #self.e3dir.insert(0,self.parent.oengus.sims[3].outdir)
+        self.e3dir.grid(row=4, column=2, sticky = Tk.E)
+
+        """
         ttk.Label(master, text="First Frame:").grid(row=1)
         self.e2 = ttk.Entry(master, width=17)
         self.e2.grid(row=1, column=1, sticky = Tk.E)
@@ -59,14 +97,14 @@ class MovieDialog(Tk.Toplevel):
         ttk.Label(master, text="Frames Per Second:").grid(row=4)
         self.e5 = ttk.Entry(master, width=17)
         self.e5.grid(row=4, column=1, sticky = Tk.E)
-
+        """
     def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
 
         box = ttk.Frame(self)
 
-        w = ttk.Button(box, text="Save", width=10, command=self.ok, default=Tk.ACTIVE)
+        w = ttk.Button(box, text="Open", width=10, command=self.ok, default=Tk.ACTIVE)
         w.pack(side=Tk.LEFT, padx=5, pady=5)
         w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
         w.pack(side=Tk.LEFT, padx=5, pady=5)
@@ -81,9 +119,9 @@ class MovieDialog(Tk.Toplevel):
 
     def ok(self, event=None):
 
-        if not self.validate():
-            self.initial_focus.focus_set() # put focus back
-            return
+        #if not self.validate():
+        #    self.initial_focus.focus_set() # put focus back
+        #    return
 
         self.withdraw()
         self.update_idletasks()
@@ -124,9 +162,9 @@ class MovieDialog(Tk.Toplevel):
         if self.Name != '':
             self.Name = str(self.e1.get()).strip().replace(' ', '_') +'.mov'
         if self.StartFrame <0:
-            self.StartFrame = len(self.parent.PathDict['Param'])+self.StartFrame + 1
+            self.StartFrame = 0#len(self.parent.PathDict['Param'])+self.StartFrame + 1
         if self.EndFrame <0:
-            self.EndFrame = len(self.parent.PathDict['Param'])+self.EndFrame + 1
+            self.EndFrame = 0#len(self.parent.PathDict['Param'])+self.EndFrame + 1
 
         if self.Name == '':
             messagebox.showwarning(
@@ -180,9 +218,16 @@ class MovieDialog(Tk.Toplevel):
             return 1 # override
 
     def apply(self):
-        ''' Save the Movie'''
-        self.parent.MakeAMovie(fname = self.Name,
-                                start = self.StartFrame,
-                                stop = self.EndFrame,
-                                step = self.Step,
-                                FPS = self.FPS)
+        # First change all the names.
+        for i, name in enumerate([self.e0name, self.e1name, self.e2name, self.e3name]):
+            self.parent.oengus.sims[i].name = str(name.get())
+        for i, dir in enumerate([self.e0dir, self.e1dir, self.e2dir, self.e3dir]):
+            if self.parent.oengus.sims[i].outdir != str(dir.get()):
+                for sim_type, cfg_path in self.parent.oengus.avail_sim_types.items():
+                    self.parent.oengus.sims[i].cfg_file = cfg_path
+                    self.parent.oengus.sims[i].outdir = str(dir.get())
+                    if len(self.parent.oengus.sims[i]) == 0:
+                        self.parent.oengus.sims[i].outdir = os.path.join(self.parent.oengus.sims[i].outdir, 'output')
+                    if len(self.parent.oengus.sims[i]) != 0:
+                        break
+        self.parenet.oengus.draw_output()
