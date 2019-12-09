@@ -26,6 +26,7 @@ class Oengus():
         self.avail_sim_types = {}
         self.get_avail_sim_types()
         self.sims = [ picSim(name='sim0') , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
+        self.sims_shown = []
         self.cur_times = [-1, -1, -1, -1]
         self.dirname = ''
         #self.tkApp = tkApp
@@ -104,6 +105,7 @@ class Oengus():
                     self.SubPlotList[i].append(self.plot_types_dict['ScalarFlds'](self, (i,j), {}))
 
 
+        self.calc_sims_shown()
 
         ##
         #
@@ -246,6 +248,13 @@ class Oengus():
     #    self.TotalMagEnergy = np.array(self.TotalMagEnergy)
     #    self.TotalElectricEnergy = np.array(self.TotalElectricEnergy)
     #    self.TotalBzEnergy = np.array(self.TotalBzEnergy)
+    def calc_sims_shown(self):
+        self.sims_shown = []
+        for i in range(self.MainParamDict['NumOfRows']):
+            for j in range(self.MainParamDict['NumOfCols']):
+                if self.SubPlotList[i][j].param_dict['sim_num'] not in self.sims_shown:
+                    self.sims_shown.append(self.SubPlotList[i][j].param_dict['sim_num'])
+        self.sims_shown.sort()
     def create_graphs(self):
         # FIND THE SLICE
         #self.MaxZInd = o.bx.shape[0]-1
@@ -261,7 +270,6 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()#self.sim, -1)
-        #if self.showingCPUs:
         #    if 'my' in self.sim._h5Key2FileDict.keys():
         #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
         #    else:

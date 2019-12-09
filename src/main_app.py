@@ -40,8 +40,6 @@ class MainApp(Tk.Tk):
         self.first_x = None
         self.first_y = None
 
-        # The simulation we are currently investigating.
-        self.cur_sim = 0
 
         # An int that stores the current stride
         self.stride = 0
@@ -92,8 +90,8 @@ class MainApp(Tk.Tk):
         self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
         self.time_step.attach(self)
         self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
-        self.time_step.set_max(len(self.oengus.sims[self.cur_sim]))
-        self.time_step.set(len(self.oengus.sims[self.cur_sim]))
+        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
 
         #menubar.add_cascade(label='Preset Views', underline=0, menu = self.presetMenu)
 
@@ -216,9 +214,9 @@ class MainApp(Tk.Tk):
     def txt_enter(self, e):
         self.playbackbar.text_callback()
     def set_knob(self, value):
-        self.oengus.sims[self.cur_sim].refresh_directory()
-        self.time_step.set_max(len(self.oengus.sims[self.cur_sim]))
-        self.oengus.cur_times[self.cur_sim] = value - 1
+        self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
+        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        self.oengus.cur_times[self.playbackbar.cur_sim] = value - 1
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
 

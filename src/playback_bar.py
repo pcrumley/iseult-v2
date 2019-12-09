@@ -13,6 +13,7 @@ class playbackBar(Tk.Frame):
     def __init__(self, oengus, tstep_param):
         Tk.Frame.__init__(self)
         self.oengus = oengus
+        self._cur_sim = 0 # A way to hold the current simulation
         self.play_pressed = False
         self.settings_window = None
         # This param should be the time-step of the simulation
@@ -30,6 +31,13 @@ class playbackBar(Tk.Frame):
         self.skipRB = ttk.Button(self, text = '>', command = self.skip_right)
         self.skipRB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
+        self.cur_sim_name  = Tk.StringVar(self)
+        self.cur_sim_name.set(self.oengus.sims[self.cur_sim].name)
+        #self.quantity.trace('w', self.quantityChanged)
+
+        simChooser = ttk.OptionMenu(self, self.cur_sim_name, self.cur_sim_name.get(), *tuple(map(lambda x: self.oengus.sims[x].name, self.oengus.sims_shown)))
+        simChooser.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
+        # the Check boxes for the dimension
         # An entry box that will let us choose the time-step
         ttk.Label(self, text='n= ').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
@@ -81,6 +89,14 @@ class playbackBar(Tk.Frame):
         ttk.Button(self, text = 'Clear Cache', command = self.on_refresh).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
         #attach the parameter to the Playbackbar
         self.param.attach(self)
+
+    @property
+    def cur_sim(self):
+        return self._cur_sim
+    @cur_sim.setter
+    def cur_sim(self, val):
+        self._cur_sim = val
+
     def open_settings(self):
         if self.settings_window is None:
             self.settings_window = SettingsFrame(self.oengus)

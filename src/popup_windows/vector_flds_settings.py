@@ -45,7 +45,7 @@ class VectorFieldsSettings(Tk.Toplevel):
         self.quantity.trace('w', self.quantityChanged)
 
         ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky = Tk.W)
-        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['field_type'], *tuple(self.parent.sim.get_available_quantities()['vec_flds'].keys()))
+        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['field_type'], *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['vec_flds'].keys()))
         quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='Dimension:')

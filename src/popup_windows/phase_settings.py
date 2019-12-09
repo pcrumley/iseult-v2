@@ -45,7 +45,7 @@ class phaseSettings(Tk.Toplevel):
         self.quantity.trace('w', self.quantityChanged)
 
         ttk.Label(frm, text="Choose Particle:").grid(row=2, sticky = Tk.W)
-        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['prtl_type'], *tuple(self.parent.sim.get_available_quantities()['prtls'].keys()))
+        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['prtl_type'], *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'].keys()))
         quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
 
@@ -54,7 +54,7 @@ class phaseSettings(Tk.Toplevel):
         self.xval_var.trace('w', self.x_valChanged)
 
         ttk.Label(frm, text="Choose Particle:").grid(row=2, sticky = Tk.W)
-        quantChooser = ttk.OptionMenu(frm, self.xval_var, self.params['x_val'], *tuple(self.parent.sim.get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+        quantChooser = ttk.OptionMenu(frm, self.xval_var, self.params['x_val'], *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
         quantChooser.grid(row =5, column = 0, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='x_val:')
@@ -65,7 +65,7 @@ class phaseSettings(Tk.Toplevel):
         self.yval_var.set(self.params['y_val'])
         self.yval_var.trace('w', self.y_valChanged)
 
-        quantChooser = ttk.OptionMenu(frm, self.yval_var, self.params['y_val'], *tuple(self.parent.sim.get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+        quantChooser = ttk.OptionMenu(frm, self.yval_var, self.params['y_val'], *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
         quantChooser.grid(row =5, column = 1, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='y_val:')
