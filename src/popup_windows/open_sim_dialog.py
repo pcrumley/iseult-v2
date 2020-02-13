@@ -230,4 +230,4 @@ class OpenSimDialog(Tk.Toplevel):
                         self.parent.oengus.sims[i].outdir = os.path.join(self.parent.oengus.sims[i].outdir, 'output')
                     if len(self.parent.oengus.sims[i]) != 0:
                         break
-        self.parenet.oengus.draw_output()
+        self.parent.oengus.draw_output()
