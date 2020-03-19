@@ -77,10 +77,10 @@ param:
 prtls:
   electrons:
     KE:
-      1d_label: $KE_i$
-      axis_label: $KE_i$
+      1d_label: $KE_e$
+      axis_label: $KE_e$
       h5attr: null
-      hist_cbar_label: $f_i (p)$
+      hist_cbar_label: $f_e (p)$
     gamma:
       1d_label: $\gamma_e$
       axis_label: $\gamma_e$
@@ -88,17 +88,17 @@ prtls:
       h5file: null
       hist_cbar_label: $f_e (p)$
     index:
-      1d_label: $\mathrm{ind}_i$
-      axis_label: $\mathrm{ind}_i$
+      1d_label: $\mathrm{ind}_e$
+      axis_label: $\mathrm{ind}_e$
       h5attr: ind1
       h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
+      hist_cbar_label: $f_e (p)$
     proc:
-      1d_label: $\mathrm{proc}_i$
-      axis_label: $\mathrm{proc}_i$
+      1d_label: $\mathrm{proc}_e$
+      axis_label: $\mathrm{proc}_e$
       h5attr: proc1
       h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
+      hist_cbar_label: $f_e (p)$
     px:
       1d_label: $\gamma_e\beta_{e,x}$
       axis_label: $\gamma_e\beta_{e,x}$
