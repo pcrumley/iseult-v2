@@ -7,5 +7,5 @@ output_v2/
 *~
 *.prof
 build/
-
+.DS_Store
 .iseult_configs/
