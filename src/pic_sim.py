@@ -11,16 +11,28 @@ def h5_getter(filepath, attribute, prtl_stride = None):
         return f[attribute][:]
 
 class picSim(object):
-    def __init__(self, name = None, dirpath=None, cfg_file=os.path.join(os.path.dirname(__file__),'code_output_configs','tristan_v1.yml')):
+    def __init__(self, name = None, dirpath=os.curdir, cfg_file=os.path.join(os.path.dirname(__file__),'code_output_configs','tristan_v1.yml')):
         self._outdir = dirpath
-        self._cfg_file = cfg_file
-        with open(self._cfg_file, 'r') as f:
-            self._cfgDict=yaml.safe_load(f)
-        self.sim_type = self._cfgDict['name']
         self._xtra_stride = 1
-        self._fnum = self.get_f_numbers()
         self._data_dictionary = {}
         self._name = name
+        self._fnum = 0
+        self._cfg_file = ''
+        if 'iseult_conf.yml' in os.listdir(self.outdir):
+            self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
+            try:
+                self.sim_type = self._cfgDict['name']
+            except KeyError:
+                self.sim_type = 'Undefined'
+            self.clear_caches()
+            if len(self) == 0:
+                self.outdir = os.path.join(self.outdir, 'output')
+        else:
+            # can't find the config file, gotta use the default ones
+            # first see if v1 works:
+            self.try_default_sim_types()
+
+
 
     def get_f_numbers(self):
         """A function that gets passed a directory and simulation type
@@ -58,10 +70,10 @@ class picSim(object):
     def __len__(self):
         return len(self._fnum)
 
-
     @property
     def cfg_file(self):
         return cfg_file
+
     @cfg_file.setter
     def cfg_file(self, cfg):
         self._cfg_file = cfg
@@ -81,6 +93,24 @@ class picSim(object):
     def refresh_directory(self):
         self._fnum = self.get_f_numbers()
 
+    def try_default_sim_types(self):
+        default_sim_types = {}
+        tmp_list = [os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg) for cfg in os.listdir(os.path.join(os.path.dirname(__file__), 'code_output_configs'))]
+        tmp_list = [os.path.abspath(elm) for elm in tmp_list]
+        filter(lambda x: x.split[-1]=='.yml', tmp_list)
+        for cfg in tmp_list:
+            with open(cfg, 'r') as f:
+                tmpDict = yaml.safe_load(f)
+                if 'name' in tmpDict:
+                    default_sim_types[tmpDict['name']] = cfg
+        for sim_type, cfg_path in default_sim_types.items():
+            self.cfg_file = cfg_path
+            if len(self) == 0:
+                if 'output' in os.listdir(self.outdir):
+                    self.outdir = os.path.join(self.outdir, 'output')
+            if len(self) != 0:
+                break
+
     @property
     def name(self):
         return self._name
@@ -98,7 +128,22 @@ class picSim(object):
     @outdir.setter
     def outdir(self, dirname):
         self._outdir = dirname
+
         self.clear_caches()
+        if 'iseult_conf.yml' in os.listdir(self.outdir):
+            self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
+            try:
+                self.sim_type = self._cfgDict['name']
+            except KeyError:
+                self.sim_type = 'Undefined'
+            self.clear_caches()
+            if len(self) == 0:
+                if 'output' in os.listdir(self.outdir):
+                    self.outdir = os.path.join(self.outdir, 'output')
+
+        else:
+            # can't find the config file, gotta use the default ones
+            self.try_default_sim_types()
 
     @property
     def xtra_stride(self):
@@ -287,7 +332,7 @@ class picSim(object):
         except KeyError:
             return response_dir
 if __name__=='__main__':
-    sim =picSim(os.path.join(os.path.dirname(__file__),'../output'))
+    sim = picSim(os.path.join(os.path.dirname(__file__),'../output'))
     print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
     print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
     print(sim.get_data(n = 15, data_class='vec_flds', fld = 'E', component = 'x'))

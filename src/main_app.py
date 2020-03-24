@@ -67,13 +67,7 @@ class MainApp(Tk.Tk):
         # open a sim
 
 
-        for sim_type, cfg_path in self.oengus.avail_sim_types.items():
-            self.oengus.sims[0].cfg_file = cfg_path
-            self.oengus.sims[0].outdir = os.curdir
-            if len(self.oengus.sims[0]) == 0:
-                self.oengus.sims[0].outdir = os.path.join(self.oengus.sims[0].outdir, 'output')
-            if len(self.oengus.sims[0]) != 0:
-                break
+        self.oengus.sims[0].outdir = self.cmd_args.O[0] if len(self.cmd_args.O[0])>0 else os.curdir
 
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
