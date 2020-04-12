@@ -24,7 +24,9 @@ class Oengus():
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.sims = [ picSim(name='sim0') , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
+        self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
+
         self.cur_times = [-1, -1, -1, -1]
         self.dirname = ''
         #self.tkApp = tkApp
