@@ -2,9 +2,10 @@ import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 import os
 
+
 class OpenSimDialog(Tk.Toplevel):
 
-    def __init__(self, parent, title = 'Open Sim'):
+    def __init__(self, parent, title='Open Sim'):
         Tk.Toplevel.__init__(self, parent)
         self.transient(parent)
         if title:
@@ -14,7 +15,7 @@ class OpenSimDialog(Tk.Toplevel):
         body = ttk.Frame(self)
         self.initial_focus = self.body(body)
 #        body.pack(fill=Tk.BOTH)#, expand=True)
-        body.pack(fill = Tk.BOTH, anchor = Tk.CENTER, expand=1)
+        body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
 
         self.buttonbox()
 
@@ -38,20 +39,20 @@ class OpenSimDialog(Tk.Toplevel):
     def body(self, master):
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
-        ttk.Label(master, text="Sim #").grid(row=0, column = 0)
-        ttk.Label(master, text="name").grid(row=0, column = 1)
-        ttk.Label(master, text="directory").grid(row=0, column = 2)
-        ttk.Label(master, text="0").grid(row=1, column = 0)
-        ttk.Label(master, text="1").grid(row=2, column = 0)
-        ttk.Label(master, text="2").grid(row=3, column = 0)
-        ttk.Label(master, text="3").grid(row=4, column = 0)
+        ttk.Label(master, text="Sim #").grid(row=0, column=0)
+        ttk.Label(master, text="name").grid(row=0, column=1)
+        ttk.Label(master, text="directory").grid(row=0, column=2)
+        ttk.Label(master, text="0").grid(row=1, column=0)
+        ttk.Label(master, text="1").grid(row=2, column=0)
+        ttk.Label(master, text="2").grid(row=3, column=0)
+        ttk.Label(master, text="3").grid(row=4, column=0)
 
         self.e0name = ttk.Entry(master, width=17)
         self.e0name.insert(0,self.parent.oengus.sims[0].name)
         self.e0name.grid(row=1, column=1, sticky = Tk.E)
         self.e0dir = ttk.Entry(master, width=27)
         if self.parent.oengus.sims[0].outdir is not None:
-            self.e0dir.insert(0,self.parent.oengus.sims[0].outdir)
+            self.e0dir.insert(0, self.parent.oengus.sims[0].outdir)
         self.e0dir.grid(row=1, column=2, sticky = Tk.E)
 
         self.e1name = ttk.Entry(master, width=17)
@@ -118,7 +119,6 @@ class OpenSimDialog(Tk.Toplevel):
     # standard button semantics
 
     def ok(self, event=None):
-
         #if not self.validate():
         #    self.initial_focus.focus_set() # put focus back
         #    return
@@ -223,11 +223,5 @@ class OpenSimDialog(Tk.Toplevel):
             self.parent.oengus.sims[i].name = str(name.get())
         for i, dir in enumerate([self.e0dir, self.e1dir, self.e2dir, self.e3dir]):
             if self.parent.oengus.sims[i].outdir != str(dir.get()):
-                for sim_type, cfg_path in self.parent.oengus.avail_sim_types.items():
-                    self.parent.oengus.sims[i].cfg_file = cfg_path
-                    self.parent.oengus.sims[i].outdir = str(dir.get())
-                    if len(self.parent.oengus.sims[i]) == 0:
-                        self.parent.oengus.sims[i].outdir = os.path.join(self.parent.oengus.sims[i].outdir, 'output')
-                    if len(self.parent.oengus.sims[i]) != 0:
-                        break
+                self.parent.oengus.sims[i].outdir = str(dir.get())
         self.parent.oengus.draw_output()

@@ -1,7 +1,7 @@
 import re, sys, os, h5py, yaml
 import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-
+from my_parser import Parser
 
 def h5_getter(filepath, attribute, prtl_stride = None):
     with h5py.File(filepath, 'r') as f:
@@ -159,7 +159,6 @@ class picSim(object):
         # Returns a hierachical dictionary structure showing
         # All available data quantities from the simulations
         return self._cfgDict
-
     def get_data(self, n = -1, **kwargs):
         """ This function is how you should access data on the hdf5
         files."""
