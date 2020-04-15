@@ -33,10 +33,10 @@ class playbackBar(Tk.Frame):
 
         self.cur_sim_name  = Tk.StringVar(self)
         self.cur_sim_name.set(self.oengus.sims[self.cur_sim].name)
-        #self.quantity.trace('w', self.quantityChanged)
+        self.cur_sim_name.trace('w', self.simChanged)
 
-        simChooser = ttk.OptionMenu(self, self.cur_sim_name, self.cur_sim_name.get(), *tuple(map(lambda x: self.oengus.sims[x].name, self.oengus.sims_shown)))
-        simChooser.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
+        self.sim_menu = ttk.OptionMenu(self, self.cur_sim_name, self.cur_sim_name.get(), *tuple(map(lambda x: self.oengus.sims[x].name, self.oengus.sims_shown)))
+        self.sim_menu.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
         # the Check boxes for the dimension
         # An entry box that will let us choose the time-step
         ttk.Label(self, text='n= ').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
@@ -96,6 +96,21 @@ class playbackBar(Tk.Frame):
     @cur_sim.setter
     def cur_sim(self, val):
         self._cur_sim = val
+
+    def update_sim_list(self):
+        menu = self.sim_menu["menu"]
+        menu.delete(0, "end")
+        for x in self.oengus.sims_shown:
+            name = self.oengus.sims[x].name
+            menu.add_command(label=name,
+                             command=lambda value=name: self.cur_sim_name.set(value))
+
+    def simChanged(self, *args):
+        if self.cur_sim_name.get() == self.oengus.sims[self.cur_sim].name:
+            pass
+        else:
+            names = [sim.name for sim in self.oengus.sims]
+            self.cur_sim = names.index(self.cur_sim_name.get())
 
     def open_settings(self):
         if self.settings_window is None:

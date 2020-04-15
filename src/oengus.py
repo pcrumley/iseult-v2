@@ -29,7 +29,8 @@ class Oengus():
 
         self.cur_times = [-1, -1, -1, -1]
         self.dirname = ''
-        #self.tkApp = tkApp
+        # self.tkApp = tkApp
+
         self.interactive = interactive
 
         #self.dirname = sim.dir
@@ -244,6 +245,7 @@ class Oengus():
                 if self.SubPlotList[i][j].param_dict['sim_num'] not in self.sims_shown:
                     self.sims_shown.append(self.SubPlotList[i][j].param_dict['sim_num'])
         self.sims_shown.sort()
+
     def create_graphs(self):
         # FIND THE SLICE
         #self.MaxZInd = o.bx.shape[0]-1

@@ -276,6 +276,8 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['sim_num'] = self.parent.oengus.sim_names.index(self.SimVar.get())
+            self.parent.oengus.calc_sims_shown()
+            self.parent.playbackbar.update_sim_list()
             self.parent.oengus.canvas.draw()
 
     def setZminChanged(self, *args):
