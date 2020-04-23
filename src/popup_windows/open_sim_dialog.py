@@ -42,21 +42,19 @@ class OpenSimDialog(Tk.Toplevel):
         ttk.Label(master, text="Sim #").grid(row=0, column=0)
         ttk.Label(master, text="name").grid(row=0, column=1)
         ttk.Label(master, text="directory").grid(row=0, column=2)
-        ttk.Label(master, text="0").grid(row=1, column=0)
-        ttk.Label(master, text="1").grid(row=2, column=0)
-        ttk.Label(master, text="2").grid(row=3, column=0)
-        ttk.Label(master, text="3").grid(row=4, column=0)
+
         self.names = []
         self.dirs = []
-        for i in range(4):
+        for i in range(len(self.parent.oengus.sims)):
+            ttk.Label(master, text=f'{i}').grid(row=i+1, column=0)
             e_name = ttk.Entry(master, width=17)
-            e_name.insert(i, self.parent.oengus.sims[i].name)
+            e_name.insert(0, self.parent.oengus.sims[i].name)
             e_name.grid(row=i+1, column=1, sticky=Tk.E)
             self.names.append(e_name)
 
             e_dir = ttk.Entry(master, width=27)
             if self.parent.oengus.sims[i].outdir is not None:
-                e_dir.insert(0, self.parent.oengus.sims[0].outdir)
+                e_dir.insert(0, self.parent.oengus.sims[i].outdir)
             e_dir.grid(row=i+1, column=2, sticky=Tk.E)
 
     def buttonbox(self):
