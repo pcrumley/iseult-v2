@@ -156,8 +156,10 @@ class MainApp(Tk.Tk):
 
     def OpenSaveDialog(self):
         SaveDialog(self)
+
     def open_sim_dialog(self):
         OpenSimDialog(self)
+
     def LoadConfig(self, config_file):
         # First get rid of any & all pop up windows:
         if self.playbackbar.settings_window is not None:
@@ -180,8 +182,7 @@ class MainApp(Tk.Tk):
         # Generate the Main Param Dict
         self.oengus.cfgDict = cfgDict
         self.oengus.GenMainParamDict()
-
-        #Loading a config file may change the stride... watch out!
+        # Loading a config file may change the stride... watch out!
         for sim in self.oengus.sims:
             if sim.xtra_stride != self.oengus.MainParamDict['PrtlStride']:
                 sim.xtra_stride = self.oengus.MainParamDict['PrtlStride']

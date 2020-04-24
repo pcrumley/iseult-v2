@@ -173,6 +173,7 @@ Chart2_1:
   v_min: 0
 MainParamDict:
   2DSlicePlane: 0
+  NumberOfSims: 2
   Average1D: 0
   AxLabelSize: 11
   ClearFig: true

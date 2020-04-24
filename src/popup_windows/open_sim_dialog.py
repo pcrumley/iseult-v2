@@ -12,10 +12,10 @@ class OpenSimDialog(Tk.Toplevel):
             self.title(title)
         self.parent = parent
 
-        body = ttk.Frame(self)
-        self.initial_focus = self.body(body)
+        self.body = ttk.Frame(self)
+        self.initial_focus = self.build_sim_table(self.body)
 #        body.pack(fill=Tk.BOTH)#, expand=True)
-        body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
+        self.body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
 
         self.buttonbox()
 
@@ -36,9 +36,9 @@ class OpenSimDialog(Tk.Toplevel):
     #
     # construction hooks
 
-    def body(self, master):
+    def build_sim_table(self, master):
         # create dialog body.  return widget that should have
-        # initial focus.  this method should be overridden
+        # initial focus.
         ttk.Label(master, text="Sim #").grid(row=0, column=0)
         ttk.Label(master, text="name").grid(row=0, column=1)
         ttk.Label(master, text="directory").grid(row=0, column=2)
@@ -81,13 +81,15 @@ class OpenSimDialog(Tk.Toplevel):
         # if not self.validate():
         #    self.initial_focus.focus_set() # put focus back
         #    return
-
-        self.withdraw()
+        self.body.destroy()
         self.update_idletasks()
+        # self.withdraw()
 
-        self.apply()
 
-        self.cancel()
+
+        # self.apply()
+
+        # self.cancel()
 
     def cancel(self, event=None):
 

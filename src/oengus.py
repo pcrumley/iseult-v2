@@ -23,7 +23,7 @@ class Oengus():
     def __init__(self, preset_view='Default', interactive = True, tkApp = None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
-        self.sims = [ picSim(name='sim0') , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
+        self.sims = [ picSim(name='sim0')]# , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
 
@@ -133,11 +133,13 @@ class Oengus():
         # First create MainParamDict with the default parameters,
         # the dictionary that will hold the parameters for the program.
         # See ./iseult_configs/Default.cfg for a description of what each parameter does.
-        self.MainParamDict = {'zSlice': 0.0, # THIS IS A float WHICH IS THE RELATIVE POSITION OF THE 2D SLICE 0->1
-                              '2DSlicePlane': 0, # 0 = x-y plane, 1 == x-z plane
-                              'Average1D': 0,
-                              'ySlice': 0.5, # THIS IS A FLOAT WHICH IS THE RELATIVE POSITION OF THE 1D SLICE 0->1
-                              'WindowSize': '1200x700',
+        self.MainParamDict = {
+            'zSlice': 0.0,  # THIS IS A float WHICH IS THE RELATIVE POSITION OF THE 2D SLICE 0->1
+            '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
+            'NumberOfSims': 4,
+            'Average1D': 0,
+            'ySlice': 0.5,  # THIS IS A FLOAT WHICH IS THE RELATIVE POSITION OF THE 1D SLICE 0->1
+            'WindowSize': '1200x700',
                               'yTop': 100.0,
                               'yBottom': 0.0,
                               'Reload2End': True,
@@ -216,7 +218,21 @@ class Oengus():
         self.ion_fit_color = self.MainParamDict['ion_fit_color']
         self.electron_fit_color = self.MainParamDict['electron_fit_color']
         self.FFT_color = self.MainParamDict['FFT_color']
+        self.MainParamDict['NumberOfSims'] = max(1,
+            self.MainParamDict['NumberOfSims'])
+        # Loading a config file may change the number of sims
+        if self.MainParamDict['NumberOfSims'] != len(self.sims):
+            tmp_num = self.MainParamDict['NumberOfSims']
+            while tmp_num > len(self.sims):
+                self.sims.append(picSim(name=f'sim{len(self.sims)}'))
+            while tmp_num < len(self.sims):
+                self.sims.pop()
+            self.sim_names = [sim.name for sim in self.sims]
 
+        # Loading a config file may change the stride... watch out!
+        for sim in self.sims:
+            if sim.xtra_stride != self.MainParamDict['PrtlStride']:
+                sim.xtra_stride = self.MainParamDict['PrtlStride']
 
     #def calc_total_energy(self):
     #    self.TotalEnergyTimes = []
