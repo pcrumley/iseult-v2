@@ -182,10 +182,7 @@ class MainApp(Tk.Tk):
         # Generate the Main Param Dict
         self.oengus.cfgDict = cfgDict
         self.oengus.GenMainParamDict()
-        # Loading a config file may change the stride... watch out!
-        for sim in self.oengus.sims:
-            if sim.xtra_stride != self.oengus.MainParamDict['PrtlStride']:
-                sim.xtra_stride = self.oengus.MainParamDict['PrtlStride']
+
 
         # There are a few parameters that need to be loaded separately, mainly in the playbackbar.
         self.playbackbar.rec_var.set(self.oengus.MainParamDict['Recording'])

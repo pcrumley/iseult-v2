@@ -1,6 +1,8 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
-import os
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+from pic_sim import picSim
 
 
 class OpenSimDialog(Tk.Toplevel):
@@ -42,11 +44,12 @@ class OpenSimDialog(Tk.Toplevel):
         ttk.Label(master, text="Sim #").grid(row=0, column=0)
         ttk.Label(master, text="name").grid(row=0, column=1)
         ttk.Label(master, text="directory").grid(row=0, column=2)
-
+        self.labels = []
         self.names = []
         self.dirs = []
         for i in range(len(self.parent.oengus.sims)):
-            ttk.Label(master, text=f'{i}').grid(row=i+1, column=0)
+            self.labels.append(ttk.Label(master, text=f'{i}'))
+            self.labels[-1].grid(row=i+1, column=0)
             e_name = ttk.Entry(master, width=17)
             e_name.insert(0, self.parent.oengus.sims[i].name)
             e_name.grid(row=i+1, column=1, sticky=Tk.E)
@@ -56,16 +59,21 @@ class OpenSimDialog(Tk.Toplevel):
             if self.parent.oengus.sims[i].outdir is not None:
                 e_dir.insert(0, self.parent.oengus.sims[i].outdir)
             e_dir.grid(row=i+1, column=2, sticky=Tk.E)
-
+            self.dirs.append(e_dir)
     def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
 
         box = ttk.Frame(self)
-
+        w = ttk.Button(
+            box, text='Add Sim', width=10,
+            command=self.add, default=Tk.ACTIVE)
+        w.pack(side=Tk.LEFT, padx=5, pady=5)
+        w = ttk.Button(box, text="Remove Sim", width=10, command=self.remove)
+        w.pack(side=Tk.LEFT, padx=5, pady=5)
         w = ttk.Button(
             box, text="Open", width=10,
-            command=self.ok, default=Tk.ACTIVE)
+            command=self.ok)
         w.pack(side=Tk.LEFT, padx=5, pady=5)
         w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
         w.pack(side=Tk.LEFT, padx=5, pady=5)
@@ -76,20 +84,49 @@ class OpenSimDialog(Tk.Toplevel):
         box.pack()
 
     # standard button semantics
+    def add(self, event=None):
+        n = len(self.dirs)
+        self.parent.oengus.sims.append(picSim(name=f'sim{n}'))
+        self.parent.oengus.sims[-1].xtra_stride = self.parent.oengus.MainParamDict['PrtlStride']
+        self.parent.oengus.sim_names = [sim.name for sim in self.parent.oengus.sims]
 
+        self.labels.append(ttk.Label(self.body, text=f'{n}'))
+        self.labels[-1].grid(row=n+1, column=0)
+        e_name = ttk.Entry(self.body, width=17)
+        e_name.insert(0, self.parent.oengus.sims[n].name)
+        e_name.grid(row=n+1, column=1, sticky=Tk.E)
+        self.names.append(e_name)
+
+        e_dir = ttk.Entry(self.body, width=27)
+        if self.parent.oengus.sims[n].outdir is not None:
+            e_dir.insert(0, self.parent.oengus.sims[n].outdir)
+        e_dir.grid(row=n+1, column=2, sticky=Tk.E)
+        self.dirs.append(e_dir)
+        self.parent.oengus.MainParamDict['NumberOfSims'] += 1
+
+    def remove(self, event=None):
+        if len(self.labels) > 1:
+            self.labels[-1].destroy()
+            self.labels.pop()
+            self.names[-1].destroy()
+            self.names.pop()
+            self.dirs[-1].destroy()
+            self.dirs.pop()
+            self.parent.oengus.sims.pop()
+            self.parent.oengus.sim_names.pop()
+            self.parent.oengus.MainParamDict['NumberOfSims'] -= 1
     def ok(self, event=None):
         # if not self.validate():
         #    self.initial_focus.focus_set() # put focus back
         #    return
-        self.body.destroy()
         self.update_idletasks()
-        # self.withdraw()
+        self.withdraw()
 
 
 
-        # self.apply()
+        self.apply()
 
-        # self.cancel()
+        self.cancel()
 
     def cancel(self, event=None):
 
