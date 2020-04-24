@@ -1,8 +1,6 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 import os, sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
-from pic_sim import picSim
 
 
 class OpenSimDialog(Tk.Toplevel):
@@ -86,10 +84,7 @@ class OpenSimDialog(Tk.Toplevel):
     # standard button semantics
     def add(self, event=None):
         n = len(self.dirs)
-        self.parent.oengus.sims.append(picSim(name=f'sim{n}'))
-        self.parent.oengus.sims[-1].xtra_stride = self.parent.oengus.MainParamDict['PrtlStride']
-        self.parent.oengus.sim_names = [sim.name for sim in self.parent.oengus.sims]
-
+        self.parent.oengus.add_sim(f'sim{n}')
         self.labels.append(ttk.Label(self.body, text=f'{n}'))
         self.labels[-1].grid(row=n+1, column=0)
         e_name = ttk.Entry(self.body, width=17)
@@ -102,7 +97,7 @@ class OpenSimDialog(Tk.Toplevel):
             e_dir.insert(0, self.parent.oengus.sims[n].outdir)
         e_dir.grid(row=n+1, column=2, sticky=Tk.E)
         self.dirs.append(e_dir)
-        self.parent.oengus.MainParamDict['NumberOfSims'] += 1
+
 
     def remove(self, event=None):
         if len(self.labels) > 1:
@@ -112,9 +107,8 @@ class OpenSimDialog(Tk.Toplevel):
             self.names.pop()
             self.dirs[-1].destroy()
             self.dirs.pop()
-            self.parent.oengus.sims.pop()
-            self.parent.oengus.sim_names.pop()
-            self.parent.oengus.MainParamDict['NumberOfSims'] -= 1
+            self.parent.oengus.pop_sim()
+
     def ok(self, event=None):
         # if not self.validate():
         #    self.initial_focus.focus_set() # put focus back

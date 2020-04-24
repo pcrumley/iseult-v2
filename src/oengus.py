@@ -220,6 +220,12 @@ class Oengus():
         self.FFT_color = self.MainParamDict['FFT_color']
         self.MainParamDict['NumberOfSims'] = max(1,
             self.MainParamDict['NumberOfSims'])
+
+        # Loading a config file may change the stride... watch out!
+        for sim in self.sims:
+            if sim.xtra_stride != self.MainParamDict['PrtlStride']:
+                sim.xtra_stride = self.MainParamDict['PrtlStride']
+
         # Loading a config file may change the number of sims
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
             tmp_num = self.MainParamDict['NumberOfSims']
@@ -228,11 +234,6 @@ class Oengus():
             while tmp_num < len(self.sims):
                 self.sims.pop()
             self.sim_names = [sim.name for sim in self.sims]
-
-        # Loading a config file may change the stride... watch out!
-        for sim in self.sims:
-            if sim.xtra_stride != self.MainParamDict['PrtlStride']:
-                sim.xtra_stride = self.MainParamDict['PrtlStride']
 
     #def calc_total_energy(self):
     #    self.TotalEnergyTimes = []
@@ -261,6 +262,18 @@ class Oengus():
                 if self.SubPlotList[i][j].param_dict['sim_num'] not in self.sims_shown:
                     self.sims_shown.append(self.SubPlotList[i][j].param_dict['sim_num'])
         self.sims_shown.sort()
+
+    def add_sim(self, name):
+        self.sims.append(picSim(name=name))
+        self.sim_names.append(self.sims[-1].name)
+        self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
+        self.MainParamDict['NumberOfSims'] += 1
+
+    def pop_sim(self):
+        if len(self.sims)>1:
+            self.sims.pop(-1)
+            self.sim_names.pop(-1)
+            self.MainParamDict['NumberOfSims'] -= 1
 
     def create_graphs(self):
         # FIND THE SLICE
