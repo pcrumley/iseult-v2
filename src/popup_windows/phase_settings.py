@@ -26,18 +26,18 @@ class phaseSettings(Tk.Toplevel):
         InterplChooser = ttk.OptionMenu(frm, self.InterpolVar,
                             self.params['interpolation'],
                             *tuple(self.subplot.interpolation_methods))
-        InterplChooser.grid(row=0, column=2, sticky=Tk.W + Tk.E)
+        InterplChooser.grid(row=0, column=3, sticky=Tk.W + Tk.E)
 
         # OptionMenu to choose simulation
         self.SimVar = Tk.StringVar(self)
         self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])  # default value
         self.SimVar.trace('w', self.SimChanged)
 
-        ttk.Label(frm, text="simulation:").grid(row=0, column=4)
+        ttk.Label(frm, text="simulation:").grid(row=1, column=0)
         SimChooser = ttk.OptionMenu(frm, self.SimVar,
                             self.parent.oengus.sim_names[self.params['sim_num']],
                             *tuple(self.parent.oengus.sim_names))
-        SimChooser.grid(row=0, column=5, sticky=Tk.W + Tk.E)
+        SimChooser.grid(row=1, column=1, sticky=Tk.W + Tk.E)
 
 
         # Create the OptionMenu to chooses the Chart Type:

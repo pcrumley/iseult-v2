@@ -228,10 +228,10 @@ class Oengus():
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
             tmp_num = self.MainParamDict['NumberOfSims']
             while tmp_num > len(self.sims):
-                self.sims.append(picSim(name=f'sim{len(self.sims)}'))
+                self.add_sim(f'sim{len(self.sims)}')
             while tmp_num < len(self.sims):
-                self.sims.pop()
-            self.sim_names = [sim.name for sim in self.sims]
+                self.pop_sim()
+
 
     #def calc_total_energy(self):
     #    self.TotalEnergyTimes = []
@@ -264,6 +264,7 @@ class Oengus():
     def add_sim(self, name):
         self.sims.append(picSim(name=name))
         self.sim_names.append(self.sims[-1].name)
+        self.cur_times.append(-1)
         self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
         self.MainParamDict['NumberOfSims'] += 1
 
@@ -271,6 +272,7 @@ class Oengus():
         if len(self.sims)>1:
             self.sims.pop(-1)
             self.sim_names.pop(-1)
+            self.cur_times.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
 
     def create_graphs(self):
