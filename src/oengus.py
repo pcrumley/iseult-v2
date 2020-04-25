@@ -27,7 +27,7 @@ class Oengus():
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
 
-        self.cur_times = [-1, -1, -1, -1]
+        self.cur_times = [-1]#, -1, -1, -1]
         self.dirname = ''
         # self.tkApp = tkApp
 
@@ -118,9 +118,7 @@ class Oengus():
         # previous objects
         #if self.showingTotEnergy:
         #    self.
-    def open_sim(self, sim, num = 0, sim_type = 'Tristan_MP'):
-        self.sims[num] = sim
-        self.sims[num].xtra_stride = self.MainParamDict['PrtlStride']
+
     def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes MainParamDict to hold all of the main iseult parameters.
             It also sets all of the plots parameters.'''

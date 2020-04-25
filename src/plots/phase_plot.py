@@ -58,18 +58,17 @@ class phasePlot:
         self.parent = parent
         self.chart_type = 'PhasePlot'
         self.figure = self.parent.figure
-        self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
+        self.interpolation_methods = [
+            'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
-
     def norm(self, vmin=None, vmax=None):
         if self.GetPlotParam('cnorm_type') == "Log":
-            return  mcolors.LogNorm(vmin, vmax)
+            return mcolors.LogNorm(vmin, vmax)
 
         else:
             return mcolors.Normalize(vmin, vmax)
-
 
     def update_labels_and_colors(self):
         if self.param_dict['prtl_type'] == 'ions': #protons
@@ -83,8 +82,16 @@ class phasePlot:
         #if self.parent.MainParamDict['DoLorentzBoost'] and np.abs(self.parent.MainParamDict['GammaBoost'])>1E-8:
         #    self.x_label = r'$x\prime\ [c/\omega_{\rm pe}]$'
 
-        self.axes.set_xlabel(self.x_values['axis_label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-        self.axes.set_ylabel(self.y_values['axis_label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+        self.axes.set_xlabel(
+            self.x_values['axis_label'],
+            labelpad=self.parent.MainParamDict['xLabelPad'],
+            color='black',
+            size=self.parent.MainParamDict['AxLabelSize'])
+        self.axes.set_ylabel(
+            self.y_values['axis_label'],
+            labelpad=self.parent.MainParamDict['xLabelPad'],
+            color='black',
+            size=self.parent.MainParamDict['AxLabelSize'])
     def draw(self, sim = None, n = None):
         # set the colors):
         self.IntRegionLines = []
@@ -94,13 +101,17 @@ class phasePlot:
         tick_color = 'black'
 
         #    self.clim[0] = 10**self.GetPlotParam('v_min')
-        #if self.GetPlotParam('set_v_max'):
+        # if self.GetPlotParam('set_v_max'):
         #    self.clim[1] = 10**self.GetPlotParam('v_max')
 
 
-        self.gs = gridspec.GridSpecFromSubplotSpec(100,100, subplot_spec = self.parent.gs0[self.pos])#, bottom=0.2,left=0.1,right=0.95, top = 0.95)
+        self.gs = gridspec.GridSpecFromSubplotSpec(
+            100, 100,
+            subplot_spec=self.parent.gs0[self.pos])
 
-        self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
+        self.axes = self.figure.add_subplot(
+            self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1],
+                self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
         self.image = self.axes.imshow([[np.nan,np.nan],[np.nan,np.nan]],
                                     cmap = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],

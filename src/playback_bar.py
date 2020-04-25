@@ -20,23 +20,29 @@ class playbackBar(Tk.Frame):
         self.param = tstep_param
 
         # make a button that skips left
-        self.skipLB = ttk.Button(self, text = '<', command = self.skip_left)
+        self.skipLB = ttk.Button(self, text='<', command=self.skip_left)
         self.skipLB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
         # make the play button
-        self.playB = ttk.Button(self, text = 'Play', command = self.play_handler)
+        self.playB = ttk.Button(self, text='Play', command=self.play_handler)
         self.playB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
         # a button that skips right
-        self.skipRB = ttk.Button(self, text = '>', command = self.skip_right)
+        self.skipRB = ttk.Button(self, text='>', command=self.skip_right)
         self.skipRB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
-        self.cur_sim_name  = Tk.StringVar(self)
+        self.cur_sim_name = Tk.StringVar(self)
         self.cur_sim_name.set(self.oengus.sims[self.cur_sim].name)
         self.cur_sim_name.trace('w', self.simChanged)
 
-        self.sim_menu = ttk.OptionMenu(self, self.cur_sim_name, self.cur_sim_name.get(), *tuple(map(lambda x: self.oengus.sims[x].name, self.oengus.sims_shown)))
-        self.sim_menu.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
+        self.sim_menu = ttk.OptionMenu(
+            self,
+            self.cur_sim_name,
+            self.cur_sim_name.get(),
+            *tuple(
+                map(lambda x: self.oengus.sims[x].name,
+                    self.oengus.sims_shown)))
+        self.sim_menu.pack(side=Tk.LEFT, fill=Tk.BOTH, expand = 0)
         # the Check boxes for the dimension
         # An entry box that will let us choose the time-step
         ttk.Label(self, text='n= ').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
@@ -48,11 +54,16 @@ class playbackBar(Tk.Frame):
 
         # the entry box
         self.txt_enter = ttk.Entry(self, textvariable=self.tstep, width=6)
-        self.txt_enter.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
+        self.txt_enter.pack(side=Tk.LEFT, fill=Tk.BOTH, expand = 0)
 
         # A slider that will show the progress in the simulation as well as
         # allow us to select a time. Now the slider just changes the tstep box
-        self.slider = ttk.Scale(self, from_=self.param.minimum, to=self.param.maximum, command = self.scale_handler)
+        self.slider = ttk.Scale(
+            self,
+            from_=self.param.minimum,
+            to=self.param.maximum,
+            command = self.scale_handler)
+
         self.slider.set(self.param.value)
         self.slider.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         # bind releasing the moust button to updating the plots.
@@ -65,8 +76,6 @@ class playbackBar(Tk.Frame):
         self.record_frames = ttk.Checkbutton(new_frame, text = 'Loop',
                                             variable = self.loop_var)
         self.record_frames.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
-
-
         self.rec_var = Tk.IntVar()
         self.rec_var.set(self.oengus.MainParamDict['Recording'])
         self.rec_var.trace('w', self.rec_changed)
@@ -78,9 +87,11 @@ class playbackBar(Tk.Frame):
         #self.measuresB= ttk.Button(self, text='FFT', command=self.open_measures)
         #self.measuresB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
-
         # a settings button that should lauch some global settings.
-        self.settingsB= ttk.Button(self, text='Settings', command=self.open_settings)
+        self.settingsB = ttk.Button(
+            self,
+            text='Settings',
+            command=self.open_settings)
         self.settingsB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
         # a reload button that reloads the files and then refreshes the plot
@@ -111,6 +122,7 @@ class playbackBar(Tk.Frame):
         else:
             names = [sim.name for sim in self.oengus.sims]
             self.cur_sim = names.index(self.cur_sim_name.get())
+            # Move the
 
     def open_settings(self):
         if self.settings_window is None:

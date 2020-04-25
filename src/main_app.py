@@ -203,8 +203,10 @@ class MainApp(Tk.Tk):
 
         self.oengus.create_graphs()
         self.oengus.canvas.draw()
+
     def txt_enter(self, e):
         self.playbackbar.text_callback()
+
     def set_knob(self, value):
         self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
         self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
