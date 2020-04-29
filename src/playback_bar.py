@@ -122,6 +122,7 @@ class playbackBar(Tk.Frame):
         else:
             names = [sim.name for sim in self.oengus.sims]
             self.cur_sim = names.index(self.cur_sim_name.get())
+            self.oengus.cur_sim = self.cur_sim
             # Move the
 
     def open_settings(self):

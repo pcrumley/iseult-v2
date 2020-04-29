@@ -24,6 +24,7 @@ class Oengus():
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.sims = [ picSim(name='sim0')]# , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
+        self.cur_sim = 0 # the curent sim on the playback bar
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
 
@@ -266,6 +267,10 @@ class Oengus():
         self.sims.append(picSim(name=name))
         self.sim_names.append(self.sims[-1].name)
         self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
+        if self.MainParamDict['LinkTime']:
+            unit = self.MainParamDict['TimeUnits']
+            cur_t = self.sims[self.cur_sim].get_time(units=unit)
+            self.sims[-1].set_time(cur_t, units=unit)
         self.MainParamDict['NumberOfSims'] += 1
 
     def pop_sim(self):
