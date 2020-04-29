@@ -74,8 +74,8 @@ class vectorFldsPlot:
     def draw(self, sim = None, n = None):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        # if n is None:
+        #     n = self.parent.cur_times[self.param_dict['sim_num']]
 
                 # get c_omp and istep to convert cells to physical units
 
@@ -344,8 +344,8 @@ class vectorFldsPlot:
         will be redrawn after all subplots data is changed. '''
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        # if n is None:
+        #    n = self.parent.cur_times[self.param_dict['sim_num']]
         # FIND THE SLICE
         MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
         MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
@@ -412,8 +412,8 @@ class vectorFldsPlot:
     def update_labels_and_colors(self, sim = None, n = None):
         if sim is None:
             sim = self.parent.sim[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        #if n is None:
+        #    n = self.parent.cur_times[self.param_dict['sim_num']]
 
         if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:

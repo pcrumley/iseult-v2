@@ -210,6 +210,8 @@ MainParamDict:
   ImageAspect: 0
   LinkK: true
   LinkSpatial: 2
+  LinkTime: true
+  TimeUnits: null
   LoopPlayback: true
   MaxCols: 8
   MaxRows: 8

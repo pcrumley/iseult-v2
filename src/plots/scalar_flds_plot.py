@@ -70,8 +70,9 @@ class scalarFldsPlot:
     def draw(self, sim = None, n = None):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+
+        #if n is None:
+        #    n = self.parent.cur_times[self.param_dict['sim_num']]
         if self.GetPlotParam('cmap') == 'None':
             if self.GetPlotParam('UseDivCmap'):
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -363,8 +364,8 @@ class scalarFldsPlot:
         will be redrawn after all subplots data is changed. '''
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        # if n is None:
+        #     n = self.parent.cur_times[self.param_dict['sim_num']]
         self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
         self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')

@@ -210,7 +210,12 @@ class MainApp(Tk.Tk):
     def set_knob(self, value):
         self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
         self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
-        self.oengus.cur_times[self.playbackbar.cur_sim] = value - 1
+        self.oengus.sims[self.playbackbar.cur_sim].set_time(value - 1)
+        if self.oengus.MainParamDict['LinkTime']:
+            unit = self.oengus.MainParamDict['TimeUnits']
+            cur_t = self.oengus.sims[self.playbackbar.cur_sim].get_time(units=unit)
+            for sim in self.oengus.sims:
+                sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
 

@@ -27,7 +27,6 @@ class Oengus():
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
 
-        self.cur_times = [-1]#, -1, -1, -1]
         self.dirname = ''
         # self.tkApp = tkApp
 
@@ -62,7 +61,7 @@ class Oengus():
         self.figure.subplots_adjust( **self.SubPlotParams)
         if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            self.canvas = FigureCanvasTkAgg(self.figure, master = tkApp)
+            self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
@@ -132,82 +131,84 @@ class Oengus():
         # the dictionary that will hold the parameters for the program.
         # See ./iseult_configs/Default.cfg for a description of what each parameter does.
         self.MainParamDict = {
-            'zSlice': 0.0,  # THIS IS A float WHICH IS THE RELATIVE POSITION OF THE 2D SLICE 0->1
-            '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
-            'NumberOfSims': 4,
-            'Average1D': 0,
-            'ySlice': 0.5,  # THIS IS A FLOAT WHICH IS THE RELATIVE POSITION OF THE 1D SLICE 0->1
-            'WindowSize': '1200x700',
-                              'yTop': 100.0,
-                              'yBottom': 0.0,
-                              'Reload2End': True,
-                              'ColorMap': 'viridis',
-                              'FFTLeft': 0.0,
-                              'ShowTitle': True,
-                              'ImageAspect': 0,
-                              'WaitTime': 0.01,
-                              'MaxCols': 8,
-                              'VAxesExtent': [4, 90, 0, 92],
-                              'kRight': 1.0,
-                              'DoLorentzBoost': False,
-                              'NumOfRows': 3,
-                              'MaxRows': 8,
-                              'SetkLim': False,
-                              'VCbarExtent': [4, 90, 94, 97],
-                              'SkipSize': 5,
-                              'xLeft': 0.0,
-                              'NumFontSize': 11,
-                              'AxLabelSize': 11,
-                              'FFTRelative': True,
-                              'NumOfCols': 2,
-                              'VSubPlotParams': {'right': 0.95,
-                                                 'bottom': 0.06,
-                                                 'top': 0.93,
-                                                 'wspace': 0.23,
-                                                 'hspace': 0.15,
-                                                 'left': 0.06},
-                              'HAxesExtent': [18, 92, 0, -1],
-                              'SetyLim': False,
-                              'cmaps_with_green': ['viridis',
-                                'Rainbow + White',
-                                'Blue/Green/Red/Yellow',
-                                'Cube YF',
-                                'Linear_L'],
-                              'HSubPlotParams': {'right': 0.95,
-                                                 'bottom': 0.06,
-                                                 'top': 0.91,
-                                                 'wspace': 0.15,
-                                                 'hspace': 0.3,
-                                                 'left': 0.06},
-                              'yLabelPad': 0,
-                              'cbarLabelPad': 15,
-                              'SetxLim': False,
-                              'xLimsRelative': False,
-                              'ConstantShockVel': True,
-                              'xRight': 100.0,
-                              'LinkSpatial': 2,
-                              'HCbarExtent': [0, 4, 0, -1],
-                              'Recording': False,
-                              'xLabelPad': 0,
-                              'annotateTextSize': 18,
-                              'FFTRight': 200.0,
-                              'ClearFig': True,
-                              'HorizontalCbars': False,
-                              'DivColorMap': 'BuYlRd',
-                              'LinkK': True,
-                              'GammaBoost': 0.0,
-                              'kLeft': 0.1,
-                              'LoopPlayback': True,
-                              'PrtlStride': 5,
-                              'electron_color': '#fca636',
-                              'electron_fit_color': 'yellow',
-                              'ion_color': '#d6556d',
-                              'ion_fit_color': 'r',
-                              'shock_color': 'w',
-                              'FigSize':  [12.0, 6.22],
-                              'dpi': 100,
-                              'FFT_color': 'k',
-                              'legendLabelSize':11}
+          'zSlice': 0.0,  # THIS IS A float WHICH IS THE RELATIVE POSITION OF THE 2D SLICE 0->1
+          '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
+          'NumberOfSims': 4,
+          'Average1D': 0,
+          'ySlice': 0.5,  # THIS IS A FLOAT WHICH IS THE RELATIVE POSITION OF THE 1D SLICE 0->1
+          'WindowSize': '1200x700',
+          'yTop': 100.0,
+          'yBottom': 0.0,
+          'LinkTime': True,
+          'TimeUnits': None,
+          'Reload2End': True,
+          'ColorMap': 'viridis',
+          'FFTLeft': 0.0,
+          'ShowTitle': True,
+          'ImageAspect': 0,
+          'WaitTime': 0.01,
+          'MaxCols': 8,
+          'VAxesExtent': [4, 90, 0, 92],
+          'kRight': 1.0,
+          'DoLorentzBoost': False,
+          'NumOfRows': 3,
+          'MaxRows': 8,
+          'SetkLim': False,
+          'VCbarExtent': [4, 90, 94, 97],
+          'SkipSize': 5,
+          'xLeft': 0.0,
+          'NumFontSize': 11,
+          'AxLabelSize': 11,
+          'FFTRelative': True,
+          'NumOfCols': 2,
+          'VSubPlotParams': {'right': 0.95,
+                             'bottom': 0.06,
+                             'top': 0.93,
+                             'wspace': 0.23,
+                             'hspace': 0.15,
+                             'left': 0.06},
+          'HAxesExtent': [18, 92, 0, -1],
+          'SetyLim': False,
+          'cmaps_with_green': ['viridis',
+            'Rainbow + White',
+            'Blue/Green/Red/Yellow',
+            'Cube YF',
+            'Linear_L'],
+          'HSubPlotParams': {'right': 0.95,
+                             'bottom': 0.06,
+                             'top': 0.91,
+                             'wspace': 0.15,
+                             'hspace': 0.3,
+                             'left': 0.06},
+          'yLabelPad': 0,
+          'cbarLabelPad': 15,
+          'SetxLim': False,
+          'xLimsRelative': False,
+          'ConstantShockVel': True,
+          'xRight': 100.0,
+          'LinkSpatial': 2,
+          'HCbarExtent': [0, 4, 0, -1],
+          'Recording': False,
+          'xLabelPad': 0,
+          'annotateTextSize': 18,
+          'FFTRight': 200.0,
+          'ClearFig': True,
+          'HorizontalCbars': False,
+          'DivColorMap': 'BuYlRd',
+          'LinkK': True,
+          'GammaBoost': 0.0,
+          'kLeft': 0.1,
+          'LoopPlayback': True,
+          'PrtlStride': 5,
+          'electron_color': '#fca636',
+          'electron_fit_color': 'yellow',
+          'ion_color': '#d6556d',
+          'ion_fit_color': 'r',
+          'shock_color': 'w',
+          'FigSize':  [12.0, 6.22],
+          'dpi': 100,
+          'FFT_color': 'k',
+          'legendLabelSize':11}
         for key, val in self.cfgDict['MainParamDict'].items():
             self.MainParamDict[key] = val
         self.electron_color = self.MainParamDict['electron_color']
@@ -264,7 +265,6 @@ class Oengus():
     def add_sim(self, name):
         self.sims.append(picSim(name=name))
         self.sim_names.append(self.sims[-1].name)
-        self.cur_times.append(-1)
         self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
         self.MainParamDict['NumberOfSims'] += 1
 
@@ -272,7 +272,6 @@ class Oengus():
         if len(self.sims)>1:
             self.sims.pop(-1)
             self.sim_names.pop(-1)
-            self.cur_times.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
 
     def create_graphs(self):
@@ -315,11 +314,13 @@ class Oengus():
         #                pass
 
         if self.MainParamDict['ShowTitle']:
-            if len(self.sim_name) == 0:
-                self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)
+            sim = self.sims[0]
+            self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+            #if len(self.sim_name) == 0:
+
                 #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
-            else:
-                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+            #else:
+            #    self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
 
         ####
         #
@@ -410,11 +411,14 @@ class Oengus():
         #            except KeyError:
         #                pass
         if self.MainParamDict['ShowTitle']:
-            if len(self.sim_name) == 0:
-                self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)
-                #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
-            else:
-                self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+            sim = self.sims[0]
+            self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+
+            #if len(self.sim_name) == 0:
+            #    self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)
+            #    #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+            #else:
+            #    self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
         #if self.MainParamDict['ShowTitle']:
         #    if len(self.sim_name) == 0:
         #        self.figure.suptitle(os.path.abspath(self.dirname)+ '/*.'+o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
@@ -471,6 +475,7 @@ class Oengus():
         if not self.interactive:
             s, (width, height) = self.canvas.print_to_buffer()
             return Image.frombytes('RGBA', (width, height), s)
+
 def runMe(cmd_args):
     tic = time.time()
     cmdout = ['ffmpeg',

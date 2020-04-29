@@ -182,8 +182,9 @@ class phasePlot:
         self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        #if n is None:
+        #    n = self.parent.cur_times[self.param_dict['sim_num']]
+
         # Generate the X-axis values
         self.x_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
@@ -192,7 +193,7 @@ class phasePlot:
                 prtl_type = self.param_dict['prtl_type'],
                 attribute = self.param_dict['y_val'])
         self.update_labels_and_colors()
-        self.refresh()
+        self.refresh(sim = sim, n = n)
 
     def refresh(self, sim = None, n = None):
         '''This is a function that will be called only if self.axes already
@@ -203,8 +204,8 @@ class phasePlot:
 
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        if n is None:
-            n = self.parent.cur_times[self.param_dict['sim_num']]
+        #if n is None:
+        #    n = self.parent.cur_times[self.param_dict['sim_num']]
         # Generate the X-axis values
         c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
 

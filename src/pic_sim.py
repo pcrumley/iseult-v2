@@ -11,11 +11,13 @@ def h5_getter(filepath, attribute, prtl_stride = None):
         return f[attribute][:]
 
 class picSim(object):
+    available_units = ['file'] # ['c_ompe', 'file', 'c_ompi']
     def __init__(self, name = None, dirpath=os.curdir, cfg_file=os.path.join(os.path.dirname(__file__),'code_output_configs','tristan_v1.yml')):
         self._outdir = dirpath
         self._xtra_stride = 1
         self._data_dictionary = {}
         self._name = name
+        self.__cur_n = -1
         self._fnum = 0
         self._cfg_file = ''
         if 'iseult_conf.yml' in os.listdir(self.outdir):
@@ -32,21 +34,51 @@ class picSim(object):
             # first see if v1 works:
             self.try_default_sim_types()
 
+    def get_time(self, units=None):
+        if units not in self.available_units:
+            units = None
+        if units is None:
+            return self.__cur_n
+        elif units == 'file':
+            return self.file_list[self.__cur_n]
+        # elif self.units == 'lap':
+        #    self.__units = 'lap'
+        # elif self.units == 'c_ompe':
+        #    self.__units = 'c_ompe'
+        # elif self.units == 'c_ompi':
+        #    self.__units = 'c_ompi'
 
+    def set_time(self, t_arg, units=None):
+        if units is None:
+            if t_arg < 0:
+                t_arg = self.__len__() - t_arg
+            self.__cur_n = min(t_arg, self.__len__() - 1)
+        # THIS IS O(N) NEED IMPROVE
+        if units == 'file':
+            self.__cur_n = self.file_list.index(t_arg)
+        #    self.__units = 'lap'
+        # elif units == 'c_ompe':
+        #    self.__unit = 'c_ompe'
+        # elif units_str == 'c_ompi':
+    #    self.__units = 'c_ompi'
 
     def get_f_numbers(self):
         """A function that gets passed a directory and simulation type
-        and retuns an ordered list of all the endings of the simulation output files.
-        """
+        and retuns an ordered list of all the endings of the simulation output
+        files."""
         output_file_names = self._cfgDict['h5_files_list']
         output_file_keys = [key.split('.')[0] for key in output_file_names]
-        output_file_regex = [re.compile(elm) for elm in  output_file_names]
+        output_file_regex = [re.compile(elm) for elm in output_file_names]
         path_dict = {}
         try:
             # Create a dictionary of all the paths to the files
             has_star = 0
             for key, regex in zip(output_file_keys, output_file_regex):
-                path_dict[key] = [item for item in filter(regex.match, os.listdir(self.outdir))]
+                path_dict[key] = [
+                    item for item in
+                    filter(regex.match, os.listdir(self.outdir))
+                ]
+                
                 path_dict[key].sort()
                 for i in range(len(path_dict[key])):
                     elm = path_dict[key][i]
@@ -56,7 +88,7 @@ class picSim(object):
                         if elm.split('.')[-1] == '***':
                             has_star += 1
                         path_dict[key].remove(elm)
-            ### GET THE NUMBERS THAT HAVE ALL SET OF FILES:
+            # GET THE NUMBERS THAT HAVE ALL SET OF FILES:
             all_there = set(elm.split('.')[-1] for elm in path_dict[output_file_keys[0]])
             for key in path_dict.keys():
                 all_there &= set(elm.split('.')[-1] for elm in path_dict[key])
@@ -159,14 +191,15 @@ class picSim(object):
         # Returns a hierachical dictionary structure showing
         # All available data quantities from the simulations
         return self._cfgDict
-    def get_data(self, n = -1, **kwargs):
+    def get_data(self, n = None, **kwargs):
         """ This function is how you should access data on the hdf5
         files."""
 
         lookup = {'data_class': None}
         for key, val in kwargs.items():
             lookup[key] = val
-
+        if n is None:
+            n = self.__cur_n
         f_end = self.file_list[n]
         response_dir = {}
         try:
