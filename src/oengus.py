@@ -20,11 +20,11 @@ from PIL import Image
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', interactive = True, tkApp = None):
+    def __init__(self, preset_view='Default', interactive=True, tkApp=None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
-        self.sims = [ picSim(name='sim0')]# , picSim(name='sim1'), picSim(name='sim2'), picSim(name='sim3') ]
-        self.cur_sim = 0 # the curent sim on the playback bar
+        self.sims = [picSim(name='sim0')]
+        self.cur_sim = 0  # the curent sim on the playback bar
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
 
@@ -274,26 +274,26 @@ class Oengus():
         self.MainParamDict['NumberOfSims'] += 1
 
     def pop_sim(self):
-        if len(self.sims)>1:
+        if len(self.sims) > 1:
             self.sims.pop(-1)
             self.sim_names.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
 
     def create_graphs(self):
         # FIND THE SLICE
-        #self.MaxZInd = o.bx.shape[0]-1
-        #self.MaxYInd = o.bx.shape[1]-1
-        #self.MaxXInd = o.bx.shape[2]-1
+        # self.MaxZInd = o.bx.shape[0]-1
+        # self.MaxYInd = o.bx.shape[1]-1
+        # self.MaxXInd = o.bx.shape[2]-1
 
-        #self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
-        #self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
+        # self.ySlice = int(np.around(self.MainParamDict['ySlice']*self.MaxYInd))
+        # self.zSlice = int(np.around(self.MainParamDict['zSlice']*self.MaxZInd))
 
         # divy up the figure into a bunch of subplots using GridSpec.
-        self.gs0 = gridspec.GridSpec(self.MainParamDict['NumOfRows'],self.MainParamDict['NumOfCols'])
+        self.gs0 = gridspec.GridSpec(self.MainParamDict['NumOfRows'], self.MainParamDict['NumOfCols'])
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                self.SubPlotList[i][j].draw()#self.sim, -1)
+                self.SubPlotList[i][j].draw() # self.sim, -1)
         #    if 'my' in self.sim._h5Key2FileDict.keys():
         #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
         #    else:
@@ -304,8 +304,6 @@ class Oengus():
         #    else:
         #        tmpSize = ((self.MaxXInd+1)*o.istep)//(o.mx0-5)
         #        cpu_x_locs = np.cumsum(np.ones(tmpSize)*(o.mx0)-5)/o.c_omp
-
-
         #    for i in range(self.MainParamDict['NumOfRows']):
         #        for j in range(self.MainParamDict['NumOfCols']):
         #            try:
@@ -323,7 +321,7 @@ class Oengus():
             self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
             #if len(self.sim_name) == 0:
 
-                #o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
+                # o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
             #else:
             #    self.figure.suptitle(self.sim_name +', t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
 
@@ -381,17 +379,17 @@ class Oengus():
                         # Choose the right dashes pattern
                         self.SubPlotList[pos[0]][pos[1]].IntRegionLines[-1].set_dashes(self.dashes_options[k])
         """
-        #self.canvas.draw()
+        # self.canvas.draw()
 
     def draw_output(self):
-        #for i in range(self.MainParamDict['NumOfRows']):
-        #    for j in range(self.MainParamDict['NumOfCols']):
-        #        self.SubPlotList[i][j].update_data(o)
+        # for i in range(self.MainParamDict['NumOfRows']):
+        #     for j in range(self.MainParamDict['NumOfCols']):
+        #         self.SubPlotList[i][j].update_data(o)
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].refresh()
-        #if self.showingCPUs:
+        # if self.showingCPUs:
         #    if 'my' in self.sim._h5Key2FileDict.keys():
         #        cpu_y_locs = np.cumsum(o.my-5)/o.c_omp
         #    else:
@@ -436,8 +434,9 @@ class Oengus():
         ####
 
         # first find all the phase plots that need writing to
-        #self.phase_plot_list = []
-        #self.spectral_plot_list = []
+        # self.phase_plot_list = []
+        # self.spectral_plot_list = []
+
         """
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):

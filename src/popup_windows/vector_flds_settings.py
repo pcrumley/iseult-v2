@@ -32,13 +32,22 @@ class VectorFieldsSettings(Tk.Toplevel):
         ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column = 0)
         ctypeChooser = ttk.OptionMenu(frm, self.ctypevar, self.subplot.chart_type, *tuple(self.parent.oengus.plot_types_dict.keys()))
         ctypeChooser.grid(row =0, column = 1, sticky = Tk.W + Tk.E)
+        # OptionMenu to choose simulation
+        self.SimVar = Tk.StringVar(self)
+        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])  # default value
+        self.SimVar.trace('w', self.SimChanged)
 
+        ttk.Label(frm, text="simulation:").grid(row=1, column=0)
+        SimChooser = ttk.OptionMenu(frm, self.SimVar,
+                    self.parent.oengus.sim_names[self.params['sim_num']],
+                    *tuple(self.parent.oengus.sim_names))
+        SimChooser.grid(row=1, column=1, sticky=Tk.W + Tk.E)
         self.TwoDVar = Tk.IntVar(self) # Create a var to track whether or not to plot in 2-D
         self.TwoDVar.set(self.params['twoD'])
         cb = ttk.Checkbutton(frm, text = "Show in 2-D",
                 variable = self.TwoDVar,
                 command = self.Change2d)
-        cb.grid(row = 1, sticky = Tk.W)
+        cb.grid(row=1, column=2, sticky=Tk.W)
         # the Radiobox Control to choose the Field Type
         self.quantity  = Tk.StringVar(self)
         self.quantity.set(self.params['field_type'])
@@ -213,6 +222,15 @@ class VectorFieldsSettings(Tk.Toplevel):
                 self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
                 self.subplot.set_v_max_min()
                 self.parent.oengus.canvas.draw()
+
+    def SimChanged(self, *args):
+        if self.SimVar.get() == self.parent.oengus.sim_names[self.params['sim_num']]:
+            pass
+        else:
+            self.params['sim_num'] = self.parent.oengus.sim_names.index(self.SimVar.get())
+            self.parent.oengus.calc_sims_shown()
+            self.parent.playbackbar.update_sim_list()
+            self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
         if self.params['stretch_colors'] == self.StretchVar.get():
