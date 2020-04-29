@@ -65,10 +65,13 @@ class MainApp(Tk.Tk):
         #self.bind_all("S", self.OpenSettings)
         self.oengus = Oengus(interactive=True, tkApp = self)
         # open a sim
-
-
-        self.oengus.sims[0].outdir = self.cmd_args.O[0] if len(self.cmd_args.O[0])>0 else os.curdir
-
+        if len(self.cmd_args.O[0]) == 0:
+            self.oengus.sims[0].outdir = os.curdir
+        else:
+            for i, outdir in enumerate(self.cmd_args.O):
+                if i == len(self.oengus.sims):
+                    self.oengus.add_sim(f'sim{i}')
+                self.oengus.sims[i].outdir = outdir
         self.oengus.create_graphs()
         self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.minsize(780, 280)

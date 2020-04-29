@@ -206,7 +206,6 @@ class VectorFieldsSettings(Tk.Toplevel):
                 self.subplot.axC.set_visible(self.CbarVar.get())
                 self.parent.oengus.canvas.draw()
 
-
     def DivHandler(self, *args):
         if self.params['UseDivCmap'] == self.DivVar.get():
             pass
