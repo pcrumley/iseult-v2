@@ -55,11 +55,14 @@ _FUNCTIONS = {
     'sinh': np.sinh,
     'append': np.append,
     'sum': np.sum,
-    'take': np.take,
+    'shape': lambda x: np.array(np.shape(x)),
+    'array': np.array,
+    'arange': np.arange,
     'average': np.average,
     'sqrt': np.sqrt,
     'tan': np.tan,
-    'tanh': np.tanh
+    'tanh': np.tanh,
+    'take': np.take
 }
 
 def h5_getter(filepath, attribute, prtl_stride=None):
@@ -256,7 +259,6 @@ class ExprParser:
         constant = _CONSTANTS.get(var.lower())
         if constant != None:
             return constant
-
         fpath = self.vars.get(var, None)
         value = h5_getter(fpath+self.f_end, var)
 

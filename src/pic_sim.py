@@ -227,16 +227,6 @@ class picSim(object):
                             self.parser.string = expr
                             self.parser.f_end = f_end
                             self._data_dictionary[hash_key] = self.parser.getValue()
-
-                        #if self.xtra_stride > 1:
-                        #    fpath = self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5file']
-                        #    fpath = os.path.join(self.outdir, fpath) + f_end
-                        #    indices = h5_getter(fpath, self._cfgDict['prtls'][lookup['prtl_type']]['index']['expr'])
-                        #    if self.sim_type == 'Tristan_MP':
-                        #        indices = indices//2
-
-                        #    response_dict['data'] = self._data_dictionary[hash_key][np.mod(indices,self.xtra_stride) == 0]
-                        #else:
                     response_dict['data'] = self._data_dictionary[hash_key]
                     response_dict['axis_label'] = prtl['attrs'][lookup['attribute']]['label']
                     response_dict['hist_cbar_label'] =  prtl['hist_cbar_label']
@@ -249,7 +239,7 @@ class picSim(object):
                 if hash_key not in self._data_dictionary:
                     self.parser.string = expr
                     self.parser.f_end = f_end
-                    self._data_dictionary[hash_key] = self.parser.getValue()
+                    self._data_dictionary[hash_key] = self.parser.getValue()[0]
                 return self._data_dictionary[hash_key]
             else:
                 return 1.0
@@ -286,21 +276,10 @@ class picSim(object):
         elif lookup['data_class'] == 'axes':
             hash_key = 'axes' + lookup['attribute'] + f_end
             if hash_key not in self._data_dictionary:
-                if lookup['attribute'] == 'x':
-                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[2])
-                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
-                    ans = ans / self.get_data(n, data_class='param', attribute='c_omp')
-                    self._data_dictionary[hash_key] = ans
-                elif lookup['attribute'] == 'y':
-                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[1])
-                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
-                    ans = ans / self.get_data(n, data_class='param', attribute='c_omp')
-                    self._data_dictionary[hash_key] = ans
-                elif lookup['attribute'] == 'z':
-                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[0])
-                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
-                    ans = ans / self.get_data(n,data_class='param', attribute='c_omp')
-                    self._data_dictionary[hash_key] = ans
+                expr = self._cfgDict['axes'][lookup['attribute']]['expr']
+                self.parser.string = expr
+                self.parser.f_end = f_end
+                self._data_dictionary[hash_key] = self.parser.getValue()
             response_dict['data'] = self._data_dictionary[hash_key]
             response_dict['label'] = self._cfgDict['axes'][lookup['attribute']]['label']
             return response_dict

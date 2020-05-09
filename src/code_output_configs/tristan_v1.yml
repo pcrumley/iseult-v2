@@ -95,13 +95,13 @@ h5_files_list:
 axes:
   x:
     label: $x$
-    expr: null
+    expr: arange(take(shape(bx), 2)) * istep / c_omp
   y:
     label: $y$
-    expr: null
+    expr: arange(take(shape(bx), 1)) * istep / c_omp
   z:
     label: $z$
-    expr: null
+    expr: arange(take(shape(bx), 0)) * istep / c_omp
 param:
   c_omp:
     expr: c_omp
@@ -141,6 +141,7 @@ param:
   #  expr: null
 
 prtls:
+
   electrons:
     hist_cbar_label: $f_e (p)$
     attrs:
@@ -174,6 +175,7 @@ prtls:
       z:
         label: $z$
         expr: ze
+
   ions:
     hist_cbar_label: $f_i (p)$
     attrs:
@@ -216,7 +218,7 @@ scalar_flds:
     label: $n$
     expr: dens
   electron_density:
-    label: $n_e$
+    label: $  n_e$
     expr: dens - densi
   ion_density:
     label: $n_i$
@@ -247,6 +249,7 @@ scalars:
   time:
     expr: time
     label: $t$
+
 vec_flds:
   B:
     axis_label: $B$
