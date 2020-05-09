@@ -1,7 +1,7 @@
 import re, sys, os, h5py, yaml
 import numpy as np
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-from my_parser import Parser
+# sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+# from my_parser import Parser
 
 def h5_getter(filepath, attribute, prtl_stride = None):
     with h5py.File(filepath, 'r') as f:
@@ -19,6 +19,7 @@ class picSim(object):
         self._name = name
         self.__cur_n = -1
         self._fnum = 0
+        self._h5attr_to_h5file = {}
         self._cfg_file = ''
         if 'iseult_conf.yml' in os.listdir(self.outdir):
             self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
@@ -66,7 +67,10 @@ class picSim(object):
         """A function that gets passed a directory and simulation type
         and retuns an ordered list of all the endings of the simulation output
         files."""
-        output_file_names = self._cfgDict['h5_files_list']
+        output_file_names = [key for key in self._cfgDict['h5_files_list'].keys()]
+        for name in output_file_names:
+            for h5attr in self._cfgDict['h5_files_list'][name]:
+                self._h5attr_to_h5file[h5attr] = name[:-1]
         output_file_keys = [key.split('.')[0] for key in output_file_names]
         output_file_regex = [re.compile(elm) for elm in output_file_names]
         path_dict = {}
@@ -78,7 +82,7 @@ class picSim(object):
                     item for item in
                     filter(regex.match, os.listdir(self.outdir))
                 ]
-                
+
                 path_dict[key].sort()
                 for i in range(len(path_dict[key])):
                     elm = path_dict[key][i]
@@ -201,109 +205,100 @@ class picSim(object):
         if n is None:
             n = self.__cur_n
         f_end = self.file_list[n]
-        response_dir = {}
-        try:
-            if lookup['data_class'] == 'prtls':
-                if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
-                    if lookup['attribute'] in self._cfgDict['prtls'][lookup['prtl_type']].keys():
-                        hash_key = lookup['data_class']  + lookup['prtl_type']
-                        hash_key += lookup['attribute'] + f_end
-                        if hash_key not in self._data_dictionary:
-                            if self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'] is not None:
-                                fpath = self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5file']
-                                fpath = os.path.join(self.outdir, fpath) + f_end
-                                self._data_dictionary[hash_key] = h5_getter(fpath,
-                                    self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['h5attr'])
-                            elif lookup['attribute'] == 'gamma':
-                                self._data_dictionary[hash_key] = np.sqrt(
-                                    self.get_data(n,
-                                        data_class = 'prtls', prtl_type = lookup['prtl_type'],
-                                        attribute = 'px')['data']**2
-                                    + self.get_data(n,
-                                        data_class = 'prtls', prtl_type = lookup['prtl_type'],
-                                        attribute = 'py')['data']**2
-                                    + self.get_data(n,
-                                        data_class = 'prtls', prtl_type = lookup['prtl_type'],
-                                        attribute = 'pz')['data']**2
-                                     + 1)
-                            elif lookup['attribute'] == 'KE':
-                                self._data_dictionary[hash_key] = self.get_data(n,
-                                                data_class = 'prtls', prtl_type = lookup['prtl_type'],
-                                                attribute = 'gamma')['data'] - 1
-                        if self.xtra_stride > 1:
-                            fpath = self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5file']
-                            fpath = os.path.join(self.outdir, fpath) + f_end
-                            indices = h5_getter(fpath, self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5attr'])
-                            if self.sim_type == 'Tristan_MP':
-                                indices = indices//2
+        response_dict = {}
 
-                            response_dir['data'] = self._data_dictionary[hash_key][np.mod(indices,self.xtra_stride) == 0]
-                        else:
-                            response_dir['data'] = self._data_dictionary[hash_key]
-                        response_dir['axis_label'] = self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['axis_label']
-                        response_dir['1d_label'] =  self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['1d_label']
-                        response_dir['hist_cbar_label'] =  self._cfgDict['prtls'][lookup['prtl_type']][lookup['attribute']]['hist_cbar_label']
-                        return response_dir
-
-            elif lookup['data_class'] == 'vec_flds':
-                if lookup['fld'] in self._cfgDict['vec_flds'].keys():
-                    if lookup['component'] in self._cfgDict['vec_flds'][lookup['fld']].keys():
-                        hash_key = 'vec_flds' + lookup['fld'] + lookup['component'] + f_end
-                        if hash_key not in self._data_dictionary:
-                            if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['h5attr'] is not None:
-                                fpath = self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['h5file']
-                                fpath = os.path.join(self.outdir, fpath) + f_end
-                            self._data_dictionary[hash_key] = h5_getter(fpath,
-                                self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['h5attr'])
-                        response_dir['data'] = self._data_dictionary[hash_key]
-                        response_dir['axis_label'] = self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['axis_label']
-                        response_dir['1d_label'] = self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['1d_label']
-                        response_dir['cbar_label'] = self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['cbar_label']
-                        return response_dir
-            elif lookup['data_class'] == 'scalar_flds':
-                fpath = os.path.join(self.outdir, 'flds.tot.') + f_end
-                if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
-                    hash_key = 'scalar_flds' + lookup['fld'] + f_end
+        if lookup['data_class'] == 'prtls':
+            if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
+                prtl = self._cfgDict['prtls'][lookup['prtl_type']]
+                if lookup['attribute'] in prtl['attrs'].keys():
+                    hash_key = 'prtls'  + lookup['prtl_type']
+                    hash_key += lookup['attribute'] + f_end
                     if hash_key not in self._data_dictionary:
-                        if self._cfgDict['scalar_flds'][lookup['fld']]['h5attr'] is not None:
+                        expr =  prtl['attrs'][lookup['attribute']]['expr']
+                        if expr is not None:
+                            fpath = self._h5attr_to_h5file[expr]
+                            fpath = os.path.join(self.outdir, fpath) + f_end
                             self._data_dictionary[hash_key] = h5_getter(fpath,
-                                self._cfgDict['scalar_flds'][lookup['fld']]['h5attr'])
+                                expr)
 
-                        elif lookup['fld'] == 'rho':
-                                self._data_dictionary[hash_key] = self.get_data(n,
-                                            data_class = 'scalar_flds',
-                                            fld = 'ion_density')['data'] - self.get_data(n,
-                                            data_class = 'scalar_flds',
-                                            fld = 'electron_density')['data']
-                        elif lookup['fld'] == 'electron_density':
-                            self._data_dictionary[hash_key] = -self.get_data(n,
-                                        data_class = 'scalar_flds',
-                                        fld = 'ion_density')['data'] + self.get_data(n,
-                                        data_class = 'scalar_flds',
-                                        fld = 'density')['data']
-                        elif lookup['fld'] == 'B_total':
+                        #if self.xtra_stride > 1:
+                        #    fpath = self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5file']
+                        #    fpath = os.path.join(self.outdir, fpath) + f_end
+                        #    indices = h5_getter(fpath, self._cfgDict['prtls'][lookup['prtl_type']]['index']['expr'])
+                        #    if self.sim_type == 'Tristan_MP':
+                        #        indices = indices//2
 
-                            tmp = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data']**2
-                            tmp += self.get_data(n, data_class='vec_flds', fld = 'B', component = 'y')['data']**2
-                            tmp += self.get_data(n, data_class='vec_flds', fld = 'B', component = 'z')['data']**2
+                        #    response_dict['data'] = self._data_dictionary[hash_key][np.mod(indices,self.xtra_stride) == 0]
+                        #else:
+                    response_dict['data'] = self._data_dictionary[hash_key]
+                    response_dict['axis_label'] = prtl['attrs'][lookup['attribute']]['label']
+                    response_dict['hist_cbar_label'] =  prtl['hist_cbar_label']
+                    return response_dict
 
-                            self._data_dictionary[hash_key] = np.sqrt(tmp)
-                        elif lookup['fld'] == 'theta_B':
-                            bx = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data']
-                            bperp = self.get_data(n, data_class='vec_flds', fld = 'B', component = 'y')['data']**2
-                            bperp += self.get_data(n, data_class='vec_flds', fld = 'B', component = 'z')['data']**2
-                            self._data_dictionary[hash_key] = np.arctan2(np.sqrt(bperp), bx)
-                        elif lookup['fld'] == 'density':
-                            self._data_dictionary[hash_key] = self.get_data(n,
-                                        data_class = 'scalar_flds',
-                                        fld = 'electron_density')['data'] + self.get_data(n,
-                                        data_class = 'scalar_flds',
-                                        fld = 'ion_density')['data']
-                    response_dir['data'] = self._data_dictionary[hash_key]
-                    response_dir['axis_label'] = self._cfgDict['scalar_flds'][lookup['fld']]['axis_label']
-                    response_dir['1d_label'] = self._cfgDict['scalar_flds'][lookup['fld']]['1d_label']
-                    response_dir['cbar_label'] = self._cfgDict['scalar_flds'][lookup['fld']]['cbar_label']
-                    return response_dir
+        elif lookup['data_class'] == 'param':
+            expr = self._cfgDict['param'][lookup['attribute']]['expr']
+            if expr is not None:
+                hash_key = 'param' + lookup['attribute']
+                if hash_key not in self._data_dictionary:
+                    fpath = self._h5attr_to_h5file[expr]
+                    fpath = os.path.join(self.outdir, fpath) + f_end
+                    self._data_dictionary[hash_key] = h5_getter(fpath, expr)[0]
+                return self._data_dictionary[hash_key]
+            else:
+                return 1.0
+
+        elif lookup['data_class'] == 'scalar_flds':
+            if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
+                fld = self._cfgDict['scalar_flds'][lookup['fld']]
+                hash_key = 'scalar_flds' + lookup['fld'] + f_end
+                if hash_key not in self._data_dictionary:
+                    expr = fld['expr']
+                    fpath = self._h5attr_to_h5file[expr]
+                    fpath = os.path.join(self.outdir, fpath) + f_end
+                    self._data_dictionary[hash_key] = h5_getter(fpath, expr)
+                response_dict['data'] = self._data_dictionary[hash_key]
+                response_dict['label'] = self._cfgDict['scalar_flds'][lookup['fld']]['label']
+                return response_dict
+
+        elif lookup['data_class'] == 'vec_flds':
+            if lookup['fld'] in self._cfgDict['vec_flds'].keys():
+                fld = self._cfgDict['vec_flds'][lookup['fld']]
+                if lookup['component'] in fld.keys():
+                    hash_key = 'vec_flds' + lookup['fld'] + lookup['component'] + f_end
+                    if hash_key not in self._data_dictionary:
+                        #if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['expr'] is not None:
+                        expr = fld[lookup['component']]['expr']
+                        fpath = self._h5attr_to_h5file[expr]
+                        fpath = os.path.join(self.outdir, fpath) + f_end
+                        self._data_dictionary[hash_key] = h5_getter(fpath, expr)
+                    response_dict['data'] = self._data_dictionary[hash_key]
+                    response_dict['axis_label'] = fld['axis_label']
+                    response_dict['label'] = fld[lookup['component']]['label']
+                    return response_dict
+
+        elif lookup['data_class'] == 'axes':
+            hash_key = 'axes' + lookup['attribute'] + f_end
+            if hash_key not in self._data_dictionary:
+                if lookup['attribute'] == 'x':
+                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[2])
+                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
+                    ans = ans / self.get_data(n, data_class='param', attribute='c_omp')
+                    self._data_dictionary[hash_key] = ans
+                elif lookup['attribute'] == 'y':
+                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[1])
+                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
+                    ans = ans / self.get_data(n, data_class='param', attribute='c_omp')
+                    self._data_dictionary[hash_key] = ans
+                elif lookup['attribute'] == 'z':
+                    ans = np.arange(self.get_data(n, data_class='scalar_flds', fld='density')['data'].shape[0])
+                    ans = ans * self.get_data(n, data_class='param', attribute='istep')
+                    ans = ans / self.get_data(n,data_class='param', attribute='c_omp')
+                    self._data_dictionary[hash_key] = ans
+            response_dict['data'] = self._data_dictionary[hash_key]
+            response_dict['label'] = self._cfgDict['axes'][lookup['attribute']]['label']
+            return response_dict
+
+        """
             elif lookup['data_class'] == 'scalars':
                 hash_key = 'scalars' + lookup['attribute'] + f_end
                 if hash_key not in self._data_dictionary:
@@ -330,39 +325,11 @@ class picSim(object):
                     else:
                         return {'data': 1.0, 'label': ''}
                 return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
-
-            elif lookup['data_class'] == 'axes':
-                hash_key = 'axes' + lookup['attribute'] + f_end
-                if hash_key not in self._data_dictionary:
-                    if lookup['attribute'] == 'x':
-                        ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[2])
-                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans = ans / self.get_data(n, data_class='param', attribute = 'c_omp')
-                        self._data_dictionary[hash_key] = ans
-                    elif lookup['attribute'] == 'y':
-                        ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[1])
-                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans = ans / self.get_data(n, data_class='param', attribute = 'c_omp')
-                        self._data_dictionary[hash_key] = ans
-                    elif lookup['attribute'] == 'z':
-                        ans = np.arange(self.get_data(n, data_class='vec_flds', fld = 'B', component = 'x')['data'].shape[0])
-                        ans = ans * self.get_data(n, data_class='param', attribute = 'istep')
-                        ans = ans / self.get_data(n,data_class='param', attribute = 'c_omp')
-                        self._data_dictionary[hash_key] = ans
-
-                return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict['axes'][lookup['attribute']]['axis_label']}
-            elif lookup['data_class'] == 'param':
-                if self._cfgDict['param'][lookup['attribute']]['h5attr'] is not None:
-                    fpath = self._cfgDict['param'][lookup['attribute']]['h5file']
-                    fpath = os.path.join(self.outdir, fpath) + f_end
-                    return h5_getter(fpath,
-                        self._cfgDict['param'][lookup['attribute']]['h5attr'])[0]
-                else:
-                    return 1.0
             else:
-                return response_dir
+                return response_dict
         except KeyError:
-            return response_dir
+            return response_dict
+        """
 if __name__=='__main__':
     sim = picSim(os.path.join(os.path.dirname(__file__),'../output'))
     print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))

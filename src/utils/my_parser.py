@@ -52,6 +52,7 @@ _FUNCTIONS = {
     'pow': np.power,
     'sin': np.sin,
     'sinh': np.sinh,
+    'append': np.append,
     'sum': np.sum,
     'take': np.take,
     'average': np.average,

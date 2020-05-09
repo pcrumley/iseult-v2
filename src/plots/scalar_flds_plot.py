@@ -15,7 +15,7 @@ class scalarFldsPlot:
 
     plot_param_dict = {'twoD': 0,
                        'sim_num': 0,
-                       'flds_type': 'B_total',
+                       'flds_type': 'density',
                        'show_cbar': True,
                        'set_color_limits': False,
                        'v_min': 0,
@@ -164,7 +164,7 @@ class scalarFldsPlot:
             #                                        PathEffects.Normal()])
             #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
 
-            self.an_2d = self.axes.annotate(self.scalar_fld['cbar_label'],
+            self.an_2d = self.axes.annotate(self.scalar_fld['label'],
                                             xy = (0.9,.9),
                                             xycoords= 'axes fraction',
                                             color = 'white',
@@ -295,7 +295,7 @@ class scalarFldsPlot:
             #if self.GetPlotParam('normalize_density'):
             #    tmp_str += r'$\ [n_0]$'
             self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_ylabel(self.scalar_fld['label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
 
         #if self.GetPlotParam('show_cpu_domains'):

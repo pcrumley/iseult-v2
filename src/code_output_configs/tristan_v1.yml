@@ -1,313 +1,280 @@
 name:
   Tristan_MP
 h5_files_list:
-  - prtl.tot.*
-  - flds.tot.*
-  - param.*
-  - spect.*
+  prtl.tot.*:
+    - che
+    - chi
+    - gammae
+    - gammai
+    - inde
+    - indi
+    - proce
+    - proci
+    - ue
+    - ui
+    - ve
+    - vi
+    - we
+    - wi
+    - xe
+    - xi
+    - ye
+    - yi
+    - ze
+    - zi
+  flds.tot.*:
+    - bx
+    - by
+    - bz
+    - dens
+    - densi
+    - ex
+    - ey
+    - ez
+    - jx
+    - jy
+    - jz
+    - v3x
+    - v3xi
+    - v3y
+    - v3yi
+    - v3z
+    - v3zi
+  param.*:
+    - acool
+    - bphi
+    - btheta
+    - c
+    - c_omp
+    - caseinit
+    - cooling
+    - delgam
+    - dlapion
+    - dlaplec
+    - dummy
+    - gamma0
+    - interval
+    - istep
+    - istep1
+    - me
+    - mi
+    - mx
+    - mx0
+    - my
+    - my0
+    - mz0
+    - ntimes
+    - pltstart
+    - ppc0
+    - qi
+    - sigma
+    - sizex
+    - sizey
+    - splitratio
+    - stride
+    - testendion
+    - testendlec
+    - teststarti
+    - teststartl
+    - time
+    - torqint
+    - walloc
+    - xinject2
+  spect.*:
+    # - dens No collision
+    - dgam
+    - gamma
+    - gmax
+    - gmin
+    - spece
+    - specerest
+    - specp
+    - specprest
+    - umean
+    - xsl
 axes:
   x:
-    axis_label: $x$
-    h5attr: null
-    h5file: null
+    label: $x$
+    expr: null
   y:
-    axis_label: $y$
-    h5attr: null
-    h5file: null
+    label: $y$
+    expr: null
   z:
-    axis_label: $z$
-    h5attr: null
-    h5file: null
+    label: $z$
+    expr: null
 param:
   c_omp:
-    h5attr: c_omp
-    h5file: param.
+    expr: c_omp
   istep:
-    h5attr: istep
-    h5file: param.
+    expr: istep
   me:
-    h5attr: me
-    h5file: param.
+    expr: me
   mi:
-    h5attr: mi
-    h5file: param.
+    expr: mi
   ppc0:
-    h5attr: ppc0
-    h5file: param.
+    expr: ppc0
   qi:
-    h5attr: qi
-    h5file: param.
+    expr: qi
   sigma:
-    h5attr: null
-    h5file: null
+    expr: null
   stride:
-    h5attr: stride
-    h5file: param.
+    expr: stride
   time:
-    h5attr: time
-    h5file: param.
-  btheta:
-    h5attr: null
-    h5file: null
-  bx0:
-    h5attr: null
-    h5file: null
-  by0:
-    h5attr: null
-    h5file: null
-  bz0:
-    h5attr: null
-    h5file: null
-  e0:
-    h5attr: null
-    h5file: null
-  ex0:
-    h5attr: null
-    h5file: null
-  ey0:
-    h5attr: null
-    h5file: null
-  ez0:
-    h5attr: null
-    h5file: null
-  e0:
-    h5attr: null
-    h5file: null
+    expr: time
+  #btheta:
+  #  expr: null
+  #bx0:
+  #  expr: null
+  #by0:
+  #  expr: null
+  #bz0:
+  #  expr: null
+  #e0:
+  #  expr: null
+  #ex0:
+  #  expr: null
+  #ey0:
+  #  expr: null
+  #ez0:
+  #  expr: null
+  #e0:
+  #  expr: null
 
 prtls:
   electrons:
-    KE:
-      1d_label: $KE_i$
-      axis_label: $KE_i$
-      h5attr: null
-      hist_cbar_label: $f_i (p)$
-    gamma:
-      1d_label: $\gamma_e$
-      axis_label: $\gamma_e$
-      h5attr: null
-      h5file: null
-      hist_cbar_label: $f_e (p)$
-    index:
-      1d_label: $\mathrm{ind}_i$
-      axis_label: $\mathrm{ind}_i$
-      h5attr: inde
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    proc:
-      1d_label: $\mathrm{proc}_i$
-      axis_label: $\mathrm{proc}_i$
-      h5attr: proce
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    px:
-      1d_label: $\gamma_e\beta_{e,x}$
-      axis_label: $\gamma_e\beta_{e,x}$
-      h5attr: ue
-      h5file: prtl.tot.
-      hist_cbar_label: $f_e (p)$
-    py:
-      1d_label: $\gamma_e\beta_{e,y}$
-      axis_label: $\gamma_e\beta_{e,y}$
-      h5attr: ve
-      h5file: prtl.tot.
-      hist_cbar_label: $f_e (p)$
-    pz:
-      1d_label: $\gamma_e\beta_{e,z}$
-      axis_label: $\gamma_e\beta_{e,z}$
-      h5attr: we
-      h5file: prtl.tot.
-      hist_cbar_label: $f_e (p)$
-    x:
-      1d_label: $x$
-      axis_label: $x$
-      h5attr: xe
-      h5file: prtl.tot.
-      hist_cbar_label: $f_e (p)$
-    y:
-      1d_label: $y$
-      axis_label: $y$
-      h5attr: ye
-      h5file: prtl.tot.
-      hist_cbar_label: $f_e (p)$
-    z:
-      1d_label: $z$
-      axis_label: $z$
-      h5attr: ze
-      h5file: prtl.tot.
-      hist_cbar_label: $f_d (p)$
+    hist_cbar_label: $f_e (p)$
+    attrs:
+      #KE:
+      #  expr: null
+      #  label: $KE_e$
+      #gamma:
+      #  expr: null
+      #  label: $\gamma_e$
+      index:
+        expr: inde
+        label: $\mathrm{ind}_e$
+
+      proc:
+        expr: proce
+        label: $\mathrm{proc}_e$
+      px:
+        label: $\gamma_e\beta_{e,x}$
+        expr: ue
+      py:
+        label: $\gamma_e\beta_{e,y}$
+        expr: ve
+      pz:
+        label: $\gamma_e\beta_{e,z}$
+        expr: we
+      x:
+        label: $x$
+        expr: xe
+      y:
+        label: $y$
+        expr: ye
+      z:
+        label: $z$
+        expr: ze
   ions:
-    KE:
-      1d_label: $KE_i$
-      axis_label: $KE_i$
-      h5attr: null
-      hist_cbar_label: $f_i (p)$
-    gamma:
-      1d_label: $\gamma_i$
-      axis_label: $\gamma_i$
-      h5attr: null
-      h5file: null
-      hist_cbar_label: $f_i (p)$
-    index:
-      1d_label: $\mathrm{ind}_i$
-      axis_label: $\mathrm{ind}_i$
-      h5attr: indi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    proc:
-      1d_label: $\mathrm{proc}_i$
-      axis_label: $\mathrm{proc}_i$
-      h5attr: proci
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    px:
-      1d_label: $\gamma_i\beta_{i,x}$
-      axis_label: $\gamma_i\beta_{i,x}$
-      h5attr: ui
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    py:
-      1d_label: $\gamma_i\beta_{i,y}$
-      axis_label: $\gamma_i\beta_{i,y}$
-      h5attr: vi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    pz:
-      1d_label: $\gamma_i\beta_{i,z}$
-      axis_label: $\gamma_i\beta_{i,z}$
-      h5attr: wi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    x:
-      1d_label: $x$
-      axis_label: $x$
-      h5attr: xi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    y:
-      1d_label: $y$
-      axis_label: $y$
-      h5attr: yi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
-    z:
-      1d_label: $z$
-      axis_label: $z$
-      h5attr: zi
-      h5file: prtl.tot.
-      hist_cbar_label: $f_i (p)$
+    hist_cbar_label: $f_i (p)$
+    attrs:
+      KE:
+        label: $KE_i$
+        expr: null
+      gamma:
+        label: $\gamma_i$
+        expr: null
+      index:
+        label: $\mathrm{ind}_i$
+        expr: indi
+      proc:
+        label: $\mathrm{proc}_i$
+        expr: proci
+      px:
+        label: $\gamma_i\beta_{i,x}$
+        expr: ui
+      py:
+        label: $\gamma_i\beta_{i,y}$
+        expr: vi
+      pz:
+        label: $\gamma_i\beta_{i,z}$
+        expr: wi
+      x:
+        label: $x$
+        expr: xi
+      y:
+        label: $y$
+        expr: yi
+      z:
+        label: $z$
+        expr: zi
 scalar_flds:
-  B_total:
-    1d_label: $|B|$
-    axis_label: $|B|$
-    cbar_label: $|B|$
-    h5attr: null
-    h5file: null
+  #B_total:
+  #  label: $|B|$
+  #  expr: null
   density:
-    1d_label: $n$
-    axis_label: $n$
-    cbar_label: $n$
-    h5attr: dens
-    h5file: flds.tot.
-  electron_density:
-    1d_label: $n_e$
-    axis_label: $n_e$
-    cbar_label: $n_e$
-    h5attr: null
-    h5file: null
+    label: $n$
+    expr: dens
+  #electron_density:
+  #  label: $n_e$
+  #  expr: null
   ion_density:
-    1d_label: $n_i$
-    axis_label: $n_i$
-    cbar_label: $n_i$
-    h5attr: densi
-    h5file: flds.tot.
-  rho:
-    1d_label: $\rho$
-    axis_label: $\rho$
-    cbar_label: $\rho$
-    h5attr: null
-    h5file: null
-  theta_B:
-    1d_label: $\theta_B$
-    axis_label: $\theta_B$
-    cbar_label: $\theta_B$
-    h5attr: null
-    h5file: null
+    label: $n_i$
+    expr: densi
+  #rho:
+  #  label: $\rho$
+  #  expr: null
+  #theta_B:
+  #  label: $\theta_B$
+  #  expr: null
+
 scalars:
   Total KE_e:
-    h5attr: null
-    h5file: null
+    expr: null
     label: ''
   Total KE_i:
-    h5attr: null
-    h5file: null
+    expr: null
     label: ''
   const_shock_speed:
-    h5attr: null
-    h5file: null
+    expr: null
     label: $v_s$
   shock_loc:
-    h5attr: null
-    h5file: null
+    expr: null
     label: $x_s$
   time:
-    h5attr: null
-    h5file: null
+    expr: time
     label: $t$
 vec_flds:
   B:
+    axis_label: $B$
     x:
-      1d_label: $B_x$
-      axis_label: $B$
-      cbar_label: $B_x$
-      h5attr: bx
-      h5file: flds.tot.
+      label: $B_x$
+      expr: bx
     y:
-      1d_label: $B_y$
-      axis_label: $B$
-      cbar_label: $B_y$
-      h5attr: by
-      h5file: flds.tot.
+      label: $B_y$
+      expr: by
     z:
-      1d_label: $B_z$
-      axis_label: $B$
-      cbar_label: $B_z$
-      h5attr: bz
-      h5file: flds.tot.
+      label: $B_z$
+      expr: bz
   E:
+    axis_label: $E$
     x:
-      1d_label: $E_x$
-      axis_label: $E$
-      cbar_label: $E_x$
-      h5attr: ex
-      h5file: flds.tot.
+      label: $E_x$
+      expr: ex
     y:
-      1d_label: $E_y$
-      axis_label: $E$
-      cbar_label: $E_y$
-      h5attr: ey
-      h5file: flds.tot.
+      label: $E_y$
+      expr: ey
     z:
-      1d_label: $E_z$
-      axis_label: $E$
-      cbar_label: $E_z$
-      h5attr: ez
-      h5file: flds.tot.
+      label: $E_z$
+      expr: ez
   J:
+    axis_label: $J$
     x:
-      1d_label: $J_x$
-      axis_label: $J$
-      cbar_label: $J_x$
-      h5attr: jx
-      h5file: flds.tot.
+      label: $J_x$
+      expr: jx
     y:
-      1d_label: $J_y$
-      axis_label: $J$
-      cbar_label: $J_y$
-      h5attr: jy
-      h5file: flds.tot.
+      label: $J_y$
+      expr: jy
     z:
-      1d_label: $J_z$
-      axis_label: $J$
-      cbar_label: $J_z$
-      h5attr: jz
-      h5file: flds.tot.
+      label: $J_z$
+      expr: jz

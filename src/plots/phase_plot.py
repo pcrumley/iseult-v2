@@ -81,7 +81,6 @@ class phasePlot:
         #set the xlabels
         #if self.parent.MainParamDict['DoLorentzBoost'] and np.abs(self.parent.MainParamDict['GammaBoost'])>1E-8:
         #    self.x_label = r'$x\prime\ [c/\omega_{\rm pe}]$'
-
         self.axes.set_xlabel(
             self.x_values['axis_label'],
             labelpad=self.parent.MainParamDict['xLabelPad'],
@@ -215,6 +214,7 @@ class phasePlot:
         self.y_values = sim.get_data(n, data_class = 'prtls',
                 prtl_type = self.param_dict['prtl_type'],
                 attribute = self.param_dict['y_val'])
+
         is_good = len(self.y_values['data']) == len(self.x_values['data'])
         is_good &= len(self.y_values['data']) > 0
 
@@ -244,7 +244,6 @@ class phasePlot:
 
             # set the colors
             self.image.set_data(hist2d)
-
             self.image.set_extent([xmin, xmax, ymin, ymax])
 
 

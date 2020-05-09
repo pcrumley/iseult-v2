@@ -56,10 +56,11 @@ class phaseSettings(Tk.Toplevel):
         self.quantity.set(self.params['prtl_type'])
         self.quantity.trace('w', self.quantityChanged)
 
+        avail_prtls = self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls']
         ttk.Label(frm, text="Choose Particle:").grid(row=2, sticky = Tk.W)
         quantChooser = ttk.OptionMenu(frm, self.quantity,
                                 self.params['prtl_type'],
-                                *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'].keys()))
+                                *tuple(avail_prtls.keys()))
         quantChooser.grid(row=3, column=0, sticky=Tk.W + Tk.E)
         # the Check boxes for the dimension
 
@@ -69,7 +70,7 @@ class phaseSettings(Tk.Toplevel):
 
         ttk.Label(frm, text="Choose Particle:").grid(row=2, sticky = Tk.W)
         quantChooser = ttk.OptionMenu(frm, self.xval_var, self.params['x_val'],
-                            *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+                            *tuple(avail_prtls[self.params['prtl_type']]['attrs'].keys()))
         quantChooser.grid(row=5, column=0, sticky=Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='x_val:')
@@ -83,7 +84,7 @@ class phaseSettings(Tk.Toplevel):
         quantChooser = ttk.OptionMenu(frm,
                             self.yval_var,
                             self.params['y_val'],
-                            *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['prtls'][self.params['prtl_type']].keys()))
+                            *tuple(avail_prtls[self.params['prtl_type']]['attrs'].keys()))
         quantChooser.grid(row=5, column=1, sticky=Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='y_val:')
@@ -104,42 +105,6 @@ class phaseSettings(Tk.Toplevel):
                         variable=self.ShockVar,
                         command=self.ShockVarHandler)
         cb.grid(row=6, column=1, sticky=Tk.W)
-
-        #  Normalize Density Var
-        # self.NormDVar = Tk.IntVar()
-        # self.NormDVar.set(self.parent.GetPlotParam('normalize_density'))
-        # cb = ttk.Checkbutton(frm, text = "Normalize to ppc0",
-        #                variable = self.NormDVar,
-        #                command = self.NormPPCHandler)
-        # cb.grid(row = 7, sticky = Tk.W)
-
-
-
-        # self.CPUVar = Tk.IntVar()
-        # self.CPUVar.set(self.parent.GetPlotParam('show_cpu_domains'))
-        # cb = ttk.Checkbutton(frm, text = "Show CPU domains",
-        #                variable = self.CPUVar,
-        #                command = self.CPUVarHandler)
-        # cb.grid(row = 10, column = 0, sticky = Tk.W)
-
-        #  Create the OptionMenu to chooses the cnorm_type:
-        # self.cnormvar = Tk.StringVar(self)
-        # self.cnormvar.set(self.params['cnorm_type']) # default value
-        # self.cnormvar.trace('w', self.cnormChanged)
-
-        # ttk.Label(frm, text="Choose Color Norm:").grid(row=6, column = 2)
-        # cnormChooser = ttk.OptionMenu(frm, self.cnormvar, self.params['cnorm_type'], *tuple(['Pow', 'Linear']))
-        # cnormChooser.grid(row =6, column = 3, sticky = Tk.W + Tk.E)
-
-        # Now the gamma of the pow norm
-        # self.powGamma = Tk.StringVar()
-        # self.powGamma.set(str(self.params['cpow_num']))
-        # ttk.Label(frm, text ='gamma =').grid(row = 7, column = 2, sticky =Tk.E)
-        # ttk.Label(frm, text ='If cnorm is Pow =>').grid(row = 8, column = 2,columnspan = 2, sticky =Tk.W)
-        # ttk.Label(frm, text ='sign(data)*|data|**gamma').grid(row = 9, column = 2,columnspan = 2, sticky =Tk.E)
-
-        # self.GammaEnter = ttk.Entry(frm, textvariable=self.powGamma, width=7)
-        # self.GammaEnter.grid(row = 7, column = 3)
 
         # Now the field lim
         self.setZminVar = Tk.IntVar()

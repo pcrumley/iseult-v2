@@ -133,7 +133,6 @@ class vectorFldsPlot:
             #                                        PathEffects.Normal()])
             #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
 
-            #self.an_2d = self.axes.annotate(self.vec_2d['cbar_label'],
             self.an_2d = self.axes.annotate('',
                                             xy = (0.9,.9),
                                             xycoords= 'axes fraction',
@@ -192,17 +191,15 @@ class vectorFldsPlot:
 
 
             #self.axes.set_xlabel(r'$x\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_xlabel(r'$x$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_xlabel(r'$x$', labelpad=self.parent.MainParamDict['xLabelPad'], color='black', size=self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                #self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$y$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+                self.axes.set_ylabel(r'$y$', labelpad=self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                #self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
                 self.axes.set_ylabel(r'$z$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
 
 
         else:
-            self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+            self.xaxis = sim.get_data(n, data_class = 'axes', attribute = 'x')
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
             if self.param_dict['show_y']:
@@ -275,7 +272,7 @@ class vectorFldsPlot:
             #if self.GetPlotParam('normalize_density'):
             #    tmp_str += r'$\ [n_0]$'
             self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            #self.axes.set_ylabel(self.scalar_fld['1d_label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+            #self.axes.set_ylabel(self.scalar_fld['label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
         self.update_labels_and_colors(sim, n)
         self.refresh(sim = sim, n = n)
         #if self.GetPlotParam('show_cpu_domains'):
@@ -365,7 +362,7 @@ class vectorFldsPlot:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
             else:
                 self.vec_2d = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')            # Link up the spatial axes if desired
-            self.an_2d.set_text(self.vec_2d['cbar_label'])
+            self.an_2d.set_text(self.vec_2d['label'])
             if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
                 self.image.set_data(self.vec_2d['data'][self.zSlice,:,:])
             elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
@@ -411,9 +408,7 @@ class vectorFldsPlot:
 
     def update_labels_and_colors(self, sim = None, n = None):
         if sim is None:
-            sim = self.parent.sim[self.param_dict['sim_num']]
-        #if n is None:
-        #    n = self.parent.cur_times[self.param_dict['sim_num']]
+            sim = self.parent.sims[self.param_dict['sim_num']]
 
         if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:
@@ -432,20 +427,23 @@ class vectorFldsPlot:
             x_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.2)
             y_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
             z_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.8)
+            self.axes.set_ylabel(
+                sim.get_data(n, data_class='vec_flds',
+                    fld=self.param_dict['field_type'],
+                    component='x')['axis_label'])
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'x')
-                self.anx.set_text(self.vec_x['1d_label'])
+                self.anx.set_text(self.vec_x['label'])
                 self.line_x[0].set_color(x_color)
                 self.anx.set_color(x_color)
             if self.param_dict['show_y']:
                 self.vec_y = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'y')
-                self.any.set_text(self.vec_y['1d_label'])
+                self.any.set_text(self.vec_y['label'])
                 self.line_y[0].set_color(y_color)
                 self.any.set_color(y_color)
-
             if self.param_dict['show_z']:
                 self.vec_z = sim.get_data(n, data_class = 'vec_flds', fld = self.param_dict['field_type'], component= 'z')
-                self.anz.set_text(self.vec_z['1d_label'])
+                self.anz.set_text(self.vec_z['label'])
                 self.line_z[0].set_color(z_color)
                 self.anz.set_color(z_color)
 
