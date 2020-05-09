@@ -1,25 +1,29 @@
-import re, sys, os, h5py, yaml
+import re
+import sys
+import os
+import h5py
+import yaml
 import numpy as np
 # sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-# from my_parser import Parser
+from my_parser import ExprParser
 
-def h5_getter(filepath, attribute, prtl_stride = None):
+
+def h5_getter(filepath, attribute, prtl_stride=None):
     with h5py.File(filepath, 'r') as f:
-        #if prtl_stride is not None:
-        #    return f[attribute][::prtl_stride]
-        #else:
-        return f[attribute][:]
-
+        if prtl_stride is not None:
+            return f[attribute][::prtl_stride]
+        else:
+            return f[attribute][:]
 class picSim(object):
-    available_units = ['file'] # ['c_ompe', 'file', 'c_ompi']
-    def __init__(self, name = None, dirpath=os.curdir, cfg_file=os.path.join(os.path.dirname(__file__),'code_output_configs','tristan_v1.yml')):
+    available_units = ['file'] #['c_ompe', 'file', 'c_ompi']
+    def __init__(self, name=None, dirpath=os.curdir, cfg_file=os.path.join(os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')):
         self._outdir = dirpath
         self._xtra_stride = 1
         self._data_dictionary = {}
         self._name = name
         self.__cur_n = -1
         self._fnum = 0
-        self._h5attr_to_h5file = {}
+        self.parser = ExprParser()
         self._cfg_file = ''
         if 'iseult_conf.yml' in os.listdir(self.outdir):
             self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
@@ -54,7 +58,7 @@ class picSim(object):
             if t_arg < 0:
                 t_arg = self.__len__() - t_arg
             self.__cur_n = min(t_arg, self.__len__() - 1)
-        # THIS IS O(N) NEED IMPROVE
+        # THIS IS O(N) NEED IMPROVEMENT
         if units == 'file':
             self.__cur_n = self.file_list.index(t_arg)
         #    self.__units = 'lap'
@@ -68,9 +72,11 @@ class picSim(object):
         and retuns an ordered list of all the endings of the simulation output
         files."""
         output_file_names = [key for key in self._cfgDict['h5_files_list'].keys()]
+        tmp_dict = {}
         for name in output_file_names:
             for h5attr in self._cfgDict['h5_files_list'][name]:
-                self._h5attr_to_h5file[h5attr] = name[:-1]
+                tmp_dict[h5attr] = os.path.join(self.outdir, name[:-1])
+        self.parser.vars = tmp_dict
         output_file_keys = [key.split('.')[0] for key in output_file_names]
         output_file_regex = [re.compile(elm) for elm in output_file_names]
         path_dict = {}
@@ -96,13 +102,14 @@ class picSim(object):
             all_there = set(elm.split('.')[-1] for elm in path_dict[output_file_keys[0]])
             for key in path_dict.keys():
                 all_there &= set(elm.split('.')[-1] for elm in path_dict[key])
-            all_there = list(sorted(all_there, key = lambda x: int(x)))
+            all_there = list(sorted(all_there, key=lambda x: int(x)))
             if has_star == len(path_dict.keys()):
                 all_there.append('***')
             return all_there
 
         except OSError:
             return []
+
     def __len__(self):
         return len(self._fnum)
 
@@ -114,7 +121,7 @@ class picSim(object):
     def cfg_file(self, cfg):
         self._cfg_file = cfg
         with open(self._cfg_file, 'r') as f:
-            self._cfgDict=yaml.safe_load(f)
+            self._cfgDict = yaml.safe_load(f)
         self.sim_type = self._cfgDict['name']
         self.clear_caches()
 
@@ -133,7 +140,7 @@ class picSim(object):
         default_sim_types = {}
         tmp_list = [os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg) for cfg in os.listdir(os.path.join(os.path.dirname(__file__), 'code_output_configs'))]
         tmp_list = [os.path.abspath(elm) for elm in tmp_list]
-        filter(lambda x: x.split[-1]=='.yml', tmp_list)
+        filter(lambda x: x.split[-1] == '.yml', tmp_list)
         for cfg in tmp_list:
             with open(cfg, 'r') as f:
                 tmpDict = yaml.safe_load(f)
@@ -164,7 +171,6 @@ class picSim(object):
     @outdir.setter
     def outdir(self, dirname):
         self._outdir = dirname
-
         self.clear_caches()
         if 'iseult_conf.yml' in os.listdir(self.outdir):
             self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
@@ -195,6 +201,8 @@ class picSim(object):
         # Returns a hierachical dictionary structure showing
         # All available data quantities from the simulations
         return self._cfgDict
+
+
     def get_data(self, n = None, **kwargs):
         """ This function is how you should access data on the hdf5
         files."""
@@ -216,10 +224,9 @@ class picSim(object):
                     if hash_key not in self._data_dictionary:
                         expr =  prtl['attrs'][lookup['attribute']]['expr']
                         if expr is not None:
-                            fpath = self._h5attr_to_h5file[expr]
-                            fpath = os.path.join(self.outdir, fpath) + f_end
-                            self._data_dictionary[hash_key] = h5_getter(fpath,
-                                expr)
+                            self.parser.string = expr
+                            self.parser.f_end = f_end
+                            self._data_dictionary[hash_key] = self.parser.getValue()
 
                         #if self.xtra_stride > 1:
                         #    fpath = self._cfgDict['prtls'][lookup['prtl_type']]['index']['h5file']
@@ -240,9 +247,9 @@ class picSim(object):
             if expr is not None:
                 hash_key = 'param' + lookup['attribute']
                 if hash_key not in self._data_dictionary:
-                    fpath = self._h5attr_to_h5file[expr]
-                    fpath = os.path.join(self.outdir, fpath) + f_end
-                    self._data_dictionary[hash_key] = h5_getter(fpath, expr)[0]
+                    self.parser.string = expr
+                    self.parser.f_end = f_end
+                    self._data_dictionary[hash_key] = self.parser.getValue()
                 return self._data_dictionary[hash_key]
             else:
                 return 1.0
@@ -253,9 +260,9 @@ class picSim(object):
                 hash_key = 'scalar_flds' + lookup['fld'] + f_end
                 if hash_key not in self._data_dictionary:
                     expr = fld['expr']
-                    fpath = self._h5attr_to_h5file[expr]
-                    fpath = os.path.join(self.outdir, fpath) + f_end
-                    self._data_dictionary[hash_key] = h5_getter(fpath, expr)
+                    self.parser.string = expr
+                    self.parser.f_end = f_end
+                    self._data_dictionary[hash_key] = self.parser.getValue()
                 response_dict['data'] = self._data_dictionary[hash_key]
                 response_dict['label'] = self._cfgDict['scalar_flds'][lookup['fld']]['label']
                 return response_dict
@@ -268,9 +275,9 @@ class picSim(object):
                     if hash_key not in self._data_dictionary:
                         #if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['expr'] is not None:
                         expr = fld[lookup['component']]['expr']
-                        fpath = self._h5attr_to_h5file[expr]
-                        fpath = os.path.join(self.outdir, fpath) + f_end
-                        self._data_dictionary[hash_key] = h5_getter(fpath, expr)
+                        self.parser.string = expr
+                        self.parser.f_end = f_end
+                        self._data_dictionary[hash_key] = self.parser.getValue()
                     response_dict['data'] = self._data_dictionary[hash_key]
                     response_dict['axis_label'] = fld['axis_label']
                     response_dict['label'] = fld[lookup['component']]['label']

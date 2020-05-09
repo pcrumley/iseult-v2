@@ -28,6 +28,7 @@
 
 import math
 import numpy as np
+import h5py
 
 _CONSTANTS = {
     'pi' : math.pi,
@@ -61,16 +62,23 @@ _FUNCTIONS = {
     'tanh': np.tanh
 }
 
-class Parser:
-    def __init__(self, string, vars = None):
-        self.string = string
+def h5_getter(filepath, attribute, prtl_stride=None):
+    with h5py.File(filepath, 'r') as f:
+        if prtl_stride is not None:
+            return f[attribute][::prtl_stride]
+        else:
+            return f[attribute][:]
+class ExprParser:
+    def __init__(self, string='', vars=None):
+        self.__string = string
         self.index = 0
-        self.vars = {} if vars == None else vars.copy()
-        for constant in _CONSTANTS.keys():
-            if self.vars.get(constant) != None:
-                raise Exception("Cannot redefine the value of " + var)
+        self.__vars = {}
+        self.vars = vars
+        self.f_end = ''
 
-    def getValue(self):
+    def getValue(self, expr=None):
+        if not expr is None:
+            self.string = expr
         value = self.parseExpression()
         self.skipWhitespace()
 
@@ -79,6 +87,26 @@ class Parser:
                 "Unexpected character found: '" + self.peek() + "' at index " + str(self.index)
             )
         return value
+
+    @property
+    def vars(self):
+        return self.__vars
+
+    @vars.setter
+    def vars(self, vars_dict=None):
+        self.__vars = {} if vars_dict == None else vars_dict.copy()
+        for constant in _CONSTANTS.keys():
+            if self.vars.get(constant) != None:
+                raise Exception("Cannot redefine the value of " + constant)
+
+    @property
+    def string(self):
+        return self.__string
+
+    @string.setter
+    def string(self, expr):
+        self.__string = expr
+        self.index = 0
 
     def peek(self):
         return self.string[self.index:self.index + 1]
@@ -145,7 +173,7 @@ class Parser:
 
                 if denominator == 0:
                     raise Exception(
-                        "Division by 0 kills baby whales (occured at index " + str(div_index) + ")"
+                        "Division by 0 (occured at index " + str(div_index) + ")"
                     )
                 values.append(1.0 / denominator)
             else:
@@ -229,10 +257,11 @@ class Parser:
         if constant != None:
             return constant
 
-        value = self.vars.get(var, None)
+        fpath = self.vars.get(var, None)
+        value = h5_getter(fpath+self.f_end, var)
 
-        #if value != None:
-        return value
+        if len(value) > 0:
+            return value
 
         raise Exception("Unrecognized variable: '" + var + "'")
 
@@ -269,7 +298,7 @@ class Parser:
 
 def evaluate(expression, vars = None):
     try:
-        p = Parser(expression, vars)
+        p = ExprParser(expression, vars)
         value = p.getValue()
     except Exception as ex:
         raise Exception
@@ -279,12 +308,12 @@ def evaluate(expression, vars = None):
     return value
 
 if __name__ == "__main__":
-    assert np.abs(evaluate("cos(take(x,0)+4*3) + 2 * 3 - y", { 'x': np.linspace(0,np.pi,num = 100), 'y':10 }) - np.cos(12) +4) <1E-8
-    assert evaluate("exp(0)") == 1
-    assert evaluate("-(1 + 2) * 3") == -9
+    # assert np.abs(evaluate("cos(take(x,0)+4*3) + 2 * 3 - y", { 'x': np.linspace(0,np.pi,num = 100), 'y':10 }) - np.cos(12) +4) <1E-8
+    # assert evaluate("exp(0)") == 1
+    # assert evaluate("-(1 + 2) * 3") == -9
     print(evaluate("(1-2)/3.0 + 0.0000"))
     print(evaluate("abs(-2) + pi / 4"))
-    print(evaluate("(x + e * 10) / 10", { 'x' : 3 }))
+    # print(evaluate("(x + e * 10) / 10", { 'x' : 3 }))
     print(evaluate("1.0 / 3 * 6"))
     print(evaluate("(1 - 1 + -1) * pi"))
     print(evaluate("cos(pi) * 1"))

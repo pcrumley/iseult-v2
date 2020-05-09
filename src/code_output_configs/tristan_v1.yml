@@ -144,16 +144,15 @@ prtls:
   electrons:
     hist_cbar_label: $f_e (p)$
     attrs:
-      #KE:
-      #  expr: null
-      #  label: $KE_e$
-      #gamma:
-      #  expr: null
-      #  label: $\gamma_e$
+      KE:
+        expr: sqrt(ue*ue + pow(ve,2) + we*we + 1) - 1
+        label: $KE_e$
+      gamma:
+        expr: sqrt(ue*ue + pow(ve,2) + we*we + 1)
+        label: $\gamma_e$
       index:
         expr: inde
         label: $\mathrm{ind}_e$
-
       proc:
         expr: proce
         label: $\mathrm{proc}_e$
@@ -180,10 +179,10 @@ prtls:
     attrs:
       KE:
         label: $KE_i$
-        expr: null
+        expr: sqrt(ui*ui + pow(vi,2) + wi*wi + 1) -1
       gamma:
         label: $\gamma_i$
-        expr: null
+        expr: sqrt(ui*ui + pow(vi,2) + wi*wi + 1)
       index:
         label: $\mathrm{ind}_i$
         expr: indi
@@ -209,24 +208,24 @@ prtls:
         label: $z$
         expr: zi
 scalar_flds:
-  #B_total:
-  #  label: $|B|$
-  #  expr: null
+  B_total:
+    label: $|B|$
+    expr: sqrt(pow(bx,2) + by*by + bz*bz)
   density:
     label: $n$
     expr: dens
-  #electron_density:
-  #  label: $n_e$
-  #  expr: null
+  electron_density:
+    label: $n_e$
+    expr: dens - densi
   ion_density:
     label: $n_i$
     expr: densi
-  #rho:
-  #  label: $\rho$
-  #  expr: null
-  #theta_B:
-  #  label: $\theta_B$
-  #  expr: null
+  rho:
+    label: $\rho$
+    expr: 2*densi - dens
+  theta_B:
+    label: $\theta_B$
+    expr: arctan2(sqrt(by*by+bz*bz), bx)
 
 scalars:
   Total KE_e:
