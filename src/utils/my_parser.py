@@ -260,10 +260,11 @@ class ExprParser:
         if constant != None:
             return constant
         fpath = self.vars.get(var, None)
-        value = h5_getter(fpath+self.f_end, var)
 
-        if len(value) > 0:
-            return value
+        value = h5_getter(fpath+self.f_end, var)
+        return value
+        #if len(value) > 0:
+
 
         raise Exception("Unrecognized variable: '" + var + "'")
 

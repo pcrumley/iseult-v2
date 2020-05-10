@@ -235,14 +235,14 @@ scalar_flds:
 
 scalars:
   Total KE_e:
-    expr: null
+    expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
     label: ''
   Total KE_i:
-    expr: null
+    expr: sum(sqrt(ui * ui + vi * vi + wi * wi + 1) -1) * stride * abs(qi) * c * c * mi / me
     label: ''
-  const_shock_speed:
-    expr: null
-    label: $v_s$
+  #const_shock_speed:
+  #  expr: null
+  #  label: $v_s$
   shock_loc:
     expr: null
     label: $x_s$

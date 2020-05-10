@@ -371,6 +371,7 @@ class scalarFldsPlot:
         self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
         self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
         # FIND THE SLICE
+
         MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
         MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
 

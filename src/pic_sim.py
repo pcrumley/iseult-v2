@@ -76,6 +76,7 @@ class picSim(object):
         for name in output_file_names:
             for h5attr in self._cfgDict['h5_files_list'][name]:
                 tmp_dict[h5attr] = os.path.join(self.outdir, name[:-1])
+
         self.parser.vars = tmp_dict
         output_file_keys = [key.split('.')[0] for key in output_file_names]
         output_file_regex = [re.compile(elm) for elm in output_file_names]
@@ -115,7 +116,7 @@ class picSim(object):
 
     @property
     def cfg_file(self):
-        return cfg_file
+        return self._cfg_file
 
     @cfg_file.setter
     def cfg_file(self, cfg):
@@ -124,7 +125,6 @@ class picSim(object):
             self._cfgDict = yaml.safe_load(f)
         self.sim_type = self._cfgDict['name']
         self.clear_caches()
-
     @property
     def file_list(self):
         return self._fnum
@@ -239,7 +239,7 @@ class picSim(object):
                 if hash_key not in self._data_dictionary:
                     self.parser.string = expr
                     self.parser.f_end = f_end
-                    self._data_dictionary[hash_key] = self.parser.getValue()[0]
+                    self._data_dictionary[hash_key] = np.squeeze(self.parser.getValue())
                 return self._data_dictionary[hash_key]
             else:
                 return 1.0
