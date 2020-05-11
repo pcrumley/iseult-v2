@@ -134,7 +134,7 @@ class Oengus():
         self.MainParamDict = {
           'zSlice': 0.0,  # THIS IS A float WHICH IS THE RELATIVE POSITION OF THE 2D SLICE 0->1
           '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
-          'NumberOfSims': 4,
+          'NumberOfSims': 2,
           'Average1D': 0,
           'ySlice': 0.5,  # THIS IS A FLOAT WHICH IS THE RELATIVE POSITION OF THE 1D SLICE 0->1
           'WindowSize': '1200x700',
@@ -318,7 +318,10 @@ class Oengus():
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
-            self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+            try:
+                self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+            except IndexError:
+                self.figure.suptitle(f'{os.path.abspath(sim.outdir)} is empty', size = 15)
             #if len(self.sim_name) == 0:
 
                 # o.fnum+' at time t = %d $\omega_{pe}^{-1}$'  % round(o.time), size = 15)
@@ -415,7 +418,10 @@ class Oengus():
         #                pass
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
-            self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+            try:
+                self.figure.suptitle(f'{os.path.abspath(sim.outdir)}/*.{sim.file_list[sim.get_time()]}', size = 15)
+            except IndexError:
+                self.figure.suptitle(f'{os.path.abspath(sim.outdir)} is empty', size = 15)
 
             #if len(self.sim_name) == 0:
             #    self.figure.suptitle(f'{os.path.abspath(self.sims[0].outdir)}/*.{self.sims[0].file_list[self.cur_times[0]]}', size = 15)

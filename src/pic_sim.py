@@ -125,6 +125,7 @@ class picSim(object):
             self._cfgDict = yaml.safe_load(f)
         self.sim_type = self._cfgDict['name']
         self.clear_caches()
+
     @property
     def file_list(self):
         return self._fnum
@@ -202,8 +203,7 @@ class picSim(object):
         # All available data quantities from the simulations
         return self._cfgDict
 
-
-    def get_data(self, n = None, **kwargs):
+    def get_data(self, n=None, **kwargs):
         """ This function is how you should access data on the hdf5
         files."""
 
@@ -212,76 +212,113 @@ class picSim(object):
             lookup[key] = val
         if n is None:
             n = self.__cur_n
-        f_end = self.file_list[n]
+
         response_dict = {}
 
         if lookup['data_class'] == 'prtls':
-            if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
-                prtl = self._cfgDict['prtls'][lookup['prtl_type']]
-                if lookup['attribute'] in prtl['attrs'].keys():
-                    hash_key = 'prtls'  + lookup['prtl_type']
-                    hash_key += lookup['attribute'] + f_end
-                    if hash_key not in self._data_dictionary:
-                        expr =  prtl['attrs'][lookup['attribute']]['expr']
-                        if expr is not None:
-                            self.parser.string = expr
-                            self.parser.f_end = f_end
-                            self._data_dictionary[hash_key] = self.parser.getValue()
-                    response_dict['data'] = self._data_dictionary[hash_key]
-                    response_dict['axis_label'] = prtl['attrs'][lookup['attribute']]['label']
-                    response_dict['hist_cbar_label'] =  prtl['hist_cbar_label']
-                    return response_dict
+            response_dict = {
+                'data': np.array([]),
+                'axis_label': '',
+                'hist_cbar_label': ''
+            }
+            try:
+                f_end = self._fnum[n]
+                if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
+                    prtl = self._cfgDict['prtls'][lookup['prtl_type']]
+                    if lookup['attribute'] in prtl['attrs'].keys():
+                        hash_key = 'prtls' + lookup['prtl_type']
+                        hash_key += lookup['attribute'] + f_end
+                        if hash_key not in self._data_dictionary:
+                            expr =  prtl['attrs'][lookup['attribute']]['expr']
+                            if expr is not None:
+                                self.parser.string = expr
+                                self.parser.f_end = f_end
+                                self._data_dictionary[hash_key] = self.parser.getValue()
+                        response_dict['data'] = self._data_dictionary[hash_key]
+                        response_dict['axis_label'] = prtl['attrs'][lookup['attribute']]['label']
+                        response_dict['hist_cbar_label'] =  prtl['hist_cbar_label']
+            except IndexError:
+                pass
+            return response_dict
 
         elif lookup['data_class'] == 'param':
-            expr = self._cfgDict['param'][lookup['attribute']]['expr']
-            if expr is not None:
-                hash_key = 'param' + lookup['attribute']
-                if hash_key not in self._data_dictionary:
-                    self.parser.string = expr
-                    self.parser.f_end = f_end
-                    self._data_dictionary[hash_key] = np.squeeze(self.parser.getValue())
-                return self._data_dictionary[hash_key]
-            else:
-                return 1.0
+            try:
+                f_end = self._fnum[n]
+                expr = self._cfgDict['param'][lookup['attribute']]['expr']
+                if expr is not None:
+                    hash_key = 'param' + lookup['attribute']
+                    if hash_key not in self._data_dictionary:
+                        self.parser.string = expr
+                        self.parser.f_end = f_end
+                        self._data_dictionary[hash_key] = np.squeeze(self.parser.getValue())
+                    return self._data_dictionary[hash_key]
+            except IndexError:
+                pass
+            return 1.0
 
         elif lookup['data_class'] == 'scalar_flds':
-            if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
-                fld = self._cfgDict['scalar_flds'][lookup['fld']]
-                hash_key = 'scalar_flds' + lookup['fld'] + f_end
-                if hash_key not in self._data_dictionary:
-                    expr = fld['expr']
-                    self.parser.string = expr
-                    self.parser.f_end = f_end
-                    self._data_dictionary[hash_key] = self.parser.getValue()
-                response_dict['data'] = self._data_dictionary[hash_key]
-                response_dict['label'] = self._cfgDict['scalar_flds'][lookup['fld']]['label']
-                return response_dict
-
-        elif lookup['data_class'] == 'vec_flds':
-            if lookup['fld'] in self._cfgDict['vec_flds'].keys():
-                fld = self._cfgDict['vec_flds'][lookup['fld']]
-                if lookup['component'] in fld.keys():
-                    hash_key = 'vec_flds' + lookup['fld'] + lookup['component'] + f_end
+            response_dict = {
+                'data': np.empty((1,1,1)),
+                'label': ''
+            }
+            try:
+                f_end = self._fnum[n]
+                if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
+                    fld = self._cfgDict['scalar_flds'][lookup['fld']]
+                    hash_key = 'scalar_flds' + lookup['fld'] + f_end
                     if hash_key not in self._data_dictionary:
-                        #if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['expr'] is not None:
-                        expr = fld[lookup['component']]['expr']
+                        expr = fld['expr']
                         self.parser.string = expr
                         self.parser.f_end = f_end
                         self._data_dictionary[hash_key] = self.parser.getValue()
                     response_dict['data'] = self._data_dictionary[hash_key]
-                    response_dict['axis_label'] = fld['axis_label']
-                    response_dict['label'] = fld[lookup['component']]['label']
-                    return response_dict
+                    response_dict['label'] = self._cfgDict['scalar_flds'][lookup['fld']]['label']
+            except IndexError:
+                pass
+            return response_dict
+
+        elif lookup['data_class'] == 'vec_flds':
+            response_dict = {
+                'data': np.empty((1,1,1)),
+                'axis_label': '',
+                'label': ''
+            }
+            try:
+                f_end = self._fnum[n]
+                if lookup['fld'] in self._cfgDict['vec_flds'].keys():
+                    fld = self._cfgDict['vec_flds'][lookup['fld']]
+                    if lookup['component'] in fld.keys():
+                        hash_key = 'vec_flds' + lookup['fld'] + lookup['component'] + f_end
+                        if hash_key not in self._data_dictionary:
+                            #if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['expr'] is not None:
+                            expr = fld[lookup['component']]['expr']
+                            self.parser.string = expr
+                            self.parser.f_end = f_end
+                            self._data_dictionary[hash_key] = self.parser.getValue()
+                        response_dict['data'] = self._data_dictionary[hash_key]
+                        response_dict['axis_label'] = fld['axis_label']
+                        response_dict['label'] = fld[lookup['component']]['label']
+            except IndexError:
+                pass
+            return response_dict
 
         elif lookup['data_class'] == 'axes':
-            hash_key = 'axes' + lookup['attribute'] + f_end
-            if hash_key not in self._data_dictionary:
-                expr = self._cfgDict['axes'][lookup['attribute']]['expr']
-                self.parser.string = expr
-                self.parser.f_end = f_end
-                self._data_dictionary[hash_key] = self.parser.getValue()
-            response_dict['data'] = self._data_dictionary[hash_key]
-            response_dict['label'] = self._cfgDict['axes'][lookup['attribute']]['label']
+            response_dict = {
+                'data': np.empty(1),
+                'label': ''
+            }
+            try:
+                f_end = self._fnum[n]
+                hash_key = 'axes' + lookup['attribute'] + f_end
+                if hash_key not in self._data_dictionary:
+                    expr = self._cfgDict['axes'][lookup['attribute']]['expr']
+                    self.parser.string = expr
+                    self.parser.f_end = f_end
+                    self._data_dictionary[hash_key] = self.parser.getValue()
+                response_dict['data'] = self._data_dictionary[hash_key]
+                response_dict['label'] = self._cfgDict['axes'][lookup['attribute']]['label']
+            except IndexError:
+                pass
             return response_dict
 
         """
