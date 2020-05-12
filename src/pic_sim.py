@@ -171,22 +171,25 @@ class picSim(object):
     # setting the values
     @outdir.setter
     def outdir(self, dirname):
-        self._outdir = dirname
-        self.clear_caches()
-        if 'iseult_conf.yml' in os.listdir(self.outdir):
-            self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
-            try:
-                self.sim_type = self._cfgDict['name']
-            except KeyError:
-                self.sim_type = 'Undefined'
+        if os.path.isdir(dirname):
+            self._outdir = dirname
             self.clear_caches()
-            if len(self) == 0:
-                if 'output' in os.listdir(self.outdir):
-                    self.outdir = os.path.join(self.outdir, 'output')
+            if 'iseult_conf.yml' in os.listdir(self.outdir):
+                self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
+                try:
+                    self.sim_type = self._cfgDict['name']
+                except KeyError:
+                    self.sim_type = 'Undefined'
+                self.clear_caches()
+                if len(self) == 0:
+                    if 'output' in os.listdir(self.outdir):
+                        self.outdir = os.path.join(self.outdir, 'output')
 
+            else:
+                # can't find the config file, gotta use the default ones
+                self.try_default_sim_types()
         else:
-            # can't find the config file, gotta use the default ones
-            self.try_default_sim_types()
+            print(f'{dirname} is not a directory')
 
     @property
     def xtra_stride(self):

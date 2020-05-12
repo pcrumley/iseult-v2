@@ -4,7 +4,6 @@ import os, sys
 
 
 class OpenSimDialog(Tk.Toplevel):
-
     def __init__(self, parent, title='Open Sim'):
         Tk.Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -58,10 +57,10 @@ class OpenSimDialog(Tk.Toplevel):
                 e_dir.insert(0, self.parent.oengus.sims[i].outdir)
             e_dir.grid(row=i+1, column=2, sticky=Tk.E)
             self.dirs.append(e_dir)
+
     def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
-
         box = ttk.Frame(self)
         w = ttk.Button(
             box, text='Add Sim', width=10,
@@ -110,26 +109,35 @@ class OpenSimDialog(Tk.Toplevel):
             self.parent.oengus.pop_sim()
 
     def ok(self, event=None):
-        # if not self.validate():
-        #    self.initial_focus.focus_set() # put focus back
-        #    return
+        if not self.validate():
+            self.initial_focus.focus_set() # put focus back
+            return
         self.update_idletasks()
         self.withdraw()
-
-
-
         self.apply()
-
         self.cancel()
 
     def cancel(self, event=None):
-
         # put focus back to the parent window
         self.parent.focus_set()
         self.destroy()
 
     #
     # command hooks
+    def validate(self):
+        ''' Check to make sure the directories are ok '''
+        # First change all the names.
+        bad = False
+        for dir in self.dirs:
+            dirname = str(dir.get())
+            if not os.path.isdir(dirname):
+                messagebox.showwarning(
+                    "Bad input",
+                    f"{dirname} is not a directory"
+                )
+                bad = True
+        if bad == False:
+            return 1 # override
 
     def apply(self):
         # First change all the names.
