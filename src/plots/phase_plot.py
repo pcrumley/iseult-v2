@@ -258,25 +258,16 @@ class phasePlot:
 
 
             if self.param_dict['show_shock']:
-                self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-
-
-
+                self.shock_line.set_xdata([self.parent.shock_loc,
+                    self.parent.shock_loc])
             if self.param_dict['set_y_min']:
                 ymin = self.param_dict['y_min']
             if self.param_dict['set_y_max']:
                 ymax = self.param_dict['y_max']
             self.axes.set_ylim(ymin, ymax)
             self.axes.set_xlim(xmin, xmax)
-            #if self.parent.MainParamDict['SetxLim'] and self.parent.MainParamDict['LinkSpatial'] == 1:
-            #    if self.parent.MainParamDict['xLimsRelative']:
-            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-            #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-            #else:
-            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-
-            #else:
-
+        else:
+            self.image.set_data(np.ones((2,2))*np.NaN)
 
     def CbarTickFormatter(self):
         ''' A helper function that sets the cbar ticks & labels. This used to be
@@ -310,5 +301,6 @@ class phasePlot:
                     self.axC.locator_params(axis='y', nbins=6)
                     self.axC.yaxis.set_label_position("right")
                     self.axC.set_ylabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
+
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
