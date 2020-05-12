@@ -229,6 +229,7 @@ class VectorFieldsSettings(Tk.Toplevel):
             self.params['sim_num'] = self.parent.oengus.sim_names.index(self.SimVar.get())
             self.parent.oengus.calc_sims_shown()
             self.parent.playbackbar.update_sim_list()
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
