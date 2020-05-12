@@ -1,6 +1,7 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
-import os, sys
+import os
+import sys
 
 
 class OpenSimDialog(Tk.Toplevel):
@@ -97,7 +98,6 @@ class OpenSimDialog(Tk.Toplevel):
         e_dir.grid(row=n+1, column=2, sticky=Tk.E)
         self.dirs.append(e_dir)
 
-
     def remove(self, event=None):
         if len(self.labels) > 1:
             self.labels[-1].destroy()
@@ -110,7 +110,8 @@ class OpenSimDialog(Tk.Toplevel):
 
     def ok(self, event=None):
         if not self.validate():
-            self.initial_focus.focus_set() # put focus back
+            # put focus back
+            self.initial_focus.focus_set()
             return
         self.update_idletasks()
         self.withdraw()
@@ -136,8 +137,8 @@ class OpenSimDialog(Tk.Toplevel):
                     f"{dirname} is not a directory"
                 )
                 bad = True
-        if bad == False:
-            return 1 # override
+        if not bad:
+            return 1
 
     def apply(self):
         # First change all the names.

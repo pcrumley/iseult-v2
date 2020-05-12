@@ -14,9 +14,18 @@ def h5_getter(filepath, attribute, prtl_stride=None):
             return f[attribute][::prtl_stride]
         else:
             return f[attribute][:]
+
+
+default_cfg = os.path.join(
+    os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
+
+
 class picSim(object):
-    available_units = ['file'] #['c_ompe', 'file', 'c_ompi']
-    def __init__(self, name=None, dirpath=os.curdir, cfg_file=os.path.join(os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')):
+    available_units = ['file']  # ['c_ompe', 'file', 'c_ompi']
+
+    def __init__(self,
+                 name=None, dirpath=os.curdir, cfg_file=default_cfg):
+
         self._outdir = dirpath
         self._xtra_stride = 1
         self._data_dictionary = {}
@@ -71,7 +80,9 @@ class picSim(object):
         """A function that gets passed a directory and simulation type
         and retuns an ordered list of all the endings of the simulation output
         files."""
-        output_file_names = [key for key in self._cfgDict['h5_files_list'].keys()]
+
+        file_names = self._cfgDict['h5_files_list'].keys()
+        output_file_names = [name for name in file_names]
         tmp_dict = {}
         for name in output_file_names:
             for h5attr in self._cfgDict['h5_files_list'][name]:
@@ -99,8 +110,10 @@ class picSim(object):
                         if elm.split('.')[-1] == '***':
                             has_star += 1
                         path_dict[key].remove(elm)
+
             # GET THE NUMBERS THAT HAVE ALL SET OF FILES:
-            all_there = set(elm.split('.')[-1] for elm in path_dict[output_file_keys[0]])
+            list_of_files = path_dict[output_file_keys[0]]
+            all_there = set(elm.split('.')[-1] for elm in list_of_files)
             for key in path_dict.keys():
                 all_there &= set(elm.split('.')[-1] for elm in path_dict[key])
             all_there = list(sorted(all_there, key=lambda x: int(x)))
@@ -139,8 +152,13 @@ class picSim(object):
 
     def try_default_sim_types(self):
         default_sim_types = {}
-        tmp_list = [os.path.join(os.path.dirname(__file__), 'code_output_configs', cfg) for cfg in os.listdir(os.path.join(os.path.dirname(__file__), 'code_output_configs'))]
-        tmp_list = [os.path.abspath(elm) for elm in tmp_list]
+        sim_cfgs_dir = os.path.join(
+            os.path.dirname(__file__), 'code_output_configs')
+
+        tmp_list = []
+        for cfg_file in os.listdir(sim_cfgs_dir):
+            elm = os.path.join(sim_cfgs_dir, cfg_file)
+            tmp_list.append(os.path.abspath(elm))
         filter(lambda x: x.split[-1] == '.yml', tmp_list)
         for cfg in tmp_list:
             with open(cfg, 'r') as f:
@@ -232,14 +250,17 @@ class picSim(object):
                         hash_key = 'prtls' + lookup['prtl_type']
                         hash_key += lookup['attribute'] + f_end
                         if hash_key not in self._data_dictionary:
-                            expr =  prtl['attrs'][lookup['attribute']]['expr']
+                            expr = prtl['attrs'][lookup['attribute']]['expr']
                             if expr is not None:
                                 self.parser.string = expr
                                 self.parser.f_end = f_end
-                                self._data_dictionary[hash_key] = self.parser.getValue()
+                                val = self.parser.getValue()
+                                self._data_dictionary[hash_key] = val
                         response_dict['data'] = self._data_dictionary[hash_key]
-                        response_dict['axis_label'] = prtl['attrs'][lookup['attribute']]['label']
-                        response_dict['hist_cbar_label'] =  prtl['hist_cbar_label']
+                        ax_label = prtl['attrs'][lookup['attribute']]['label']
+                        response_dict['axis_label'] = ax_label
+                        cbar_label = prtl['hist_cbar_label']
+                        response_dict['hist_cbar_label'] = cbar_label
             except IndexError:
                 pass
             return response_dict
@@ -253,7 +274,8 @@ class picSim(object):
                     if hash_key not in self._data_dictionary:
                         self.parser.string = expr
                         self.parser.f_end = f_end
-                        self._data_dictionary[hash_key] = np.squeeze(self.parser.getValue())
+                        self._data_dictionary[hash_key] = np.squeeze(
+                            self.parser.getValue())
                     return self._data_dictionary[hash_key]
             except IndexError:
                 pass
@@ -261,9 +283,10 @@ class picSim(object):
 
         elif lookup['data_class'] == 'scalar_flds':
             response_dict = {
-                'data': np.empty((1,1,1)),
+                'data': np.empty((1, 1, 1)),
                 'label': ''
             }
+
             try:
                 f_end = self._fnum[n]
                 if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
@@ -273,16 +296,17 @@ class picSim(object):
                         expr = fld['expr']
                         self.parser.string = expr
                         self.parser.f_end = f_end
-                        self._data_dictionary[hash_key] = self.parser.getValue()
+                        val = self.parser.getValue()
+                        self._data_dictionary[hash_key] = val
                     response_dict['data'] = self._data_dictionary[hash_key]
-                    response_dict['label'] = self._cfgDict['scalar_flds'][lookup['fld']]['label']
+                    response_dict['label'] = fld['label']
             except IndexError:
                 pass
             return response_dict
 
         elif lookup['data_class'] == 'vec_flds':
             response_dict = {
-                'data': np.empty((1,1,1)),
+                'data': np.empty((1, 1, 1)),
                 'axis_label': '',
                 'label': ''
             }
@@ -291,16 +315,18 @@ class picSim(object):
                 if lookup['fld'] in self._cfgDict['vec_flds'].keys():
                     fld = self._cfgDict['vec_flds'][lookup['fld']]
                     if lookup['component'] in fld.keys():
-                        hash_key = 'vec_flds' + lookup['fld'] + lookup['component'] + f_end
+                        hash_key = 'vec_flds' + lookup['fld']
+                        hash_key = hash_key + lookup['component'] + f_end
                         if hash_key not in self._data_dictionary:
-                            #if self._cfgDict['vec_flds'][lookup['fld']][lookup['component']]['expr'] is not None:
                             expr = fld[lookup['component']]['expr']
                             self.parser.string = expr
                             self.parser.f_end = f_end
-                            self._data_dictionary[hash_key] = self.parser.getValue()
+                            val = self.parser.getValue()
+                            self._data_dictionary[hash_key] = val
                         response_dict['data'] = self._data_dictionary[hash_key]
                         response_dict['axis_label'] = fld['axis_label']
-                        response_dict['label'] = fld[lookup['component']]['label']
+                        label = fld[lookup['component']]['label']
+                        response_dict['label'] = label
             except IndexError:
                 pass
             return response_dict
@@ -319,47 +345,21 @@ class picSim(object):
                     self.parser.f_end = f_end
                     self._data_dictionary[hash_key] = self.parser.getValue()
                 response_dict['data'] = self._data_dictionary[hash_key]
-                response_dict['label'] = self._cfgDict['axes'][lookup['attribute']]['label']
+                label = self._cfgDict['axes'][lookup['attribute']]['label']
+                response_dict['label'] = label
             except IndexError:
                 pass
             return response_dict
 
-        """
-            elif lookup['data_class'] == 'scalars':
-                hash_key = 'scalars' + lookup['attribute'] + f_end
-                if hash_key not in self._data_dictionary:
-                    if lookup['attribute'] == 'shock_loc':
-                        dens_avg1D = np.average(self.get_data(n, data_class='scalar_flds', fld = 'density')['data'], axis =2)
-                        x_ax = self.get_data(n, data_class='axes', attribute= 'x')['data']
-                        istep = self.get_data(n, data_class='param', attribute = 'istep')
-                        c_omp = self.get_data(n, data_class='param', attribute = 'c_omp')
 
-                        # Find out where the shock is at the last time step.
-                        jstart = int(min(10*c_omp/istep, len(x_ax)))
-
-                        dens_half_max = max(dens_avg1D[jstart:])*.5
-
-                        # Find the farthest location where the average density is greater
-                        # than half max
-                        ishock = np.where(dens_avg1D[jstart:]>=dens_half_max)[0][-1]
-                        self._data_dictionary[hash_key] = x_ax[ishock_final]
-
-                    if lookup['attribute'] == 'const_shock_speed':
-                        vel_shock = self.get_data(-1, data_class='scalars', attribute='shock_loc')['data']
-                        vel_shock /= self.get_data(-1, data_class='scalars', attribute='time')['data']
-                        return {'data': vel_shock, 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
-                    else:
-                        return {'data': 1.0, 'label': ''}
-                return {'data': self._data_dictionary[hash_key], 'label': self._cfgDict[lookup['data_class']][lookup['attribute']]['label']}
-            else:
-                return response_dict
-        except KeyError:
-            return response_dict
-        """
-if __name__=='__main__':
-    sim = picSim(os.path.join(os.path.dirname(__file__),'../output'))
-    print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'ions', attribute = 'KE'))
-    print(sim.get_data(n = 15, data_class='prtls', prtl_type = 'electrons', attribute = 'z'))
-    print(sim.get_data(n = 15, data_class='vec_flds', fld = 'E', component = 'x'))
-    print(sim.get_data(n = 15, data_class='scalar_flds', fld = 'density'))
-    print(sim.get_data(n = 15, data_class='param', attribute = 'c_omp'))
+if __name__ == '__main__':
+    sim = picSim(os.path.join(os.path.dirname(__file__), '../output'))
+    print(
+        sim.get_data(
+            n=15, data_class='prtls', prtl_type='ions', attribute='KE'))
+    print(
+        sim.get_data(
+            n=15, data_class='prtls', prtl_type='electrons', attribute='z'))
+    print(sim.get_data(n=15, data_class='vec_flds', fld='E', component='x'))
+    print(sim.get_data(n=15, data_class='scalar_flds', fld='density'))
+    print(sim.get_data(n=15, data_class='param', attribute='c_omp'))
