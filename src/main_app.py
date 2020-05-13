@@ -55,8 +55,8 @@ class MainApp(Tk.Tk):
             label='Save Current State', command=self.OpenSaveDialog)
         fileMenu.add_command(
             label='Open Simulation', command=self.open_sim_dialog)
-        # fileMenu.add_command(
-        #   label= 'Make a Movie', command = self.OpenMovieDialog)
+        fileMenu.add_command(
+           label='Make a Movie', command=self.open_movie_dialog)
         # fileMenu.add_command(
         #   label= 'Reset Session', command = self.ResetSession)
         self.preset_menu = Tk.Menu(
@@ -68,7 +68,9 @@ class MainApp(Tk.Tk):
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
         # self.bind_all("S", self.OpenSettings)
-        self.oengus = Oengus(interactive=True, tkApp=self, preset_view=cmd_args.p)
+        self.oengus = Oengus(
+            interactive=True, tkApp=self,
+            preset_view=cmd_args.p)
         # open a sim
         if len(self.cmd_args.O[0]) == 0:
             self.oengus.sims[0].outdir = os.curdir
@@ -216,9 +218,12 @@ class MainApp(Tk.Tk):
     def txt_enter(self, e):
         self.playbackbar.text_callback()
 
+    def open_movie_dialog(self):
+        MovieDialog(self, self.oengus)
+
     def set_knob(self, value):
         self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
-        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        #self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
         self.oengus.sims[self.playbackbar.cur_sim].set_time(value - 1)
         if self.oengus.MainParamDict['LinkTime']:
             unit = self.oengus.MainParamDict['TimeUnits']
@@ -228,7 +233,6 @@ class MainApp(Tk.Tk):
                 sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
         self.oengus.canvas.get_tk_widget().update_idletasks()
-
 
 def runMe(cmd_args):
     app = MainApp('Iseult', cmd_args)

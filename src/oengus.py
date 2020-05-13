@@ -1,7 +1,7 @@
 import os
 import sys
 import yaml
-import time
+import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -27,6 +27,7 @@ class Oengus():
         self.sim_names = [sim.name for sim in self.sims]
         self.sims_shown = []
         self.dirname = ''
+
         self.interactive = interactive
         # Create the figure
         self.figure = plt.figure(edgecolor='none', facecolor='w')
@@ -301,3 +302,62 @@ class Oengus():
         if not self.interactive:
             s, (width, height) = self.canvas.print_to_buffer()
             return Image.frombytes('RGBA', (width, height), s)
+
+    def make_movie(self, fname, start, stop, step, FPS, outdir):
+        '''Record a movie'''
+        # First find the last frame is stop is -1:
+        if stop == -1:
+            stop = len(self.sims[self.cur_sim])
+
+        # Now build all the frames we have to visit
+        frame_arr = np.arange(start, stop, step)
+        if frame_arr[-1] != stop:
+            frame_arr = np.append(frame_arr, stop)
+
+        # If total energy plot is showing, we have to
+        # loop through everything twice.
+
+        # if self.showing_total_energy_plt:
+        #    for k in frame_arr:
+        #        self.TimeStep.set(k)
+
+        cmdstring = [
+            'ffmpeg',
+            # Set framerate to the the user selected option
+            '-framerate', str(int(FPS)),
+            '-pattern_type', 'glob',
+            '-i', '-',
+            '-c:v',
+            'prores',
+            '-pix_fmt',
+            'yuv444p10le',
+            os.path.join(os.path.join(outdir), fname)
+        ]
+        pipe = subprocess.Popen(cmdstring, stdin=subprocess.PIPE)
+        print(frame_arr)
+        for i in frame_arr:
+
+            self.sims[self.cur_sim].set_time(i-1, units=None)
+            if self.MainParamDict['LinkTime']:
+                unit = self.MainParamDict['TimeUnits']
+                cur_t = self.sims[self.cur_sim].get_time(units=None)
+                print(cur_t)
+                for sim_num in self.sims_shown:
+                    self.sims[sim_num].set_time(cur_t, units=None)
+            self.draw_output()
+            #if self.interactive:
+            #    self.canvas.get_tk_widget().update_idletasks()
+
+            s, (width, height) = self.canvas.print_to_buffer()
+            im = Image.frombytes('RGBA', (width, height), s)
+            # The ffmpeg command we want to call.
+            # ffmpeg -framerate [FPS] -i [NAME_***].png -c:v prores -pix_fmt
+            # yuv444p10le [OUTPUTNAME].mov
+            im.save(pipe.stdin, 'PNG')
+            print(f"saving image {i} to pipe")
+        pipe.stdin.close()
+        pipe.wait()
+
+        # Make sure all went well
+        if pipe.returncode != 0:
+            raise subprocess.CalledProcessError(pipe.returncode, cmdstring)

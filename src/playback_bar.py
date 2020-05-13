@@ -14,11 +14,13 @@ class playbackBar(Tk.Frame):
     def __init__(self, oengus, tstep_param):
         Tk.Frame.__init__(self)
         self.oengus = oengus
-        self._cur_sim = 0  # A way to hold the current simulation
-        self.play_pressed = False
-        self.settings_window = None
         # This param should be the time-step of the simulation
         self.param = tstep_param
+
+        self._cur_sim = 0  # A way to hold the current simulation
+
+        self.play_pressed = False
+        self.settings_window = None
 
         # make a button that skips left
         self.skipLB = ttk.Button(self, text='<', command=self.skip_left)
@@ -64,7 +66,7 @@ class playbackBar(Tk.Frame):
             from_=self.param.minimum,
             to=self.param.maximum,
             command=self.scale_handler)
-
+        self.cur_sim = 0
         self.slider.set(self.param.value)
         self.slider.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         # bind releasing the moust button to updating the plots.
@@ -112,6 +114,9 @@ class playbackBar(Tk.Frame):
     @cur_sim.setter
     def cur_sim(self, val):
         self._cur_sim = val
+        self.oengus.cur_sim = val
+        self.param.set_max(len(self.oengus.sims[self._cur_sim]))
+        self.slider.config(to=self.param.maximum)
 
     def update_sim_list(self):
         menu = self.sim_menu["menu"]
@@ -213,6 +218,6 @@ class playbackBar(Tk.Frame):
             self.param.set(int(self.slider.get()))
 
     def set_knob(self, value):
-        self.slider.config(to=self.param.maximum)
+
         self.slider.set(value)
         self.tstep.set(str(value))
