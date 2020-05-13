@@ -220,6 +220,7 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 self.subplot.remove()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
+
     def cnormChanged(self, *args):
         if self.params['cnorm_type'] == self.cnormvar.get():
             pass

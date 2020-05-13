@@ -60,7 +60,7 @@ class MainApp(Tk.Tk):
         # fileMenu.add_command(
         #   label= 'Reset Session', command = self.ResetSession)
         self.preset_menu = Tk.Menu(
-            menubar, tearoff=False, postcommand=self.viewsUpdate)
+            menubar, tearoff=False, postcommand=self.views_update)
 
         menubar.add_cascade(
             label='Preset Views', underline=0, menu=self.preset_menu)
@@ -68,7 +68,7 @@ class MainApp(Tk.Tk):
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
         # self.bind_all("S", self.OpenSettings)
-        self.oengus = Oengus(interactive=True, tkApp=self)
+        self.oengus = Oengus(interactive=True, tkApp=self, preset_view=cmd_args.p)
         # open a sim
         if len(self.cmd_args.O[0]) == 0:
             self.oengus.sims[0].outdir = os.curdir
@@ -109,7 +109,7 @@ class MainApp(Tk.Tk):
         self.bind('<space>', self.playbackbar.play_handler)
         self.update()
 
-    def viewsUpdate(self):
+    def views_update(self):
         tmpdir = os.listdir(os.path.join(self.IseultDir, '.iseult_configs'))
         tmpdir = [elm for elm in tmpdir]
         tmpdir.sort()
@@ -134,8 +134,8 @@ class MainApp(Tk.Tk):
             self.preset_menu.add_command(
                 label=name,
                 command=partial(
-                    self.LoadConfig,
-                    os.path.join(cfg_dir, cfile)))
+                    self.load_config,
+                    name))
 
     def onclick(self, event):
         '''After being clicked, we should use the x and y of the cursor to
@@ -179,7 +179,7 @@ class MainApp(Tk.Tk):
     def open_sim_dialog(self):
         OpenSimDialog(self)
 
-    def LoadConfig(self, config_file):
+    def load_config(self, config_name):
         # First get rid of any & all pop up windows:
         if self.playbackbar.settings_window is not None:
             self.playbackbar.settings_window.destroy()
@@ -190,23 +190,17 @@ class MainApp(Tk.Tk):
         for key, val in self.popups_dict.items():
             if val is not None:
                 val.destroy()
-        # Read in the config file
-        cfgDict = {}
-        with open(config_file, 'r') as f:
-            cfgDict = yaml.safe_load(f)
-        # Generate the Main Param Dict
-        self.oengus.cfgDict = cfgDict
-        self.oengus.GenMainParamDict()
+
+
+        self.oengus.load_view(config_name)
 
         # There are a few parameters that need to be loaded separately,
         # mainly in the playbackbar.
         self.playbackbar.loop_var.set(
             self.oengus.MainParamDict['LoopPlayback'])
 
-        self.oengus.figure.clf()
-
         self.oengus.create_graphs()
-        self.geometry(self.oengus.MainParamDict['WindowSize'])
+        #self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.oengus.canvas.draw()
         # refresh the geometry
 

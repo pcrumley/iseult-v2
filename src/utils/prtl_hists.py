@@ -15,7 +15,7 @@ def Fast2DHist(x1, x2, min1, max1, bnum1, min2, max2, bnum2):
             else:
                 j = (x1[i]-min1)*b1_w
             if j < bnum1:
-                if x2[i] > =min2:
+                if x2[i] >= min2:
                     if x2[i] == max2:
                         k = bnum2 - 1
                     else:
@@ -54,10 +54,10 @@ if __name__ == '__main__':
         px, x,
         bins=[200, 200],
         range=[[px.min(), px.max()], [x.min(), x.max()]])[0]
-    #print(numpyHist)
+    # print(numpyHist)
     plt.subplot(211)
     plt.imshow(hist)
     plt.subplot(212)
     plt.imshow(numpyHist)
     plt.show()
-    assert np.all(hist == numpyHist))
+    assert np.all(hist == numpyHist)

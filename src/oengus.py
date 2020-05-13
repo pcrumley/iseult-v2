@@ -28,103 +28,15 @@ class Oengus():
         self.sims_shown = []
         self.dirname = ''
         self.interactive = interactive
-
-        view_file = preset_view.strip().replace(' ', '_') + '.yml'
-        view_file = os.path.join(self.IseultDir, '.iseult_configs', view_file)
-        if os.path.exists(view_file) and os.path.isfile(view_file):
-            with open(view_file) as f:
-                self.cfgDict = yaml.safe_load(f)
-        else:
-            print(
-                'Cannot find/load ' + preset_view.strip().replace(' ', '_') +
-                '.yml in .iseult_configs.' +
-                ' If the name of view contains whitespace,')
-            print(
-                'either it must be enclosed in quotation marks' +
-                "or given with whitespace replaced with '_'.")
-            print('Name is case sensitive.')
-            print('Reverting to Default view')
-
-            default_file = os.path.join('.iseult_configs', 'Default.yml')
-            with open(os.path.join(self.IseultDir, default_file)) as f:
-                self.cfgDict = yaml.safe_load(f)
-        self.GenMainParamDict()
-
         # Create the figure
-        self.figure = plt.figure(
-            figsize=self.MainParamDict['FigSize'],
-            dpi=self.MainParamDict['dpi'],
-            edgecolor='none', facecolor='w')
-
-        if self.MainParamDict['HorizontalCbars']:
-            self.axes_extent = self.MainParamDict['HAxesExtent']
-            self.cbar_extent = self.MainParamDict['HCbarExtent']
-            self.SubPlotParams = self.MainParamDict['HSubPlotParams']
-
-        else:
-            self.axes_extent = self.MainParamDict['VAxesExtent']
-            self.cbar_extent = self.MainParamDict['VCbarExtent']
-            self.SubPlotParams = self.MainParamDict['VSubPlotParams']
-        self.figure.subplots_adjust(**self.SubPlotParams)
+        self.figure = plt.figure(edgecolor='none', facecolor='w')
         if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
-
-        # Make the object hold the timestep info
-        # Some options to set the way the spectral lines are dashed
-        self.spect_plot_counter = 0
-        self.dashes_options = [[], [3, 1], [5, 1], [1, 1]]
-
-        # Create the list of all of subplot wrappers
-        self.SubPlotList = [[] for i in range(self.MainParamDict['MaxRows'])]
-        self.showingCPUs = False
-        self.showingTotEnergy = False
-        self.plot_types_dict = {
-            'ScalarFlds': scalarFldsPlot,
-            'VectorFlds': vectorFldsPlot,
-            'PhasePlot': phasePlot
-            # 'FieldsPlot': FieldsPanel,
-            # 'DensityPlot': DensPanel,
-            # 'SpectraPlot': SpectralPanel,
-            # 'MagPlots': BPanel,
-            # 'FFTPlots': FFTPanel,
-            # 'TotalEnergyPlot': TotEnergyPanel,
-            # 'Moments': MomentsPanel
-        }
-        for i in range(self.MainParamDict['MaxRows']):
-            for j in range(self.MainParamDict['MaxCols']):
-                tmp_str = f"Chart{i}_{j}"
-                if tmp_str in self.cfgDict.keys():
-                    tmpchart_type = self.cfgDict[tmp_str]['chart_type']
-                    self.SubPlotList[i].append(
-                        self.plot_types_dict[tmpchart_type](
-                            self, (i, j), self.cfgDict[tmp_str]))
-                    self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
-                    try:
-                        show_cpus = self.cfgDict[tmp_str]['show_cpu_domains']
-                        self.showingCPUs = show_cpus
-                    except KeyError:
-                        pass
-                else:
-                    # The graph isn't specified in the config file,
-                    # just set it equal to scalar field plots
-                    self.SubPlotList[i].append(
-                        self.plot_types_dict['ScalarFlds'](self, (i, j), {}))
-
-        self.calc_sims_shown()
-
-        ##
-        #
-        # Open TristanSim
-        #
-        ##
-
-        # previous objects
-        # if self.showingTotEnergy:
-        #    self.
+        self.load_view(preset_view)
 
     def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes
@@ -243,6 +155,85 @@ class Oengus():
                 self.add_sim(f'sim{len(self.sims)}')
             while tmp_num < len(self.sims):
                 self.pop_sim()
+
+    def load_view(self, view_name):
+        self.figure.clf()
+        view_file = view_name.strip().replace(' ', '_') + '.yml'
+        view_file = os.path.join(self.IseultDir, '.iseult_configs', view_file)
+        if os.path.exists(view_file) and os.path.isfile(view_file):
+            with open(view_file) as f:
+                self.cfgDict = yaml.safe_load(f)
+        else:
+            print(
+                'Cannot find/load ' + preset_view.strip().replace(' ', '_') +
+                '.yml in .iseult_configs.' +
+                ' If the name of view contains whitespace,')
+            print(
+                'either it must be enclosed in quotation marks' +
+                "or given with whitespace replaced with '_'.")
+            print('Name is case sensitive.')
+            print('Reverting to Default view')
+
+            default_file = os.path.join('.iseult_configs', 'Default.yml')
+            with open(os.path.join(self.IseultDir, default_file)) as f:
+                self.cfgDict = yaml.safe_load(f)
+        self.GenMainParamDict()
+        self.figure.dpi = self.MainParamDict['dpi']
+        self.figure.figsize = self.MainParamDict['FigSize']
+
+        if self.MainParamDict['HorizontalCbars']:
+            self.axes_extent = self.MainParamDict['HAxesExtent']
+            self.cbar_extent = self.MainParamDict['HCbarExtent']
+            self.SubPlotParams = self.MainParamDict['HSubPlotParams']
+
+        else:
+            self.axes_extent = self.MainParamDict['VAxesExtent']
+            self.cbar_extent = self.MainParamDict['VCbarExtent']
+            self.SubPlotParams = self.MainParamDict['VSubPlotParams']
+        self.figure.subplots_adjust(**self.SubPlotParams)
+
+        # Make the object hold the timestep info
+        # Some options to set the way the spectral lines are dashed
+        self.spect_plot_counter = 0
+        self.dashes_options = [[], [3, 1], [5, 1], [1, 1]]
+
+        # Create the list of all of subplot wrappers
+        self.SubPlotList = [[] for i in range(self.MainParamDict['MaxRows'])]
+        self.showingCPUs = False
+        self.showingTotEnergy = False
+        self.plot_types_dict = {
+            'ScalarFlds': scalarFldsPlot,
+            'VectorFlds': vectorFldsPlot,
+            'PhasePlot': phasePlot
+            # 'FieldsPlot': FieldsPanel,
+            # 'DensityPlot': DensPanel,
+            # 'SpectraPlot': SpectralPanel,
+            # 'MagPlots': BPanel,
+            # 'FFTPlots': FFTPanel,
+            # 'TotalEnergyPlot': TotEnergyPanel,
+            # 'Moments': MomentsPanel
+        }
+        for i in range(self.MainParamDict['MaxRows']):
+            for j in range(self.MainParamDict['MaxCols']):
+                tmp_str = f"Chart{i}_{j}"
+                if tmp_str in self.cfgDict.keys():
+                    tmpchart_type = self.cfgDict[tmp_str]['chart_type']
+                    self.SubPlotList[i].append(
+                        self.plot_types_dict[tmpchart_type](
+                            self, (i, j), self.cfgDict[tmp_str]))
+                    self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
+                    try:
+                        show_cpus = self.cfgDict[tmp_str]['show_cpu_domains']
+                        self.showingCPUs += show_cpus
+                    except KeyError:
+                        pass
+                else:
+                    # The graph isn't specified in the config file,
+                    # just set it equal to scalar field plots
+                    self.SubPlotList[i].append(
+                        self.plot_types_dict['ScalarFlds'](self, (i, j), {}))
+
+        self.calc_sims_shown()
 
     def calc_sims_shown(self):
         self.sims_shown = []

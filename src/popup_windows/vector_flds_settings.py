@@ -21,48 +21,60 @@ class VectorFieldsSettings(Tk.Toplevel):
         self.InterpolVar.trace('w', self.InterpolChanged)
 
         ttk.Label(frm, text="Interpolation Method:").grid(row=0, column=2)
-        InterplChooser = ttk.OptionMenu(frm, self.InterpolVar, self.params['interpolation'], *tuple(self.subplot.interpolation_methods))
-        InterplChooser.grid(row =0, column = 3, sticky = Tk.W + Tk.E)
+        InterplChooser = ttk.OptionMenu(
+            frm, self.InterpolVar, self.params['interpolation'],
+            *tuple(self.subplot.interpolation_methods))
+        InterplChooser.grid(row=0, column=3, sticky=Tk.W + Tk.E)
 
         # Create the OptionMenu to chooses the Chart Type:
         self.ctypevar = Tk.StringVar(self)
-        self.ctypevar.set(self.subplot.chart_type) # default value
+        self.ctypevar.set(self.subplot.chart_type)  # default value
         self.ctypevar.trace('w', self.ctypeChanged)
 
-        ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column = 0)
-        ctypeChooser = ttk.OptionMenu(frm, self.ctypevar, self.subplot.chart_type, *tuple(self.parent.oengus.plot_types_dict.keys()))
-        ctypeChooser.grid(row =0, column = 1, sticky = Tk.W + Tk.E)
+        ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column=0)
+        ctypeChooser = ttk.OptionMenu(
+            frm, self.ctypevar, self.subplot.chart_type,
+            *tuple(self.parent.oengus.plot_types_dict.keys()))
+        ctypeChooser.grid(row=0, column=1, sticky=Tk.W + Tk.E)
         # OptionMenu to choose simulation
         self.SimVar = Tk.StringVar(self)
-        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])  # default value
+        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])
         self.SimVar.trace('w', self.SimChanged)
 
         ttk.Label(frm, text="simulation:").grid(row=1, column=0)
-        SimChooser = ttk.OptionMenu(frm, self.SimVar,
-                    self.parent.oengus.sim_names[self.params['sim_num']],
-                    *tuple(self.parent.oengus.sim_names))
+        SimChooser = ttk.OptionMenu(
+            frm, self.SimVar,
+            self.parent.oengus.sim_names[self.params['sim_num']],
+            *tuple(self.parent.oengus.sim_names))
         SimChooser.grid(row=1, column=1, sticky=Tk.W + Tk.E)
-        self.TwoDVar = Tk.IntVar(self) # Create a var to track whether or not to plot in 2-D
+        # Create a var to track whether or not to plot in 2-D
+        self.TwoDVar = Tk.IntVar(self)
         self.TwoDVar.set(self.params['twoD'])
-        cb = ttk.Checkbutton(frm, text = "Show in 2-D",
-                variable = self.TwoDVar,
-                command = self.Change2d)
+        cb = ttk.Checkbutton(
+            frm, text="Show in 2-D", variable=self.TwoDVar,
+            command=self.Change2d)
         cb.grid(row=1, column=2, sticky=Tk.W)
         # the Radiobox Control to choose the Field Type
-        self.quantity  = Tk.StringVar(self)
+        self.quantity = Tk.StringVar(self)
         self.quantity.set(self.params['field_type'])
         self.quantity.trace('w', self.quantityChanged)
 
-        ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky = Tk.W)
-        quantChooser = ttk.OptionMenu(frm, self.quantity, self.params['field_type'], *tuple(self.parent.oengus.sims[self.params['sim_num']].get_available_quantities()['vec_flds'].keys()))
-        quantChooser.grid(row =3, column = 0, sticky = Tk.W + Tk.E)
+        ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky=Tk.W)
+        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
+        avail_flds = cur_sim.get_available_quantities()['vec_flds'].keys()
+        quantChooser = ttk.OptionMenu(
+            frm, self.quantity, self.params['field_type'],
+            *tuple(avail_flds))
+        quantChooser.grid(row=3, column=0, sticky = Tk.W + Tk.E)
         # the Check boxes for the dimension
         self.label = ttk.Label(frm, text='Dimension:')
-        self.label.grid(row = 2, column = 1, sticky = Tk.W)
+        self.label.grid(row=2, column=1, sticky=Tk.W)
 
-        self.ShowXVar = Tk.IntVar(self) # Create a var to track whether or not to show X
+        # Create a var to track whether or not to show X
+        self.ShowXVar = Tk.IntVar(self)
         self.ShowXVar.set(self.params['show_x'])
-        self.cbx = ttk.Checkbutton(frm, text = "Show x",
+        self.cbx = ttk.Checkbutton(
+            frm, text="Show x",
             variable = self.ShowXVar,
             command = self.Selector)
         self.cbx.grid(row = 3, column = 1, sticky = Tk.W)
@@ -302,6 +314,7 @@ class VectorFieldsSettings(Tk.Toplevel):
             self.subplot.remove()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
+
     def ctypeChanged(self, *args):
         if self.ctypevar.get() == self.subplot.chart_type:
             pass
