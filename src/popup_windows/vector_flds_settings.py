@@ -17,10 +17,10 @@ class VectorFieldsSettings(Tk.Toplevel):
         self.params = self.subplot.param_dict
         # Create the OptionMenu to chooses the Chart Type:
         self.InterpolVar = Tk.StringVar(self)
-        self.InterpolVar.set(self.params['interpolation']) # default value
+        self.InterpolVar.set(self.params['interpolation'])  # default value
         self.InterpolVar.trace('w', self.InterpolChanged)
 
-        ttk.Label(frm, text="Interpolation Method:").grid(row=0, column = 2)
+        ttk.Label(frm, text="Interpolation Method:").grid(row=0, column=2)
         InterplChooser = ttk.OptionMenu(frm, self.InterpolVar, self.params['interpolation'], *tuple(self.subplot.interpolation_methods))
         InterplChooser.grid(row =0, column = 3, sticky = Tk.W + Tk.E)
 
