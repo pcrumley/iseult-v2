@@ -15,8 +15,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -31,9 +31,9 @@ import numpy as np
 import h5py
 
 _CONSTANTS = {
-    'pi' : math.pi,
-    'e' : math.e,
-    #'phi': (1 + 5 ** .5) / 2
+    'pi': math.pi,
+    'e': math.e,
+    # 'phi': (1 + 5 ** .5) / 2
 }
 
 _FUNCTIONS = {
@@ -65,12 +65,15 @@ _FUNCTIONS = {
     'take': np.take
 }
 
+
 def h5_getter(filepath, attribute, prtl_stride=None):
     with h5py.File(filepath, 'r') as f:
         if prtl_stride is not None:
             return f[attribute][::prtl_stride]
         else:
             return f[attribute][:]
+
+
 class ExprParser:
     def __init__(self, string='', vars=None):
         self.__string = string
@@ -80,14 +83,15 @@ class ExprParser:
         self.f_end = ''
 
     def getValue(self, expr=None):
-        if not expr is None:
+        if expr is not None:
             self.string = expr
         value = self.parseExpression()
         self.skipWhitespace()
 
         if self.hasNext():
             raise Exception(
-                "Unexpected character found: '" + self.peek() + "' at index " + str(self.index)
+                "Unexpected character found: '"
+                + self.peek() + "' at index " + str(self.index)
             )
         return value
 
@@ -97,9 +101,9 @@ class ExprParser:
 
     @vars.setter
     def vars(self, vars_dict=None):
-        self.__vars = {} if vars_dict == None else vars_dict.copy()
+        self.__vars = {} if vars_dict is None else vars_dict.copy()
         for constant in _CONSTANTS.keys():
-            if self.vars.get(constant) != None:
+            if self.vars.get(constant) is not None:
                 raise Exception("Cannot redefine the value of " + constant)
 
     @property
@@ -128,8 +132,8 @@ class ExprParser:
 
     def popExpected(self, value):
         if not self.popIfNext(value):
-            raise Exception("Expected '" + value + "' at index " + str(self.index))
-
+            raise Exception(
+                "Expected '" + value + "' at index " + str(self.index))
 
     def skipWhitespace(self):
         while self.hasNext():
@@ -199,7 +203,8 @@ class ExprParser:
 
             if self.peek() != ')':
                 raise Exception(
-                    "No closing parenthesis found at character " + str(self.index)
+                    "No closing parenthesis found at character "
+                    + str(self.index)
                 )
             self.index += 1
             return value
@@ -252,19 +257,18 @@ class ExprParser:
         var = ''.join(var)
 
         function = _FUNCTIONS.get(var.lower())
-        if function != None:
+        if function is not None:
             args = self.parseArguments()
             return function(*args)
 
         constant = _CONSTANTS.get(var.lower())
-        if constant != None:
+        if constant is not None:
             return constant
         fpath = self.vars.get(var, None)
 
         value = h5_getter(fpath+self.f_end, var)
         return value
-        #if len(value) > 0:
-
+        # if len(value) > 0:
 
         raise Exception("Unrecognized variable: '" + var + "'")
 
@@ -280,7 +284,8 @@ class ExprParser:
             if char == '.':
                 if decimal_found:
                     raise Exception(
-                        "Found an extra period in a number at character " + str(self.index) + ". Are you European?"
+                        "Found an extra period in a number at character "
+                        + str(self.index) + ". Are you European?"
                     )
                 decimal_found = True
                 strValue += '.'
@@ -295,23 +300,25 @@ class ExprParser:
                 raise Exception("Unexpected end found")
             else:
                 raise Exception(
-                    "I was expecting to find a number at character " + str(self.index) + " but instead I found a '" + char + "'. What's up with that?")
+                    "I was expecting to find a number at character "
+                    + str(self.index) + " but instead I found a '"
+                    + char + "'. What's up with that?")
 
         return float(strValue)
 
-def evaluate(expression, vars = None):
+def evaluate(expression, vars=None):
     try:
         p = ExprParser(expression, vars)
         value = p.getValue()
     except Exception as ex:
         raise Exception
 
-
-
     return value
 
+
 if __name__ == "__main__":
-    # assert np.abs(evaluate("cos(take(x,0)+4*3) + 2 * 3 - y", { 'x': np.linspace(0,np.pi,num = 100), 'y':10 }) - np.cos(12) +4) <1E-8
+    # assert np.abs(evaluate("cos(take(x,0)+4*3) + 2 * 3 - y", {
+    #    'x': np.linspace(0,np.pi,num = 100), 'y':10 }) - np.cos(12) +4) < 1E-8
     # assert evaluate("exp(0)") == 1
     # assert evaluate("-(1 + 2) * 3") == -9
     print(evaluate("(1-2)/3.0 + 0.0000"))
