@@ -15,6 +15,7 @@ class Knob:
         """
         pass
 
+
 class Param:
     """
     ---- Taken from the Matplotlib gallery
@@ -40,8 +41,10 @@ class Param:
 
     def attach(self, knob):
         self.knobs += [knob]
+
     def dettach(self, knob):
         self.knobs.remove(knob)
+
     def set(self, value, knob=None):
         if self.value != self.constrain(value):
             self.value = self.constrain(value)
