@@ -2,6 +2,7 @@ import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
 import new_cmaps
 
+
 class Spinbox(ttk.Entry):
     def __init__(self, master=None, **kw):
         ttk.Entry.__init__(self, master, "ttk::spinbox", **kw)
@@ -11,6 +12,7 @@ class Spinbox(ttk.Entry):
 
     def set(self, value):
         return self.tk.call(self._w, 'set', value)
+
 
 class SettingsFrame(Tk.Toplevel):
     def __init__(self, oengus):
@@ -26,60 +28,93 @@ class SettingsFrame(Tk.Toplevel):
 
         # Make an entry to change the skip size
         self.skipSize = Tk.StringVar(self)
-        self.skipSize.set(self.main_params['SkipSize']) # default value
+        self.skipSize.set(self.main_params['SkipSize'])  # default value
         self.skipSize.trace('w', self.SkipSizeChanged)
-        ttk.Label(frm, text="Skip Size:").grid(row=0)
-        self.skipEnter = ttk.Entry(frm, textvariable=self.skipSize, width = 6)
-        self.skipEnter.grid(row =0, column = 1, sticky = Tk.W + Tk.E)
-
+        ttk.Label(
+            frm, text="Skip Size:").grid(row=0)
+        ttk.Entry(
+            frm, textvariable=self.skipSize,
+            width=6).grid(
+                row=0, column=1,
+                sticky=Tk.W + Tk.E)
         # Make an button to change the wait time
         self.waitTime = Tk.StringVar(self)
-        self.waitTime.set(self.main_params['WaitTime']) # default value
+        self.waitTime.set(self.main_params['WaitTime'])  # default value
         self.waitTime.trace('w', self.WaitTimeChanged)
-        ttk.Label(frm, text="Playback Wait Time:").grid(row=1)
-        self.waitEnter = ttk.Entry(frm, textvariable=self.waitTime, width = 6)
-        self.waitEnter.grid(row =1, column = 1, sticky = Tk.W + Tk.E)
+
+        ttk.Label(
+            frm, text="Playback Wait Time:").grid(row=1)
+        ttk.Entry(
+            frm, textvariable=self.waitTime,
+            width=6).grid(
+                row=1, column=1,
+                sticky=Tk.W + Tk.E)
 
         # Have a list of the color maps
         self.cmapvar = Tk.StringVar(self)
-        self.cmapvar.set(self.main_params['ColorMap']) # default value
+        self.cmapvar.set(self.main_params['ColorMap'])  # default value
         self.cmapvar.trace('w', self.CmapChanged)
 
-        ttk.Label(frm, text="Color map:").grid(row=2)
-        cmapChooser = ttk.OptionMenu(frm, self.cmapvar, self.main_params['ColorMap'], *tuple(new_cmaps.sequential))
-        cmapChooser.grid(row =2, column = 1, sticky = Tk.W + Tk.E)
+        ttk.Label(
+            frm, text="Color map:").grid(
+                row=2)
+        ttk.OptionMenu(
+            frm, self.cmapvar,
+            self.main_params['ColorMap'],
+            *tuple(new_cmaps.sequential)).grid(
+                row=2, column=1,
+                sticky=Tk.W + Tk.E)
 
         # Have a list of the color maps
         self.divcmapList = new_cmaps.cmaps.keys()
         self.div_cmapvar = Tk.StringVar(self)
-        self.div_cmapvar.set(self.main_params['DivColorMap']) # default value
+        self.div_cmapvar.set(self.main_params['DivColorMap'])  # default value
         self.div_cmapvar.trace('w', self.DivCmapChanged)
 
-        ttk.Label(frm, text="Diverging Cmap:").grid(row=3)
-        cmapChooser = ttk.OptionMenu(frm, self.div_cmapvar, self.main_params['DivColorMap'], *tuple(new_cmaps.diverging))
-        cmapChooser.grid(row =3, column = 1, sticky = Tk.W + Tk.E)
-
+        ttk.Label(
+            frm, text="Diverging Cmap:").grid(
+            row=3)
+        ttk.OptionMenu(
+            frm, self.div_cmapvar,
+            self.main_params['DivColorMap'],
+            *tuple(new_cmaps.diverging)).grid(
+                row=3, column=1,
+                sticky=Tk.W + Tk.E)
 
         # Make an entry to change the number of columns
         self.columnNum = Tk.StringVar(self)
-        self.columnNum.set(self.main_params['NumOfCols']) # default value
+        self.columnNum.set(self.main_params['NumOfCols'])  # default value
         self.columnNum.trace('w', self.ColumnNumChanged)
         ttk.Label(frm, text="# of columns:").grid(row=4)
-        self.ColumnSpin = Spinbox(frm,  from_=1, to=self.main_params['MaxCols'], textvariable=self.columnNum, width = 6)
-        self.ColumnSpin.grid(row =4, column = 1, sticky = Tk.W + Tk.E)
+        Spinbox(
+            frm, from_=1, to=self.main_params['MaxCols'],
+            textvariable=self.columnNum, width=6).grid(
+                row=4, column=1,
+                sticky=Tk.W + Tk.E)
 
         # Make an entry to change the number of columns
         self.rowNum = Tk.StringVar(self)
-        self.rowNum.set(self.main_params['NumOfRows']) # default value
+        self.rowNum.set(self.main_params['NumOfRows'])  # default value
         self.rowNum.trace('w', self.RowNumChanged)
-        ttk.Label(frm, text="# of rows:").grid(row=5)
-        self.RowSpin = Spinbox(frm, from_=1, to=self.main_params['MaxRows'], textvariable=self.rowNum, width = 6)
-        self.RowSpin.grid(row =5, column = 1, sticky = Tk.W + Tk.E)
+        ttk.Label(
+            frm, text="# of rows:").grid(row=5)
+        Spinbox(
+            frm, from_=1, to=self.main_params['MaxRows'],
+            textvariable=self.rowNum, width=6).grid(
+                row=5, column=1,
+                sticky=Tk.W + Tk.E)
 
         self.PrtlStrideVar = Tk.StringVar()
         self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
-        ttk.Entry(frm, textvariable = self.PrtlStrideVar, width =6).grid(row =6, column =1, sticky = Tk.W +Tk.E)
-        ttk.Label(frm, text='Particle stride').grid(row= 6,column =0)
+        ttk.Entry(
+            frm,
+            textvariable=self.PrtlStrideVar,
+            width=6).grid(
+                row=6, column=1,
+                sticky=Tk.W + Tk.E)
+        ttk.Label(
+            frm, text='Particle stride').grid(
+                row=6, column=0)
 
         # Control whether or not Title is shown
         self.TitleVar = Tk.IntVar()
@@ -95,226 +130,84 @@ class SettingsFrame(Tk.Toplevel):
         self.xright = Tk.StringVar()
         self.xright.set(str(self.main_params['xRight']))
 
-
-        ttk.Label(frm, text = 'min').grid(row= 7, column = 1, sticky = Tk.N)
-        ttk.Label(frm, text = 'max').grid(row= 7, column = 2, sticky = Tk.N)
-        cb = ttk.Checkbutton(frm, text ='Set xlim',
-                        variable = self.LimVar)
-        cb.grid(row = 8, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.xleft, width = 8).grid(row = 8, column =1, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.xright, width = 8).grid(row = 8, column =2, sticky = Tk.N)
-
-
+        ttk.Label(
+            frm, text='min').grid(
+                row=7, column=1,
+                sticky=Tk.N)
+        ttk.Label(
+            frm, text='max').grid(
+                row=7, column=2,
+                sticky=Tk.N)
+        ttk.Checkbutton(
+            frm, text='Set xlim',
+            variable=self.LimVar).grid(
+                row=8, sticky=Tk.N)
+        ttk.Entry(
+            frm, textvariable=self.xleft,
+            width=8).grid(
+                row=8, column=1,
+                sticky=Tk.N)
+        ttk.Entry(
+            frm, textvariable=self.xright,
+            width=8).grid(
+                row=8, column=2,
+                sticky=Tk.N)
 
         self.yLimVar = Tk.IntVar()
         self.yLimVar.set(self.main_params['SetyLim'])
         self.yLimVar.trace('w', self.yLimChanged)
-
-
 
         self.yleft = Tk.StringVar()
         self.yleft.set(str(self.main_params['yBottom']))
         self.yright = Tk.StringVar()
         self.yright.set(str(self.main_params['yTop']))
 
+        ttk.Checkbutton(
+            frm, text='Set ylim',
+            variable=self.yLimVar).grid(
+                row=9, sticky=Tk.N)
+        ttk.Entry(
+            frm, textvariable=self.yleft,
+            width=8).grid(
+                row=9, column=1,
+                sticky=Tk.N)
+        ttk.Entry(
+            frm, textvariable=self.yright,
+            width=8).grid(
+                row=9, column=2,
+                sticky=Tk.N)
 
-        ttk.Checkbutton(frm, text ='Set ylim',
-                        variable = self.yLimVar).grid(row = 9, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.yleft, width = 8 ).grid(row = 9, column =1, sticky = Tk.N)
-        ttk.Entry(frm, textvariable=self.yright, width =8 ).grid(row = 9, column =2, sticky = Tk.N)
-
-        #self.kLimVar = Tk.IntVar()
-        #self.kLimVar.set(self.main_params['SetkLim'])
-        #self.kLimVar.trace('w', self.kLimChanged)
-
-
-
-        #self.kleft = Tk.StringVar()
-        #self.kleft.set(str(self.main_params['kLeft']))
-        #self.kright = Tk.StringVar()
-        #self.kright.set(str(self.main_params['kRight']))
-
-
-        #ttk.Checkbutton(frm, text ='Set klim', variable = self.kLimVar).grid(row = 10, sticky = Tk.N)
-        #ttk.Entry(frm, textvariable=self.kleft, width = 8 ).grid(row = 10, column =1, sticky = Tk.N)
-        #ttk.Entry(frm, textvariable=self.kright, width =8 ).grid(row = 10, column =2, sticky = Tk.N)
-
-        #self.xRelVar = Tk.IntVar()
-        #self.xRelVar.set(self.main_params['xLimsRelative'])
-        #self.xRelVar.trace('w', self.xRelChanged)
-        #ttk.Checkbutton(frm, text = "x limits & zooms relative to shock",
-        #                variable = self.xRelVar).grid(row = 11, columnspan = 3, sticky = Tk.W)
-
-        """
-        framecb = ttk.Frame(frm)
-
-        ttk.Label(framecb, text='Choose 2D plane:').pack(side = Tk.LEFT, expand = 0)
-        self.PlaneVar = Tk.IntVar()
-        self.PlaneVar.set(self.main_params['2DSlicePlane'])
-        self.xybutton = ttk.Radiobutton(framecb,
-                            text='x-y',
-                            variable=self.PlaneVar,
-                            command = self.RadioPlane,
-                            value=0)
-        self.xybutton.pack(side = Tk.LEFT, expand = 0)
-        self.xzbutton = ttk.Radiobutton(framecb,
-                            text='x-z',
-                            variable=self.PlaneVar,
-                            command = self.RadioPlane,
-                            value=1)
-        self.xzbutton.pack(side = Tk.LEFT, expand = 0)
-        framecb.grid(row = 12, columnspan = 4)
-        """
-        """
-        framey = ttk.Frame(frm)
-        self.ySliceVar = Tk.IntVar()
-        self.ySliceVar.set(self.parent.ySlice)
-        self.units_listy = []
-        for i in range(self.parent.MaxYInd+1):
-            self.units_listy.append(str(i*self.parent.istep/self.parent.c_omp))
-
-        self.ySliceVarC_omp = Tk.StringVar()
-        self.ySliceVarC_omp.set(self.units_listy[self.ySliceVar.get()])
-
-        labely = ttk.Label(framey, text='y-slice')#
-        labely.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-
-        # A slider that will select the 2D slice in the simulation
-        self.slidery = ttk.Scale(framey, from_=0, to=self.parent.MaxYInd, command = self.yScaleHandler)
-        self.slidery.set(self.ySliceVar.get())
-        self.slidery.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
-
-
-        self.txtEntery = ttk.Entry(framey, textvariable=self.ySliceVarC_omp, width=6)
-        self.txtEntery.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
-        if self.parent.MaxYInd ==0:
-            self.txtEntery.state(['disabled'])
-            self.slidery.state(['disabled'])
-        ttk.Label(framey, text='[c_omp]').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # bind releasing the moust button to updating the plots.
-        self.slidery.bind("<ButtonRelease-1>", self.yUpdateValue)
-
-
-        framey.grid(row = 13, columnspan =4)
-
-        framez = ttk.Frame(frm)
-        self.zSliceVar = Tk.IntVar()
-        self.zSliceVar.set(int(np.around(self.main_params['zSlice']*self.parent.MaxZInd)))
-
-        self.units_listz = []
-        for i in range(self.parent.MaxZInd+1):
-            self.units_listz.append(str(i*self.parent.istep/self.parent.c_omp))
-
-        self.zSliceVarC_omp = Tk.StringVar()
-        self.zSliceVarC_omp.set(self.units_listz[self.zSliceVar.get()])
-
-        # An entry box that will let us choose the time-step
-        ttk.Label(framez, text='z-slice').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-        # A slider that will select the 2D slice in the simulation
-        self.sliderz = ttk.Scale(framez, from_=0, to=self.parent.MaxZInd, command = self.zScaleHandler)
-        self.sliderz.set(self.zSliceVar.get())
-        self.sliderz.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
-
-        self.txtEnterz = ttk.Entry(framez, textvariable=self.zSliceVarC_omp, width=6)
-        self.txtEnterz.pack(side=Tk.LEFT, fill = Tk.BOTH, expand = 0)
-        ttk.Label(framez, text='[c_omp]').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # bind releasing the moust button to updating the plots.
-        self.sliderz.bind("<ButtonRelease-1>", self.zUpdateValue)
-        if self.parent.MaxZInd ==0:
-            self.xzbutton.state(['disabled'])
-            self.txtEnterz.state(['disabled'])
-            self.sliderz.state(['disabled'])
-
-
-        framez.grid(row = 14, columnspan =4)
-        """
-        cb = ttk.Checkbutton(frm, text = "Show Title",
-                        variable = self.TitleVar)
-        cb.grid(row = 15, sticky = Tk.W)
-        # Control whether or not axes are shared with a radio box:
-        #self.toLinkList = ['None', 'All spatial', 'All non p-x', 'All 2-D spatial']
-        #self.LinkedVar = Tk.IntVar()
-        #self.LinkedVar.set(self.main_params['LinkSpatial'])
-
-        #ttk.Label(frm, text='Share spatial axes:').grid(row = 0, column = 2, sticky = Tk.W)
-
-        #for i in range(len(self.toLinkList)):
-        #    ttk.Radiobutton(frm,
-        #            text=self.toLinkList[i],
-        #            variable=self.LinkedVar,
-        #            command = self.RadioLinked,
-        #            value=i).grid(row = 1+i, column = 2, sticky =Tk.N)
-
+        ttk.Checkbutton(
+            frm, text="Show Title",
+            variable=self.TitleVar).grid(
+                row=15, sticky=Tk.W)
         self.AspectVar = Tk.IntVar()
         self.AspectVar.set(self.main_params['ImageAspect'])
         self.AspectVar.trace('w', self.AspectVarChanged)
 
-        cb = ttk.Checkbutton(frm, text = "Aspect = 1",
-                                variable = self.AspectVar)
-        cb.grid(row = 15, column = 1, sticky = Tk.W)
-
-        #self.ConstantShockVar = Tk.IntVar()
-        #self.ConstantShockVar.set(self.main_params['ConstantShockVel'])
-        #self.ConstantShockVar.trace('w', self.ShockSpeedVarChanged)
-
-        #cb = ttk.Checkbutton(frm, text = "Constant Shock v",
-        #                        variable = self.ConstantShockVar)
-        #cb.grid(row = 15, column = 2, sticky = Tk.W)
+        ttk.Checkbutton(
+            frm, text="Aspect = 1",
+            variable=self.AspectVar).grid(
+                row=15, column=1,
+                sticky=Tk.W)
 
         self.Average1DVar = Tk.IntVar()
         self.Average1DVar.set(self.main_params['Average1D'])
         self.Average1DVar.trace('w', self.AverageChanged)
-        ttk.Checkbutton(frm, text='1D Average',variable = self.Average1DVar).grid(row = 16, column = 2, sticky = Tk.W)
+        ttk.Checkbutton(
+            frm, text='1D Average',
+            variable=self.Average1DVar).grid(
+                row=16, column=2,
+                sticky=Tk.W)
 
         self.CbarOrientation = Tk.IntVar()
         self.CbarOrientation.set(self.main_params['HorizontalCbars'])
         self.CbarOrientation.trace('w', self.OrientationChanged)
 
-        cb = ttk.Checkbutton(frm, text = "Horizontal Cbars",
-                                variable = self.CbarOrientation)
-        cb.grid(row = 16, sticky = Tk.W)
-
-
-        #self.LinkKVar = Tk.IntVar()
-        #self.LinkKVar.set(self.main_params['LinkK'])
-        #self.LinkKVar.trace('w', self.LinkKChanged)
-
-        #cb = ttk.Checkbutton(frm, text = "Share k-axes",
-        #                        variable = self.LinkKVar)
-        #cb.grid(row = 16, column =1, sticky = Tk.W)
-
-    def yScaleHandler(self, e):
-        # if changing the scale will change the value of the parameter, do so
-        if self.ySliceVar.get() != int(self.slidery.get()):
-            self.ySliceVar.set(int(self.slidery.get()))
-            self.ySliceVarC_omp.set(self.units_listy[self.ySliceVar.get()])
-
-    def zScaleHandler(self, e):
-        # if changing the scale will change the value of the parameter, do so
-        if self.zSliceVar.get() != int(self.sliderz.get()):
-            self.zSliceVar.set(int(self.sliderz.get()))
-            self.zSliceVarC_omp.set(self.units_listz[self.zSliceVar.get()])
-
-    def zUpdateValue(self, e):
-        if self.zSliceVar.get() == self.parent.zSlice:
-            pass
-
-        else:
-            self.main_params['zSlice'] = float(self.zSliceVar.get())/self.parent.MaxZInd
-            self.zSliceVarC_omp.set(self.units_listz[self.zSliceVar.get()])
-            self.parent.RenewCanvas()
-
-    def yUpdateValue(self, e):
-        if self.ySliceVar.get() == self.parent.ySlice:
-            pass
-
-        else:
-            self.main_params['ySlice'] = float(self.ySliceVar.get())/self.parent.MaxYInd
-            self.ySliceVarC_omp.set(self.units_listy[self.ySliceVar.get()])
-            self.parent.RenewCanvas()
-
+        ttk.Checkbutton(
+            frm, text="Horizontal Cbars",
+            variable=self.CbarOrientation).grid(
+                row=16, sticky=Tk.W)
 
     def AspectVarChanged(self, *args):
         if self.AspectVar.get() == self.main_params['ImageAspect']:
@@ -356,16 +249,8 @@ class SettingsFrame(Tk.Toplevel):
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
-    #def LorentzBoostChanged(self, *args):
-    #    if self.LorentzBoostVar.get() == self.main_params['DoLorentzBoost']:
-    #        pass
-
-    #    else:
-    #        self.main_params['DoLorentzBoost'] = self.LorentzBoostVar.get()
-    #        self.parent.RenewCanvas()
-
     def TitleChanged(self, *args):
-        if self.TitleVar.get()==self.main_params['ShowTitle']:
+        if self.TitleVar.get() == self.main_params['ShowTitle']:
             pass
         else:
             self.main_params['ShowTitle'] = self.TitleVar.get()
@@ -380,6 +265,7 @@ class SettingsFrame(Tk.Toplevel):
         else:
             self.main_params['LinkSpatial'] = self.LinkedVar.get()
             self.parent.RenewCanvas(ForceRedraw = True)
+
     def RadioPlane(self, *args):
         # If the shared axes are changed, the whole plot must be redrawn
         if self.PlaneVar.get() == self.main_params['2DSlicePlane']:
