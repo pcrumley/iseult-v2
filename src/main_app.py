@@ -193,7 +193,6 @@ class MainApp(Tk.Tk):
             if val is not None:
                 val.destroy()
 
-
         self.oengus.load_view(config_name)
 
         # There are a few parameters that need to be loaded separately,
@@ -202,7 +201,7 @@ class MainApp(Tk.Tk):
             self.oengus.MainParamDict['LoopPlayback'])
 
         self.oengus.create_graphs()
-        #self.geometry(self.oengus.MainParamDict['WindowSize'])
+        # self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.oengus.canvas.draw()
         # refresh the geometry
 
@@ -223,7 +222,8 @@ class MainApp(Tk.Tk):
 
     def set_knob(self, value):
         self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
-        #self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        # self.time_step.set_max(
+        #    len(self.oengus.sims[self.playbackbar.cur_sim]))
         self.oengus.sims[self.playbackbar.cur_sim].set_time(value - 1)
         if self.oengus.MainParamDict['LinkTime']:
             unit = self.oengus.MainParamDict['TimeUnits']
@@ -232,7 +232,9 @@ class MainApp(Tk.Tk):
             for sim in self.oengus.sims:
                 sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
+
         self.oengus.canvas.get_tk_widget().update_idletasks()
+
 
 def runMe(cmd_args):
     app = MainApp('Iseult', cmd_args)

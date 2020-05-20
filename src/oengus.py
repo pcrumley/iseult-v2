@@ -345,7 +345,7 @@ class Oengus():
                 for sim_num in self.sims_shown:
                     self.sims[sim_num].set_time(cur_t, units=None)
             self.draw_output()
-            #if self.interactive:
+            # if self.interactive:
             #    self.canvas.get_tk_widget().update_idletasks()
 
             s, (width, height) = self.canvas.print_to_buffer()

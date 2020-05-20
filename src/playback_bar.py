@@ -218,6 +218,5 @@ class playbackBar(Tk.Frame):
             self.param.set(int(self.slider.get()))
 
     def set_knob(self, value):
-
         self.slider.set(value)
         self.tstep.set(str(value))

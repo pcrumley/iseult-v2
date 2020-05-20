@@ -6,6 +6,7 @@ output/
 output_v2/
 *~
 *.prof
+*.mov
 build/
 .DS_Store
 .iseult_configs/

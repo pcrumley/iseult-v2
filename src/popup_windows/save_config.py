@@ -47,6 +47,7 @@ def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
     with open(cfgfile, 'w') as cfgFile:
         cfgFile.write(yaml.safe_dump(cfgDict))
 
+
 class SaveDialog(Tk.Toplevel):
 
     def __init__(self, parent, title=None):
