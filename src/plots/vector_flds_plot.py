@@ -382,7 +382,7 @@ class vectorFldsPlot:
                     self.axC.set_ylim(clim[0], clim[1])
                     self.axC.locator_params(axis='y', nbins=6)
 
-            else:  # self.GetPlotParam('cnorm_type') == "Linear":
+            else:
                 if self.parent.MainParamDict['HorizontalCbars']:
                     # self.cbar.set_data(self.gradient)
                     self.cbar.set_extent([clim[0], clim[1], 0, 1])
@@ -511,22 +511,26 @@ class vectorFldsPlot:
             sim = self.parent.sims[self.param_dict['sim_num']]
 
         if self.param_dict['cmap'] == 'None':
+            cmap = self.parent.MainParamDict['ColorMap']
+            x_color = new_cmaps.cmap_to_hex(0.2, cmap)
+            y_color = new_cmaps.cmap_to_hex(0.5, cmap)
+            z_color = new_cmaps.cmap_to_hex(0.8, cmap)
+
             if self.param_dict['UseDivCmap']:
                 cmap = self.parent.MainParamDict['DivColorMap']
-            else:
-                cmap = self.parent.MainParamDict['ColorMap']
 
         else:
             cmap = self.param_dict['cmap']
+            x_color = new_cmaps.cmap_to_hex(0.2, cmap)
+            y_color = new_cmaps.cmap_to_hex(0.5, cmap)
+            z_color = new_cmaps.cmap_to_hex(0.8, cmap)
 
         if self.param_dict['twoD']:
             self.image.set_cmap(new_cmaps.cmaps[cmap])
             self.cbar.set_cmap(new_cmaps.cmaps[cmap])
 
         else:
-            x_color = new_cmaps.cmap_to_hex(0.2, cmap)
-            y_color = new_cmaps.cmap_to_hex(0.5, cmap)
-            z_color = new_cmaps.cmap_to_hex(0.8, cmap)
+
             self.axes.set_ylabel(
                 sim.get_data(
                     n, data_class='vec_flds',

@@ -8,33 +8,34 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
 
+
 class scalarFldsPlot:
     # A dictionary of all of the parameters for this plot with the default parameters
 
-    plot_param_dict = {'twoD': 0,
-                       'sim_num': 0,
-                       'flds_type': 'density',
-                       'show_cbar': True,
-                       'set_color_limits': False,
-                       'v_min': 0,
-                       'v_max' : 10,
-                       'set_v_min': False,
-                       'set_v_max': False,
-                       'show_labels' : True,
-                       'show_shock' : False,
-                       'OutlineText': True,
-                       'spatial_x': True,
-                       'spatial_y': False,
-                       'interpolation': 'none',
-                       'normalize_density': True, # Normalize density to it's upstream values
-                       'cnorm_type': 'Linear', # Colormap norm;  options are Pow or Linear
-                       'cpow_num': 0.6, # Used in the PowerNorm
-                       'UseDivCmap': False,
-                       'div_midpoint': 0.0,
-                       'stretch_colors': False,
-                       'cmap': 'None', # If cmap is none, the plot will inherit the parent's cmap
-                       'show_cpu_domains': False, # plots lines showing how the CPUs are divvying up the computational region
-                       'face_color': 'gainsboro'}
+    plot_param_dict = {
+        'twoD': 0,
+        'sim_num': 0,
+        'flds_type': 'density',
+        'show_cbar': True,
+        'set_color_limits': False,
+        'v_min': 0,
+        'v_max' : 10,
+        'set_v_min': False,
+        'set_v_max': False,
+        'show_labels' : True,
+        'show_shock' : False,
+        'OutlineText': True,
+        'spatial_x': True,
+        'spatial_y': False,
+        'interpolation': 'none',
+        'normalize_density': True, # Normalize density to it's upstream values
+        'cnorm_type': 'Linear', # Colormap norm;  options are Pow or Linear
+        'cpow_num': 0.6, # Used in the PowerNorm
+        'UseDivCmap': False,
+        'div_midpoint': 0.0,
+        'stretch_colors': False,
+        'cmap': 'None', # If cmap is none, the plot inherits the parent's cmap
+        'face_color': 'gainsboro'}
 
     gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
     gradient = np.vstack((gradient, gradient))
@@ -49,62 +50,75 @@ class scalarFldsPlot:
         self.changedD = False
         self.parent = parent
         self.figure = self.parent.figure
-        self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
+        self.interpolation_methods = [
+            'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def norm(self, vmin=None, vmax=None):
-        if self.GetPlotParam('cnorm_type') =="Linear":
-            if self.GetPlotParam('UseDivCmap'):
-                return PowerNormWithNeg(1.0, vmin, vmax, midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
+        if self.param_dict['cnorm_type'] == "Linear":
+            if self.param_dict['UseDivCmap']:
+                return PowerNormWithNeg(
+                    1.0, vmin, vmax,
+                    midpoint=self.param_dict['div_midpoint'],
+                    stretch_colors=self.param_dict['stretch_colors'])
+
             else:
                 return mcolors.Normalize(vmin, vmax)
-        elif self.GetPlotParam('cnorm_type') == "Log":
-            return  mcolors.LogNorm(vmin, vmax)
+
+        elif self.param_dict['cnorm_type'] == "Log":
+            return mcolors.LogNorm(vmin, vmax)
+
         else:
-            return PowerNormWithNeg(self.GetPlotParam('cpow_num'), vmin, vmax, div_cmap = self.GetPlotParam('UseDivCmap'),midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
 
+            return PowerNormWithNeg(
+                self.param_dict['cpow_num'],
+                vmin, vmax,
+                div_cmap=self.param_dict['UseDivCmap'],
+                midpoint=self.param_dict['div_midpoint'],
+                stretch_colors=self.param_dict['stretch_colors'])
 
-    def draw(self, sim = None, n = None):
+    def draw(self, sim=None, n=None):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
 
-        #if n is None:
-        #    n = self.parent.cur_times[self.param_dict['sim_num']]
-        if self.GetPlotParam('cmap') == 'None':
-            if self.GetPlotParam('UseDivCmap'):
+        if self.param_dict['cmap'] == 'None':
+            if self.param_dict['UseDivCmap']:
                 self.cmap = self.parent.MainParamDict['DivColorMap']
+
             else:
                 self.cmap = self.parent.MainParamDict['ColorMap']
-
         else:
-            self.cmap = self.GetPlotParam('cmap')
+            self.cmap = self.param_dict['cmap']
 
-        self.dens_color = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']](0.5)
-                # get c_omp and istep to convert cells to physical units
+        self.dens_color = new_cmaps.cmap_to_hex(0.5, self.cmap)
+
+        # get c_omp and istep to convert cells to physical units
+        self.c_omp = sim.get_data(n, data_class='param', attribute='c_omp')
+        self.istep = sim.get_data(n, data_class='param', attribute='istep')
 
         # FIND THE SLICE
-        MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
-        MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
+        self.ySlice = self.parent.calc_slices('y', sim, n)
+        self.zSlice = self.parent.calc_slices('z', sim, n)
 
+        self.scalar_fld = sim.get_data(
+            n, data_class='scalar_flds',
+            fld=self.param_dict['flds_type'])
 
-        self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
-        self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
-
-        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
-
-        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
-        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
-        if self.GetPlotParam('OutlineText'):
-            self.annotate_kwargs = {'horizontalalignment': 'right',
-            'verticalalignment': 'top',
-            'size' : self.parent.MainParamDict['annotateTextSize'],
-            'path_effects' : [PathEffects.withStroke(linewidth=1.5,foreground="k")]
+        if self.param_dict['OutlineText']:
+            self.annotate_kwargs = {
+                'horizontalalignment': 'right',
+                'verticalalignment': 'top',
+                'size' : self.parent.MainParamDict['annotateTextSize'],
+                'path_effects' : [
+                    PathEffects.withStroke(linewidth=1.5, foreground="k")]
             }
+
         else:
-            self.annotate_kwargs = {'horizontalalignment' : 'right',
-            'verticalalignment' : 'top',
-            'size' : self.parent.MainParamDict['annotateTextSize']}
+            self.annotate_kwargs = {
+                'horizontalalignment' : 'right',
+                'verticalalignment' : 'top',
+                'size' : self.parent.MainParamDict['annotateTextSize']}
 
         # Set the tick color
         tick_color = 'black'

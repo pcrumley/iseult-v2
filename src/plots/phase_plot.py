@@ -1,4 +1,5 @@
-import matplotlib, sys
+import matplotlib
+import sys
 import numpy as np
 import numpy.ma as ma
 import new_cmaps
@@ -8,43 +9,43 @@ import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 
+
 class phasePlot:
-    # A dictionary of all of the parameters for this plot with the default parameters
+    # A dictionary of all of the parameters for this plot with the
+    # default parameters
 
-    plot_param_dict = {'twoD': 1,
-                       'sim_num': 0,
-                       'masked': 1,
-                       'cnorm_type': 'Log', #Colormap normalization. Opts are Log or Linear
-                       'prtl_type': 'ions',
-                       'x_val': 'x',
-                       'y_val': 'px',
-                       'weights': None,
-                       'cpow_num': 0.6,
-                       'show_cbar': True,
-                       'weighted': False,
-                       'show_shock': False,
-                       'show_int_region': True,
-                       'x_bins' : 200,
-                       'y_bins' : 200,
-                       'v_min': -2.0,
-                       'v_max' : 0,
-                       'set_v_min': False,
-                       'set_v_max': False,
-                       'y_min': -2.0,
-                       'y_max' : 2,
-                       #'set_E_min' : False,
-                       #'E_min': 1.0,
-                       #'set_E_max': False,
-                       #'E_max': 200.0,
-                       'set_y_min': False,
-                       'set_y_max': False,
-                       'spatial_x': True,
-                       'spatial_y': False,
-                       'interpolation': 'nearest',
-                       'face_color': 'gainsboro'}
+    plot_param_dict = {
+        'twoD': 1,
+        'sim_num': 0,
+        'masked': 1,
+        'cnorm_type': 'Log',  # Colormap normalization. Opts are Log or Linear
+        'prtl_type': 'ions',
+        'x_val': 'x',
+        'y_val': 'px',
+        'weights': None,
+        'cpow_num': 0.6,
+        'show_cbar': True,
+        'weighted': False,
+        'show_shock': False,
+        'show_int_region': True,
+        'x_bins': 200,
+        'y_bins': 200,
+        'v_min': -2.0,
+        'v_max': 0,
+        'set_v_min': False,
+        'set_v_max': False,
+        'y_min': -2.0,
+        'y_max': 2.0,
+        'cmap': 'None',
+        'set_y_min': False,
+        'set_y_max': False,
+        'spatial_x': True,
+        'spatial_y': False,
+        'interpolation': 'nearest',
+        'face_color': 'gainsboro'}
 
-
-    gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
+    # A way to make the colorbar display better
+    gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
     def __init__(self, parent, pos, param_dict):
@@ -68,49 +69,41 @@ class phasePlot:
             return mcolors.Normalize(vmin, vmax)
 
     def update_labels_and_colors(self):
-        if self.param_dict['prtl_type'] == 'ions': #protons
+        if self.param_dict['prtl_type'] == 'ions':  # protons
             self.energy_color = self.parent.ion_color
-        else: #electons
+
+        else:  # electrons
             self.energy_color = self.parent.electron_color
 
-        #for line in self.IntRegionLines:
-        #    line.set_color(self.energy_color)
-        #set the xlabels
-        #if self.parent.MainParamDict['DoLorentzBoost'] and np.abs(self.parent.MainParamDict['GammaBoost'])>1E-8:
-        #    self.x_label = r'$x\prime\ [c/\omega_{\rm pe}]$'
         self.axes.set_xlabel(
             self.x_values['axis_label'],
             labelpad=self.parent.MainParamDict['xLabelPad'],
             color='black',
             size=self.parent.MainParamDict['AxLabelSize'])
+
         self.axes.set_ylabel(
             self.y_values['axis_label'],
             labelpad=self.parent.MainParamDict['xLabelPad'],
             color='black',
             size=self.parent.MainParamDict['AxLabelSize'])
-    def draw(self, sim = None, n = None):
-        # set the colors):
+
+    def draw(self, sim=None, n=None):
+
         self.IntRegionLines = []
-        # Figure out the color and ylabel
-        # Choose the particle type and px, py, or pz
-
         tick_color = 'black'
-
-        #    self.clim[0] = 10**self.GetPlotParam('v_min')
-        # if self.GetPlotParam('set_v_max'):
-        #    self.clim[1] = 10**self.GetPlotParam('v_max')
-
 
         self.gs = gridspec.GridSpecFromSubplotSpec(
             100, 100,
             subplot_spec=self.parent.gs0[self.pos])
 
         self.axes = self.figure.add_subplot(
-            self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1],
+            self.gs[
+                self.parent.axes_extent[0]:self.parent.axes_extent[1],
                 self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-        self.image = self.axes.imshow([[np.nan,np.nan],[np.nan,np.nan]],
-                                    cmap = new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
+        self.image = self.axes.imshow(
+            [[np.nan ,np.nan], [np.nan, np.nan]],
+            cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
                                     norm = self.norm(), origin = 'lower',
                                     aspect = 'auto',
                                     interpolation=self.param_dict['interpolation'])
