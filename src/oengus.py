@@ -153,6 +153,27 @@ class Oengus():
             while tmp_num < len(self.sims):
                 self.pop_sim()
 
+    def calc_slices(self, ax, sim, n):
+        # FIND THE SLICE
+        attr, param = 'x', 'xSlice'
+        if ax == 'y':
+            attr, param = 'y', 'ySlice'
+
+        elif ax == 'z':
+            attr, param = 'z', 'zSlice'
+
+        maxInd = len(
+            sim.get_data(
+                n, data_class='axes',
+                attribute=attr)['data']
+            ) - 1
+
+        slice = int(
+            np.around(
+                self.MainParamDict[param]*maxInd))
+
+        return slice
+
     def load_view(self, view_name):
         self.figure.clf()
         view_file = view_name.strip().replace(' ', '_') + '.yml'

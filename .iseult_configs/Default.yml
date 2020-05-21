@@ -215,5 +215,6 @@ MainParamDict:
   ySlice: 0.5
   yTop: 100.0
   zSlice: 0.0
+  xSlice: 0.0
 general:
   ConfigName: Default
