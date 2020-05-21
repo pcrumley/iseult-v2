@@ -2,6 +2,7 @@ import tkinter as Tk
 from tkinter import ttk, messagebox
 import os
 
+
 class MovieDialog(Tk.Toplevel):
 
     def __init__(self, parent, oengus, title=None):

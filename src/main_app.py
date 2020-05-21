@@ -7,18 +7,15 @@ import tkinter as Tk
 from pic_sim import picSim
 from oengus import Oengus
 import numpy as np
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'popup_windows'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-from mpl_param import Param  # noqa: E402
-from custom_toolbar import myCustomToolbar  # noqa: E402
-from movie_dialog import MovieDialog  # noqa: E402
-from open_sim_dialog import OpenSimDialog  # noqa: E402
-from save_config import SaveDialog  # noqa: E402
-from scalar_flds_settings import ScalarFieldsSettings  # noqa: E402
-from vector_flds_settings import VectorFieldsSettings  # noqa: E402
-from phase_settings import phaseSettings  # noqa: E402
-from playback_bar import playbackBar  # noqa: E402
+from mpl_param import Param
+from custom_toolbar import myCustomToolbar
+from movie_dialog import MovieDialog
+from open_sim_dialog import OpenSimDialog
+from save_config import SaveDialog
+from scalar_flds_settings import ScalarFieldsSettings
+from vector_flds_settings import VectorFieldsSettings
+from phase_settings import phaseSettings
+from playback_bar import playbackBar
 
 
 def destroy(e):

@@ -1,5 +1,6 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
+from new_cmaps import cmap_to_hex
 import new_cmaps
 
 
@@ -219,11 +220,6 @@ class SettingsFrame(Tk.Toplevel):
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
-    def ShockSpeedVarChanged(self, *args):
-        if self.main_params['ConstantShockVel'] != self.ConstantShockVar.get():
-            self.main_params['ConstantShockVel'] = self.ConstantShockVar.get()
-            self.parent.RenewCanvas(ForceRedraw = True)
-
     def AverageChanged(self, *args):
         if self.main_params['Average1D'] != self.Average1DVar.get():
             self.main_params['Average1D'] = self.Average1DVar.get()
@@ -254,34 +250,9 @@ class SettingsFrame(Tk.Toplevel):
             pass
         else:
             self.main_params['ShowTitle'] = self.TitleVar.get()
-            if self.TitleVar.get() == False:
+            if not self.TitleVar.get():
                 self.oengus.figure.suptitle('')
             self.oengus.canvas.draw()
-
-    def RadioLinked(self, *args):
-        # If the shared axes are changed, the whole plot must be redrawn
-        if self.LinkedVar.get() == self.main_params['LinkSpatial']:
-            pass
-        else:
-            self.main_params['LinkSpatial'] = self.LinkedVar.get()
-            self.parent.RenewCanvas(ForceRedraw = True)
-
-    def RadioPlane(self, *args):
-        # If the shared axes are changed, the whole plot must be redrawn
-        if self.PlaneVar.get() == self.main_params['2DSlicePlane']:
-            pass
-        else:
-            self.main_params['2DSlicePlane'] = self.PlaneVar.get()
-            self.parent.RenewCanvas()
-
-
-    def LinkKChanged(self, *args):
-        # If the shared axes are changed, the whole plot must be redrawn
-        if self.LinkKVar.get() == self.main_params['LinkK']:
-            pass
-        else:
-            self.main_params['LinkK'] = self.LinkKVar.get()
-            self.parent.RenewCanvas(ForceRedraw = True)
 
     def xRelChanged(self, *args):
         # If the shared axes are changed, the whole plot must be redrawn
@@ -291,24 +262,28 @@ class SettingsFrame(Tk.Toplevel):
             self.main_params['xLimsRelative'] = self.xRelVar.get()
             self.parent.RenewCanvas()
 
-
     def CmapChanged(self, *args):
-    # Note here that Tkinter passes an event object to onselect()
+        # Note here that Tkinter passes an event object to onselect()
         if self.cmapvar.get() == self.main_params['ColorMap']:
             pass
         else:
             self.main_params['ColorMap'] = self.cmapvar.get()
-            if self.main_params['ColorMap'] in self.oengus.MainParamDict['cmaps_with_green']:
+            cmaps_with_green = self.oengus.MainParamDict['cmaps_with_green']
+            if self.main_params['ColorMap'] in cmaps_with_green:
 
-                self.oengus.MainParamDict['ion_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['plasma'](0.55)[0]*255)), int(round(new_cmaps.cmaps['plasma'](0.55)[1]*255)), int(round(new_cmaps.cmaps['plasma'](0.55)[2]*255)))
-                self.oengus.MainParamDict['electron_color'] ="#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['plasma'](0.8)[0]*255)), int(round(new_cmaps.cmaps['plasma'](0.8)[1]*255)), int(round(new_cmaps.cmaps['plasma'](0.8)[2]*255)))
+                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
+                    0.55, 'plasma')
+                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
+                    0.8, 'plasma')
 
                 self.oengus.MainParamDict['ion_fit_color'] = 'r'
                 self.oengus.MainParamDict['electron_fit_color'] = 'yellow'
 
             else:
-                self.oengus.MainParamDict['ion_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.45)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.45)[2]*255)))
-                self.oengus.MainParamDict['electron_color'] = "#{0:02x}{1:02x}{2:02x}".format(int(round(new_cmaps.cmaps['viridis'](0.75)[0]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[1]*255)), int(round(new_cmaps.cmaps['viridis'](0.75)[2]*255)))
+                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
+                    0.45, 'viridis')
+                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
+                    0.75, 'viridis')
 
                 self.oengus.MainParamDict['ion_fit_color'] = 'mediumturquoise'
                 self.oengus.MainParamDict['electron_fit_color'] = 'lime'
@@ -317,9 +292,8 @@ class SettingsFrame(Tk.Toplevel):
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
-
     def DivCmapChanged(self, *args):
-    # Note here that Tkinter passes an event object to onselect()
+        # Note here that Tkinter passes an event object to onselect()
         if self.div_cmapvar.get() == self.main_params['DivColorMap']:
             pass
         else:
@@ -328,10 +302,8 @@ class SettingsFrame(Tk.Toplevel):
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
-
-
     def SkipSizeChanged(self, *args):
-    # Note here that Tkinter passes an event object to SkipSizeChange()
+        # Note here that Tkinter passes an event object to SkipSizeChange()
         try:
             if self.skipSize.get() == '':
                 pass
@@ -344,9 +316,9 @@ class SettingsFrame(Tk.Toplevel):
         try:
             if self.rowNum.get() == '':
                 pass
-            if int(self.rowNum.get())<1:
+            if int(self.rowNum.get()) < 1:
                 self.rowNum.set(1)
-            if int(self.rowNum.get())>self.main_params['MaxRows']:
+            if int(self.rowNum.get()) > self.main_params['MaxRows']:
                 self.rowNum.set(self.main_params['MaxRows'])
             if int(self.rowNum.get()) != self.main_params['NumOfRows']:
                 self.main_params['NumOfRows'] = int(self.rowNum.get())
@@ -360,13 +332,12 @@ class SettingsFrame(Tk.Toplevel):
         try:
             if self.columnNum.get() == '':
                 pass
-            if int(self.columnNum.get())<1:
+            if int(self.columnNum.get()) < 1:
                 self.columnNum.set(1)
-            if int(self.columnNum.get())>self.main_params['MaxCols']:
+            if int(self.columnNum.get()) > self.main_params['MaxCols']:
                 self.columnNum.set(self.main_params['MaxCols'])
             if int(self.columnNum.get()) != self.main_params['NumOfCols']:
                 self.main_params['NumOfCols'] = int(self.columnNum.get())
-                #self.parent.UpdateGridSpec()
                 self.oengus.figure.clf()
                 self.oengus.create_graphs()
                 self.oengus.canvas.draw()
@@ -374,7 +345,7 @@ class SettingsFrame(Tk.Toplevel):
             self.columnNum.set(self.main_params['NumOfCols'])
 
     def WaitTimeChanged(self, *args):
-    # Note here that Tkinter passes an event object to onselect()
+        # Note here that Tkinter passes an event object to onselect()
         try:
             if self.waitTime.get() == '':
                 pass
@@ -385,21 +356,23 @@ class SettingsFrame(Tk.Toplevel):
 
     def CheckIfLimsChanged(self):
         to_reload = False
-        tmplist = [self.xleft, self.xright, self.yleft, self.yright]#, self.kleft, self.kright]
-        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop']#, 'kLeft', 'kRight']
-        setKeys = ['SetxLim', 'SetyLim']#, 'SetkLim']
+        tmplist = [self.xleft, self.xright, self.yleft, self.yright]
+        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop']
+        setKeys = ['SetxLim', 'SetyLim']
         for j in range(len(tmplist)):
             setlims = self.main_params[setKeys[j//2]]
             tmpkey = limkeys[j]
 
             try:
-            #make sure the user types in a a number and that it has changed.
-                if abs(float(tmplist[j].get()) - self.main_params[tmpkey]) > 1E-4:
-                    self.main_params[tmpkey] = float(tmplist[j].get())
+                # make sure the user types in a a number and
+                # that it has changed.
+                user_num = float(tmplist[j].get())
+                if abs(user_num - self.main_params[tmpkey]) > 1E-4:
+                    self.main_params[tmpkey] = user_num
                     to_reload += setlims
 
             except ValueError:
-                #if they type in random stuff, just set it ot the param value
+                # if they type in random stuff, just set it ot the param value
                 tmplist[j].set(str(self.main_params[tmpkey]))
         return to_reload
 
@@ -407,7 +380,7 @@ class SettingsFrame(Tk.Toplevel):
         to_reload = False
 
         try:
-            #make sure the user types in a int
+            # make sure the user types in a int
             if int(self.PrtlStrideVar.get()) <= 0:
                 self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
             if int(self.PrtlStrideVar.get()) != self.main_params['PrtlStride']:
@@ -417,80 +390,29 @@ class SettingsFrame(Tk.Toplevel):
                         sim.xtra_stride = self.main_params['PrtlStride']
                 self.oengus.draw_output()
         except ValueError:
-            #if they type in random stuff, just set it to the param value
+            # if they type in random stuff, just set it to the param value
             self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
         return to_reload
 
-    def CheckIfSliceChanged(self):
-        to_reload = False
-        try:
-            #make sure the user types in a float
-            self.ySliceVar.set(int(np.around(float(self.ySliceVarC_omp.get())*self.parent.c_omp/self.parent.istep)))
-            if int(self.ySliceVar.get()) < 0:
-                self.ySliceVar.set(0)
-
-            elif int(self.ySliceVar.get()) > self.parent.MaxYInd:
-                self.ySliceVar.set(self.parent.MaxYInd)
-            self.ySliceVarC_omp.set(self.units_listy[self.ySliceVar.get()])
-            if self.ySliceVar.get() != int(np.around(self.main_params['ySlice']*self.parent.MaxYInd)):
-                self.main_params['ySlice'] = float(self.ySliceVar.get())/self.parent.MaxYInd
-                self.slidery.set(self.ySliceVar.get())
-                to_reload += True
-        except ValueError:
-            #if they type in random stuff, just set it to the param value
-            self.ySliceVarC_omp.set(self.units_listy[self.ySliceVar.get()])
-
-        try:
-            #make sure the user types in a float
-            self.zSliceVar.set(int(np.around(float(self.zSliceVarC_omp.get())*self.parent.c_omp/self.parent.istep)))
-            if int(self.zSliceVar.get()) < 0:
-                self.zSliceVar.set(0)
-
-            elif int(self.zSliceVar.get()) > self.parent.MaxZInd:
-                self.zSliceVar.set(self.parent.MaxZInd)
-            self.zSliceVarC_omp.set(self.units_listz[self.zSliceVar.get()])
-            if self.zSliceVar.get() != int(np.around(self.main_params['zSlice']*self.parent.MaxZInd)):
-                self.main_params['zSlice'] = float(self.OneDSliceVar.get())/self.parent.MaxZInd
-                self.sliderz.set(self.zSliceVar.get())
-                to_reload += True
-
-        except ValueError:
-            #if they type in random stuff, just set it to the param value
-            self.TwoDSliceVarC_omp.set(self.units_list2D[self.TwoDSliceVar.get()])
-        return to_reload
-
-
     def LimChanged(self, *args):
-        if self.LimVar.get()==self.main_params['SetxLim']:
+        if self.LimVar.get() == self.main_params['SetxLim']:
             pass
         else:
             self.main_params['SetxLim'] = self.LimVar.get()
             self.oengus.draw_output()
 
     def yLimChanged(self, *args):
-        if self.yLimVar.get()==self.main_params['SetyLim']:
+        if self.yLimVar.get() == self.main_params['SetyLim']:
             pass
         else:
             self.main_params['SetyLim'] = self.yLimVar.get()
             self.oengus.draw_output()
 
-    #def kLimChanged(self, *args):
-    #    if self.kLimVar.get()==self.main_params['SetkLim']:
-    #        pass
-    #    else:
-    #        self.main_params['SetkLim'] = self.kLimVar.get()
-    #        self.parent.RenewCanvas()
-
-
     def SettingsCallback(self, e):
         to_reload = self.CheckIfLimsChanged()
         to_reload += self.CheckIfStrideChanged()
-        #to_reload += self.CheckIfSliceChanged()
         if to_reload:
             self.oengus.draw_output()
 
-
-
     def OnClosing(self):
-        #self.parent.settings_window = None
         self.destroy()

@@ -4,8 +4,7 @@ import os
 import h5py
 import yaml
 import numpy as np
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-from my_parser import ExprParser # noqa: E402
+from my_parser import ExprParser
 
 
 def h5_getter(filepath, attribute, prtl_stride=None):

@@ -1,7 +1,4 @@
-#!/usr/bin/env pythonw
 import matplotlib, sys
-sys.path.append('../utils')
-
 import numpy as np
 import numpy.ma as ma
 import new_cmaps

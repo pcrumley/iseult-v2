@@ -1,8 +1,6 @@
 import matplotlib
 import numpy as np
 import sys
-sys.path.append('../utils')
-
 import new_cmaps
 from new_cnorms import PowerNormWithNeg, PowerNormFunc
 import matplotlib.colors as mcolors
@@ -11,38 +9,51 @@ import matplotlib.patheffects as PathEffects
 from matplotlib.ticker import FuncFormatter
 import matplotlib.transforms as mtransforms
 
+
 class vectorFldsPlot:
-    # A dictionary of all of the parameters for this plot with the default parameters
+    # A dictionary of all of the parameters for this plot
+    # with the default values
 
-    plot_param_dict = {'twoD': 0,
-                       'field_type': 'B',
-                       'sim_num': 0,
-                       'show_x': 1,
-                       'show_y' : 1,
-                       'show_z' : 1,
-                       'show_cbar': True,
-                       'v_min': 0,
-                       'v_max' : 10,
-                       'set_v_min': False,
-                       'set_v_max': False,
-                       'show_shock' : False,
-                       'show_FFT_region': False,
-                       'OutlineText': True,
-                       'spatial_x': True,
-                       'spatial_y': False,
-                       'show_labels': True,
-                       'normalize_fields': True, # Normalize fields to their upstream values
-                       'cnorm_type': 'Linear', # Colormap norm;  options are Log, Pow or Linear
-                       'cpow_num': 1.0, # Used in the PowerNorm
-                       'div_midpoint': 0.0, # The cpow color norm normalizes data to [0,1] using np.sign(x-midpoint)*np.abs(x-midpoint)**(-cpow_num) -> [0,midpoint,1] if it is a divering cmap or [0,1] if it is not a divering cmap
-                       'interpolation': 'none',
-                       'cmap': 'None', # If cmap is none, the plot will inherit the parent's cmap
-                       'UseDivCmap': True, # Use a diverging cmap for the 2d plots
-                       'stretch_colors': False, # If stretch colors is false, then for a diverging cmap the plot ensures -b and b are the same distance from the midpoint of the cmap.
-                       'show_cpu_domains': False, # plots lines showing how the CPUs are divvying up the computational region
-                       'face_color': 'gainsboro'}
+    plot_param_dict = {
+        'twoD': 0,
+        'field_type': 'B',
+        'sim_num': 0,
+        'show_x': 1,
+        'show_y': 1,
+        'show_z': 1,
+        'show_cbar': True,
+        'v_min': 0,
+        'v_max': 10,
+        'set_v_min': False,
+        'set_v_max': False,
+        'show_shock': False,
+        'show_FFT_region': False,
+        'OutlineText': True,
+        'spatial_x': True,
+        'spatial_y': False,
+        'show_labels': True,
+        'normalize_fields': True,  # Normalize fields to their upstream values
+        'cnorm_type': 'Linear',  # Colormap norm: Log, Pow or Linear
+        'cpow_num': 1.0,  # Used in the PowerNorm
+        # The cpow color norm normalizes data to [0,1] using
+        # np.sign(x-midpoint)*np.abs(x-midpoint)**(-cpow_num) -> [0,midpoint,1]
+        # if it is a divering cmap or [0,1] if it is not a divering cmap
+        'div_midpoint': 0.0,
+        'interpolation': 'none',
+        # If cmap is none, the plot will inherit the parent's cmap
+        'cmap': 'None',
+        'UseDivCmap': True,  # Use a diverging cmap for the 2d plots
+        # plots lines showing how the CPUs are divvying up
+        # the computational region
+        'show_cpu_domains': False,
+        # If stretch colors is false, then for a diverging cmap the plot
+        # ensures -b and b are the same distance from the midpoint of the cmap.
+        'stretch_colors': False,
+        'face_color': 'gainsboro'}
 
-    gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
+    # A way to make the colorbar display better. I'm not sure this is necessary
+    # anymore.
+    gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
     def __init__(self, parent, pos, param_dict):
@@ -55,111 +66,134 @@ class vectorFldsPlot:
         self.changedD = False
         self.parent = parent
         self.figure = self.parent.figure
-        self.interpolation_methods = ['none','nearest', 'bilinear', 'bicubic', 'spline16',
+        self.interpolation_methods = [
+            'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
             'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def norm(self, vmin=None, vmax=None):
         if self.param_dict['cnorm_type'] == "Linear":
             if self.param_dict['UseDivCmap']:
-                return PowerNormWithNeg(1.0, vmin, vmax, midpoint = self.param_dict['div_midpoint'], stretch_colors = self.param_dict['stretch_colors'])
+                return PowerNormWithNeg(
+                    1.0, vmin, vmax,
+                    midpoint=self.param_dict['div_midpoint'],
+                    stretch_colors=self.param_dict['stretch_colors'])
             else:
                 return mcolors.Normalize(vmin, vmax)
         elif self.param_dict['cnorm_type'] == "Log":
-            return  mcolors.LogNorm(vmin, vmax)
+            return mcolors.LogNorm(vmin, vmax)
         else:
-            return PowerNormWithNeg(self.param_dict['cpow_num'], vmin, vmax, div_cmap = self.param_dict['UseDivCmap'], midpoint = self.param_dict['div_midpoint'], stretch_colors = self.param_dict['stretch_colors'])
+            return PowerNormWithNeg(
+                self.param_dict['cpow_num'], vmin, vmax,
+                div_cmap=self.param_dict['UseDivCmap'],
+                midpoint=self.param_dict['div_midpoint'],
+                stretch_colors=self.param_dict['stretch_colors'])
 
-
-    def draw(self, sim = None, n = None):
+    def draw(self, sim=None, n=None):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        # if n is None:
-        #     n = self.parent.cur_times[self.param_dict['sim_num']]
-
-                # get c_omp and istep to convert cells to physical units
 
         # FIND THE SLICE
-        MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
-        MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
+        MaxYInd = len(
+            sim.get_data(
+                n, data_class='axes',
+                attribute='y')['data']
+            ) - 1
+        MaxZInd = len(
+            sim.get_data(
+                n, data_class='axes',
+                attribute='z')['data']
+            ) - 1
 
+        self.ySlice = int(
+            np.around(
+                self.parent.MainParamDict['ySlice']*MaxYInd))
+        self.zSlice = int(
+            np.around(
+                self.parent.MainParamDict['zSlice']*MaxZInd))
 
-        self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
-        self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
-
-
-
-        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
-        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
+        self.c_omp = sim.get_data(n, data_class='param', attribute='c_omp')
+        self.istep = sim.get_data(n, data_class='param', attribute='istep')
 
         if self.param_dict['OutlineText']:
-            self.annotate_kwargs = {'horizontalalignment': 'right',
-            'verticalalignment': 'top',
-            'size' : self.parent.MainParamDict['annotateTextSize'],
-            'path_effects' : [PathEffects.withStroke(linewidth=1.5,foreground="k")]
+            self.annotate_kwargs = {
+                'horizontalalignment': 'right',
+                'verticalalignment': 'top',
+                'size': self.parent.MainParamDict['annotateTextSize'],
+                'path_effects': [
+                    PathEffects.withStroke(linewidth=1.5, foreground="k")]
             }
         else:
-            self.annotate_kwargs = {'horizontalalignment' : 'right',
-            'verticalalignment' : 'top',
-            'size' : self.parent.MainParamDict['annotateTextSize']}
+            self.annotate_kwargs = {
+                'horizontalalignment': 'right',
+                'verticalalignment': 'top',
+                'size': self.parent.MainParamDict['annotateTextSize']}
 
         # Set the tick color
         tick_color = 'black'
 
         # Create a gridspec to handle spacing better
-        self.gs = gridspec.GridSpecFromSubplotSpec(100,100, subplot_spec = self.parent.gs0[self.pos])#, bottom=0.2,left=0.1,right=0.95, top = 0.95)
+        self.gs = gridspec.GridSpecFromSubplotSpec(
+            100, 100, subplot_spec=self.parent.gs0[self.pos])
 
         # Now that the data is loaded, start making the plots
         if self.param_dict['twoD']:
-            self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
+            self.axes = self.figure.add_subplot(
+                self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1],
+                self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-            self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower')
+            self.image = self.axes.imshow(
+                np.array([[1, 1], [1, 1]]),
+                norm=self.norm(),
+                origin='lower')
 
-            if self.parent.MainParamDict['ImageAspect']:
-                self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower')
-            else:
-                self.image = self.axes.imshow(np.array([[1,1],[1,1]]), norm = self.norm(), origin = 'lower', aspect='auto')
+            if not self.parent.MainParamDict['ImageAspect']:
+                self.image = self.axes.imshow(
+                    np.array([[1, 1], [1, 1]]),
+                    norm=self.norm(),
+                    origin='lower',
+                    aspect='auto')
 
-            self.image.set_interpolation(self.param_dict['interpolation'])
+            self.image.set_interpolation(
+                self.param_dict['interpolation'])
 
+            self.an_2d = self.axes.annotate(
+                '',
+                xy=(0.9,.9),
+                xycoords='axes fraction',
+                color='white',
+                **self.annotate_kwargs)
 
-
-            #self.shockline_2d = self.axes.axvline(self.parent.shock_loc,
-            #                                        linewidth = 1.5,
-            #                                        linestyle = '--',
-
-            #                                        color = self.parent.shock_color,
-            #                                        path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-            #                                        PathEffects.Normal()])
-            #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
-
-            self.an_2d = self.axes.annotate('',
-                                            xy = (0.9,.9),
-                                            xycoords= 'axes fraction',
-                                            color = 'white',
-                                            **self.annotate_kwargs)
-            self.an_2d.set_visible(self.param_dict['show_labels'])
+            self.an_2d.set_visible(
+                self.param_dict['show_labels'])
 
 
-            self.axC = self.figure.add_subplot(self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1], self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
+            self.axC = self.figure.add_subplot(
+                self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1],
+                self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
 
             if self.parent.MainParamDict['HorizontalCbars']:
-                self.cbar = self.axC.imshow(self.gradient, aspect='auto')
+                self.cbar = self.axC.imshow(
+                    self.gradient, aspect='auto')
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
-                self.axC.tick_params(axis='x',
-                                which = 'both', # bothe major and minor ticks
-                                top = False, # turn off top ticks
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
+                self.axC.tick_params(
+                    axis='x',
+                    which='both',  # bothe major and minor ticks
+                    top=False,  # turn off top ticks
+                    labelsize=self.parent.MainParamDict['NumFontSize'])
 
-                self.axC.tick_params(axis='y',          # changes apply to the y-axis
-                                which='both',      # both major and minor ticks are affected
-                                left=False,      # ticks along the bottom edge are off
-                                right=False,         # ticks along the top edge are off
-                                labelleft=False)
+                self.axC.tick_params(
+                    axis='y',       # changes apply to the y-axis
+                    which='both',   # both major and minor ticks are affected
+                    left=False,     # ticks along the bottom edge are off
+                    right=False,    # ticks along the top edge are off
+                    labelleft=False)
             else: #Cbar is on the vertical
-                self.cbar = self.axC.imshow(np.transpose(self.gradient)[::-1], aspect='auto',
-                                            origin='upper')
+                self.cbar = self.axC.imshow(
+                    np.transpose(self.gradient)[::-1],
+                    aspect='auto',
+                    origin='upper')
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
                 self.axC.tick_params(axis='x',
@@ -485,6 +519,7 @@ class vectorFldsPlot:
             self.image.norm.vmax = self.vmax
             if self.param_dict['show_cbar']:
                 self.CbarTickFormatter()
+
     def remove(self):
         try:
             self.axC.remove()
@@ -495,14 +530,13 @@ class vectorFldsPlot:
         self.axes.remove()
 
 
-if __name__== '__main__':
+if __name__ == '__main__':
     import os
     from oengus import Oengus
     from pic_sim import picSim
     import matplotlib.pyplot as plt
-    oengus = Oengus(interactive=False,preset_view='test')
-
-
-    oengus.open_sim(picSim(os.path.join(os.path.dirname(__file__),'../output')))
+    oengus = Oengus(interactive=False, preset_view='test')
+    oengus.open_sim(
+        picSim(os.path.join(os.path.dirname(__file__),'../output')))
     oengus.create_graphs()
     plt.savefig('test.png')

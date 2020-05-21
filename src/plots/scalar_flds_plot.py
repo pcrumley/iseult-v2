@@ -1,8 +1,6 @@
 import matplotlib
 import numpy as np
 import sys
-sys.path.append('../utils')
-
 import new_cmaps
 from new_cnorms import PowerNormWithNeg, PowerNormFunc
 import matplotlib.colors as mcolors

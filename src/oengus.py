@@ -6,15 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from PIL import Image
-sys.path.append(os.path.join(os.path.dirname(__file__), 'popup_windows'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'plots'))
-
-from pic_sim import picSim # noqa: E402
-import new_cmaps # noqa: E402
-from scalar_flds_plot import scalarFldsPlot # noqa: E402
-from vector_flds_plot import vectorFldsPlot # noqa: E402
-from phase_plot import phasePlot # noqa: E402
+from pic_sim import picSim
+import new_cmaps
+from scalar_flds_plot import scalarFldsPlot
+from vector_flds_plot import vectorFldsPlot
+from phase_plot import phasePlot
 
 
 class Oengus():

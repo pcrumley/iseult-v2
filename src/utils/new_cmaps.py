@@ -3902,3 +3902,9 @@ sequential = [
 diverging = [
     'vort', 'BlGr', 'coolwarm', 'BuYlRd', 'Spectral', 'PiYG', 'RdBu', 'PRGn',
     'PuOr', 'RdYlGn', 'Blue/Green/Red/Yellow']
+
+
+def cmap_to_hex(val, cmap='viridis'):
+    cmap_func = cmaps[cmap]
+    rgb_list = [int(round(cmap_func(val)[x]*255)) for x in range(3)]
+    return '#{0:02x}{1:02x}{2:02x}'.format(*rgb_list)
