@@ -262,9 +262,9 @@ class scalarFldsPlot:
                 color=self.dens_color)
 
             if int(matplotlib.__version__[0]) < 2:
-                self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
+                self.axes.set_axis_bgcolor(self.param_dict['face_color'])
             else:
-                self.axes.set_facecolor(self.GetPlotParam('face_color'))
+                self.axes.set_facecolor(self.param_dict['face_color'])
 
             self.axes.tick_params(
                 labelsize=self.parent.MainParamDict['NumFontSize'],
@@ -363,7 +363,7 @@ class scalarFldsPlot:
                     self.axC.set_ylim(clim[0], clim[1])
                     self.axC.locator_params(axis='y', nbins=6)
 
-            else:  # self.GetPlotParam('cnorm_type') == "Linear":
+            else:
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_extent([clim[0], clim[1], 0, 1])
                     self.axC.set_xlim(clim[0], clim[1])
@@ -426,7 +426,7 @@ class scalarFldsPlot:
             self.axes.set_ylim(min_max)
             if self.param_dict['set_v_min']:
                 self.axes.set_ylim(bottom=self.param_dict['v_min'])
-            if self.GetPlotParam('set_v_max'):
+            if self.param_dict['set_v_max']:
                 self.axes.set_ylim(top=self.param_dict['v_max'])
 
             if self.parent.MainParamDict['SetxLim']:
@@ -519,9 +519,6 @@ class scalarFldsPlot:
         except KeyError:
             pass
         self.axes.remove()
-
-    def GetPlotParam(self, keyname):
-        return self.param_dict[keyname]
 
 
 if __name__ == '__main__':

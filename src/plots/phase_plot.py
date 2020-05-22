@@ -62,7 +62,7 @@ class phasePlot:
             'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def norm(self, vmin=None, vmax=None):
-        if self.GetPlotParam('cnorm_type') == "Log":
+        if self.param_dict['cnorm_type'] == 'Log':
             return mcolors.LogNorm(vmin, vmax)
 
         else:
@@ -102,116 +102,127 @@ class phasePlot:
                 self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
         self.image = self.axes.imshow(
-            [[np.nan ,np.nan], [np.nan, np.nan]],
+            [[np.nan, np.nan], [np.nan, np.nan]],
             cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
-                                    norm = self.norm(), origin = 'lower',
-                                    aspect = 'auto',
-                                    interpolation=self.param_dict['interpolation'])
+            norm=self.norm(), origin='lower',
+            aspect='auto',
+            interpolation=self.param_dict['interpolation'])
 
         self.image.set_extent([0, 1, 0, 1])
-
         self.image.set_clim([1, 10])
 
-        #self.shock_line = self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-        #           PathEffects.Normal()])
-        #if not self.GetPlotParam('show_shock'):
-        #    self.shock_line.set_visible(False)
-
-
-
-
-        self.axC = self.figure.add_subplot(self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1], self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
-
+        self.axC = self.figure.add_subplot(
+            self.gs[
+                self.parent.cbar_extent[0]:self.parent.cbar_extent[1],
+                self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
 
         # Technically I should use the colorbar class here,
         # but I found it annoying in some of it's limitations.
         if self.parent.MainParamDict['HorizontalCbars']:
-            self.cbar = self.axC.imshow(self.gradient, aspect='auto',
-                                    cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
-            # Make the colobar axis more like the real colorbar
-            self.axC.tick_params(axis='x',
-                                which = 'both', # bothe major and minor ticks
-                                top = False, # turn off top ticks
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
+            self.cbar = self.axC.imshow(
+                self.gradient, aspect='auto',
+                cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
 
-            self.axC.tick_params(axis='y',          # changes apply to the y-axis
-                                which='both',      # both major and minor ticks are affected
-                                left=False,      # ticks along the bottom edge are off
-                                right=False,         # ticks along the top edge are off
-                                labelleft=False)
+            # Make the colobar axis more like the real colorbar
+            self.axC.tick_params(
+                axis='x',
+                which='both',  # bothe major and minor ticks
+                top=False,  # turn off top ticks
+                labelsize=self.parent.MainParamDict['NumFontSize'])
+
+            self.axC.tick_params(
+                axis='y',          # changes apply to the y-axis
+                which='both',      # both major and minor ticks are affected
+                left=False,        # ticks along the bottom edge are off
+                right=False,       # ticks along the top edge are off
+                labelleft=False)
 
         else:
-            self.cbar = self.axC.imshow(np.transpose(self.gradient)[::-1], aspect='auto', origin='upper',
-                                    cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
-            # Make the colobar axis more like the real colorbar
-            self.axC.tick_params(axis='x',
-                                which = 'both', # bothe major and minor ticks
-                                top = False, # turn off top ticks
-                                bottom = False,
-                                labelbottom = False,
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
+            self.cbar = self.axC.imshow(
+                np.transpose(self.gradient)[::-1],
+                aspect='auto', origin='upper',
+                cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
 
-            self.axC.tick_params(axis='y',          # changes apply to the y-axis
-                                which='both',      # both major and minor ticks are affected
-                                left=False,      # ticks along the bottom edge are off
-                                right=True,         # ticks along the top edge are off
-                                labelleft=False,
-                                labelright=True,
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
+            # Make the colobar axis more like the real colorbar
+            self.axC.tick_params(
+                axis='x',
+                which='both',   # both major and minor ticks
+                top=False,      # turn off top ticks
+                bottom=False,
+                labelbottom=False,
+                labelsize=self.parent.MainParamDict['NumFontSize'])
+
+            self.axC.tick_params(
+                axis='y',           # changes apply to the y-axis
+                which='both',       # both major and minor ticks are affected
+                left=False,         # ticks along the bottom edge are off
+                right=True,         # ticks along the top edge are off
+                labelleft=False,
+                labelright=True,
+                labelsize=self.parent.MainParamDict['NumFontSize'])
 
         self.cbar.set_extent([0, 1.0, 0, 1.0])
 
-        if not self.GetPlotParam('show_cbar'):
+        if not self.param_dict['show_cbar']:
             self.axC.set_visible(False)
 
         if int(matplotlib.__version__[0]) < 2:
             self.axes.set_axis_bgcolor(self.param_dict['face_color'])
         else:
             self.axes.set_facecolor(self.param_dict['face_color'])
-        self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
+
+        self.axes.tick_params(
+            labelsize=self.parent.MainParamDict['NumFontSize'],
+            color=tick_color)
+
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        #if n is None:
-        #    n = self.parent.cur_times[self.param_dict['sim_num']]
 
         # Generate the X-axis values
-        self.x_values = sim.get_data(n, data_class = 'prtls',
-                prtl_type = self.param_dict['prtl_type'],
-                attribute = self.param_dict['x_val'])
-        self.y_values = sim.get_data(n, data_class = 'prtls',
-                prtl_type = self.param_dict['prtl_type'],
-                attribute = self.param_dict['y_val'])
-        self.update_labels_and_colors()
-        self.refresh(sim = sim, n = n)
+        self.x_values = sim.get_data(
+            n, data_class='prtls',
+            prtl_type=self.param_dict['prtl_type'],
+            attribute=self.param_dict['x_val'])
+        self.y_values = sim.get_data(
+            n, data_class='prtls',
+            prtl_type=self.param_dict['prtl_type'],
+            attribute=self.param_dict['y_val'])
 
-    def refresh(self, sim = None, n = None):
+        self.update_labels_and_colors()
+        self.refresh(sim=sim, n=n)
+
+    def refresh(self, sim=None, n=None):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown. If
-        hasn't changed, or isn't viewed, don't touch it. The difference between this and last
-        time, is that we won't actually do any drawing in the plot. The plot
-        will be redrawn after all subplots data is changed. '''
+        hasn't changed, or isn't viewed, don't touch it. The difference
+        between this and last time, is that we won't create any mpl objects.
+        The plot will be redrawn after all subplots data is changed. '''
 
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        #if n is None:
-        #    n = self.parent.cur_times[self.param_dict['sim_num']]
-        # Generate the X-axis values
-        c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
 
-        self.x_values = sim.get_data(n, data_class = 'prtls',
-                prtl_type = self.param_dict['prtl_type'],
-                attribute = self.param_dict['x_val'])
-        self.y_values = sim.get_data(n, data_class = 'prtls',
-                prtl_type = self.param_dict['prtl_type'],
-                attribute = self.param_dict['y_val'])
+        c_omp = sim.get_data(
+            n, data_class='param',
+            attribute='c_omp')
+
+        self.x_values = sim.get_data(
+            n, data_class='prtls',
+            prtl_type=self.param_dict['prtl_type'],
+            attribute=self.param_dict['x_val'])
+        self.y_values = sim.get_data(
+            n, data_class='prtls',
+            prtl_type=self.param_dict['prtl_type'],
+            attribute=self.param_dict['y_val'])
 
         is_good = len(self.y_values['data']) == len(self.x_values['data'])
         is_good &= len(self.y_values['data']) > 0
 
         if self.param_dict['weighted']:
-            self.weights = sim.get_data(n, data_class = 'prtls',
-                    prtl_type = self.param_dict['prtl_type'],
-                    attribute = self.param_dict['weights'])
+            self.weights = sim.get_data(
+                n, data_class='prtls',
+                prtl_type=self.param_dict['prtl_type'],
+                attribute=self.param_dict['weights'])
+
             is_good &= len(self.weights['data']) != 0
             is_good &= len(self.weights['data']) == len(self.y_values['data'])
 
@@ -223,12 +234,25 @@ class phasePlot:
             ymin = np.min(self.y_values['data'])
             ymax = np.max(self.y_values['data'])
             ymax = ymax if ymax > ymin else ymin + 1
-            if self.param_dict['weighted']:
-                hist2d = Fast2DWeightedHist(self.y_values['data'], self.x_values['data'], self.weights['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
-            else:
-                hist2d = Fast2DHist(self.y_values['data'], self.x_values['data'], ymin, ymax, self.param_dict['y_bins'], xmin, xmax, self.param_dict['x_bins'])
 
-            #hist2d *= len(self.x_values['data'])**(-1)
+            if self.param_dict['weighted']:
+                hist2d = Fast2DWeightedHist(
+                    self.y_values['data'],
+                    self.x_values['data'],
+                    self.weights['data'],
+                    ymin, ymax,
+                    self.param_dict['y_bins'],
+                    xmin, xmax,
+                    self.param_dict['x_bins'])
+            else:
+                hist2d = Fast2DHist(
+                    self.y_values['data'],
+                    self.x_values['data'],
+                    ymin, ymax,
+                    self.param_dict['y_bins'],
+                    xmin, xmax,
+                    self.param_dict['x_bins'])
+
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
 
@@ -236,61 +260,81 @@ class phasePlot:
             self.image.set_data(hist2d)
             self.image.set_extent([xmin, xmax, ymin, ymax])
 
+            if self.param_dict['set_v_min']:
+                self.clim[0] = 10**self.param_dict['v_min']
 
-            if self.GetPlotParam('set_v_min'):
-                self.clim[0] =  10**self.param_dict['v_min']
-            if self.GetPlotParam('set_v_max'):
-                self.clim[1] =  10**self.param_dict['v_max']
+            if self.param_dict['set_v_max']:
+                self.clim[1] = 10**self.param_dict['v_max']
 
             self.image.set_clim(self.clim)
+
             if self.param_dict['show_cbar']:
                 self.CbarTickFormatter()
 
-
             if self.param_dict['show_shock']:
-                self.shock_line.set_xdata([self.parent.shock_loc,
-                    self.parent.shock_loc])
+                self.shock_line.set_xdata(
+                    [self.parent.shock_loc, self.parent.shock_loc])
+
             if self.param_dict['set_y_min']:
                 ymin = self.param_dict['y_min']
+
             if self.param_dict['set_y_max']:
                 ymax = self.param_dict['y_max']
+
             self.axes.set_ylim(ymin, ymax)
             self.axes.set_xlim(xmin, xmax)
+
         else:
-            self.image.set_data(np.ones((2,2))*np.NaN)
+            self.image.set_data(np.ones((2, 2))*np.NaN)
 
     def CbarTickFormatter(self):
-        ''' A helper function that sets the cbar ticks & labels. This used to be
-        easier, but because I am no longer using the colorbar class i have to do
-        stuff manually.'''
+        ''' A helper function that sets the cbar ticks & labels. This used to
+        be easier, but because I am no longer using the colorbar class i have
+        to do stuff manually.'''
         clim = np.copy(self.image.get_clim())
-        if self.GetPlotParam('show_cbar'):
-            if self.GetPlotParam('cnorm_type') == "Log":
+        if self.param_dict['show_cbar']:
+            if self.param_dict['cnorm_type'] == 'Log':
                 if self.parent.MainParamDict['HorizontalCbars']:
-                    self.cbar.set_extent([np.log10(clim[0]),np.log10(clim[1]),0,1])
-                    self.axC.set_xlim(np.log10(clim[0]),np.log10(clim[1]))
-                    self.axC.xaxis.set_label_position("top")
-                    self.axC.set_xlabel('$\log\ $' + self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], size = self.parent.MainParamDict['AxLabelSize'])
+                    self.cbar.set_extent(
+                        [np.log10(clim[0]), np.log10(clim[1]), 0, 1])
+                    self.axC.set_xlim(
+                        np.log10(clim[0]), np.log10(clim[1]))
+                    self.axC.xaxis.set_label_position('top')
+                    self.axC.set_xlabel(
+                        '$\log\ $' + self.x_values['hist_cbar_label'],
+                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
+                        size=self.parent.MainParamDict['AxLabelSize'])
 
                 else:
-                    self.cbar.set_extent([0,1,np.log10(clim[0]),np.log10(clim[1])])
-                    self.axC.set_ylim(np.log10(clim[0]),np.log10(clim[1]))
-                    self.axC.locator_params(axis='y',nbins=6)
-                    self.axC.yaxis.set_label_position("right")
-                    self.axC.set_ylabel('$\log\ $' +  self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
+                    self.cbar.set_extent(
+                        [0, 1, np.log10(clim[0]), np.log10(clim[1])])
+                    self.axC.set_ylim(
+                        np.log10(clim[0]), np.log10(clim[1]))
 
-            else:# self.GetPlotParam('cnorm_type') == "Linear":
+                    self.axC.locator_params(axis='y', nbins=6)
+                    self.axC.yaxis.set_label_position("right")
+                    self.axC.set_ylabel(
+                        '$\log\ $' + self.x_values['hist_cbar_label'],
+                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
+                        rotation=-90,
+                        size=self.parent.MainParamDict['AxLabelSize'])
+
+            else:
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_extent([clim[0], clim[1], 0, 1])
                     self.axC.set_xlim(clim[0], clim[1])
-                    self.axC.set_xlabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], size = self.parent.MainParamDict['AxLabelSize'])
+                    self.axC.set_xlabel(
+                        self.x_values['hist_cbar_label'],
+                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
+                        size=self.parent.MainParamDict['AxLabelSize'])
 
                 else:
                     self.cbar.set_extent([0, 1, clim[0], clim[1]])
                     self.axC.set_ylim(clim[0], clim[1])
                     self.axC.locator_params(axis='y', nbins=6)
                     self.axC.yaxis.set_label_position("right")
-                    self.axC.set_ylabel(self.x_values['hist_cbar_label'], labelpad = self.parent.MainParamDict['cbarLabelPad'], rotation = -90, size = self.parent.MainParamDict['AxLabelSize'])
-
-    def GetPlotParam(self, keyname):
-        return self.param_dict[keyname]
+                    self.axC.set_ylabel(
+                        self.x_values['hist_cbar_label'],
+                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
+                        rotation=-90,
+                        size=self.parent.MainParamDict['AxLabelSize'])
