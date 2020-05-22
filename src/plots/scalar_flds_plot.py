@@ -10,7 +10,8 @@ from matplotlib.ticker import FuncFormatter
 
 
 class scalarFldsPlot:
-    # A dictionary of all of the parameters for this plot with the default parameters
+    # A dictionary of all of the parameters for this plot with the
+    # default parameters
 
     plot_param_dict = {
         'twoD': 0,
@@ -19,25 +20,26 @@ class scalarFldsPlot:
         'show_cbar': True,
         'set_color_limits': False,
         'v_min': 0,
-        'v_max' : 10,
+        'v_max': 10,
         'set_v_min': False,
         'set_v_max': False,
-        'show_labels' : True,
-        'show_shock' : False,
+        'show_labels': True,
+        'show_shock': False,
         'OutlineText': True,
         'spatial_x': True,
         'spatial_y': False,
         'interpolation': 'none',
-        'normalize_density': True, # Normalize density to it's upstream values
-        'cnorm_type': 'Linear', # Colormap norm;  options are Pow or Linear
-        'cpow_num': 0.6, # Used in the PowerNorm
+        'normalize_density': True,  # Normalize dens to it's upstream values
+        'cnorm_type': 'Linear',  # Colormap norm;  options are Pow or Linear
+        'cpow_num': 0.6,  # Used in the PowerNorm
         'UseDivCmap': False,
         'div_midpoint': 0.0,
         'stretch_colors': False,
-        'cmap': 'None', # If cmap is none, the plot inherits the parent's cmap
+        'cmap': 'None',  # If cmap is none, the plot inherits the parent's cmap
         'face_color': 'gainsboro'}
 
-    gradient =  np.linspace(0, 1, 256)# A way to make the colorbar display better
+    # A way to make the colorbar display better
+    gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
     def __init__(self, parent, pos, param_dict):
@@ -88,6 +90,7 @@ class scalarFldsPlot:
 
             else:
                 self.cmap = self.parent.MainParamDict['ColorMap']
+
         else:
             self.cmap = self.param_dict['cmap']
 
@@ -109,372 +112,389 @@ class scalarFldsPlot:
             self.annotate_kwargs = {
                 'horizontalalignment': 'right',
                 'verticalalignment': 'top',
-                'size' : self.parent.MainParamDict['annotateTextSize'],
-                'path_effects' : [
+                'size': self.parent.MainParamDict['annotateTextSize'],
+                'path_effects': [
                     PathEffects.withStroke(linewidth=1.5, foreground="k")]
             }
 
         else:
             self.annotate_kwargs = {
-                'horizontalalignment' : 'right',
-                'verticalalignment' : 'top',
-                'size' : self.parent.MainParamDict['annotateTextSize']}
+                'horizontalalignment': 'right',
+                'verticalalignment': 'top',
+                'size': self.parent.MainParamDict['annotateTextSize']}
 
         # Set the tick color
         tick_color = 'black'
 
         # Create a gridspec to handle spacing better
-        self.gs = gridspec.GridSpecFromSubplotSpec(100,100, subplot_spec = self.parent.gs0[self.pos])#, bottom=0.2,left=0.1,right=0.95, top = 0.95)
+        self.gs = gridspec.GridSpecFromSubplotSpec(
+            100, 100,
+            subplot_spec=self.parent.gs0[self.pos])
 
         # Now that the data is loaded, start making the plots
-        if self.GetPlotParam('twoD'):
-            # Link up the spatial axes if desired
-            self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
+        # Make the plots
+        if self.param_dict['twoD']:
+            self.axes = self.figure.add_subplot(
+                self.gs[
+                    self.parent.axes_extent[0]:self.parent.axes_extent[1],
+                    self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
+            self.image = self.axes.imshow(
+                np.array([[1, 1], [1, 1]]),
+                norm=self.norm(),
+                origin='lower')
 
+            if not self.parent.MainParamDict['ImageAspect']:
+                self.image = self.axes.imshow(
+                    np.array([[1, 1], [1, 1]]),
+                    norm=self.norm(),
+                    origin='lower',
+                    aspect='auto')
 
-            if self.parent.MainParamDict['2DSlicePlane'] ==0: # x-y plane
-                if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower')
-                else:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][self.zSlice,:,:], norm = self.norm(), origin = 'lower',
-                                                aspect = 'auto')
-            elif self.parent.MainParamDict['2DSlicePlane'] ==1: # x-z plane
-                if self.parent.MainParamDict['ImageAspect']:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower')
-                else:
-                    self.image = self.axes.imshow(self.scalar_fld['data'][:,self.ySlice,:], norm = self.norm(), origin = 'lower',
-                                                aspect = 'auto')
+            self.image.set_interpolation(
+                self.param_dict['interpolation'])
 
-            self.ymin = 0
-            self.ymax =  self.image.get_array().shape[0]#/self.c_omp*self.istep
+            self.an_2d = self.axes.annotate(
+                '',
+                xy=(0.9, 0.9),
+                xycoords='axes fraction',
+                color='white',
+                **self.annotate_kwargs)
 
-            self.xmin = 0
-            self.xmax =  self.image.get_array().shape[1]#/self.c_omp*self.istep
+            self.an_2d.set_visible(
+                self.param_dict['show_labels'])
 
-            self.vmin = self.image.get_array().min()
-            if self.GetPlotParam('set_v_min'):
-                self.vmin = self.GetPlotParam('v_min')
-            self.vmax = self.image.get_array().max()
-            if self.GetPlotParam('set_v_max'):
-                self.vmax = self.GetPlotParam('v_max')
-            if self.GetPlotParam('UseDivCmap') and not self.GetPlotParam('stretch_colors'):
-                self.vmax = max(np.abs(self.vmin), self.vmax)
-                self.vmin = -self.vmax
-            self.image.norm.vmin = self.vmin
-            self.image.norm.vmax = self.vmax
-            self.image.set_interpolation(self.GetPlotParam('interpolation'))
-            self.image.set_cmap(new_cmaps.cmaps[self.cmap])
-            self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
-
-            #self.shockline_2d = self.axes.axvline(self.parent.shock_loc,
-            #                                        linewidth = 1.5,
-            #                                        linestyle = '--',
-
-            #                                        color = self.parent.shock_color,
-            #                                        path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-            #                                        PathEffects.Normal()])
-            #self.shockline_2d.set_visible(self.GetPlotParam('show_shock'))
-
-            self.an_2d = self.axes.annotate(self.scalar_fld['label'],
-                                            xy = (0.9,.9),
-                                            xycoords= 'axes fraction',
-                                            color = 'white',
-                                            **self.annotate_kwargs)
-            self.an_2d.set_visible(self.GetPlotParam('show_labels'))
-
-
-            self.axC = self.figure.add_subplot(self.gs[self.parent.cbar_extent[0]:self.parent.cbar_extent[1], self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
+            self.axC = self.figure.add_subplot(
+                self.gs[
+                    self.parent.cbar_extent[0]:self.parent.cbar_extent[1],
+                    self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
 
             if self.parent.MainParamDict['HorizontalCbars']:
-                self.cbar = self.axC.imshow(self.gradient, aspect='auto',
-                                            cmap=new_cmaps.cmaps[self.cmap])
+                self.cbar = self.axC.imshow(
+                    self.gradient, aspect='auto')
+
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
-                self.axC.tick_params(axis='x',
-                                which = 'both', # bothe major and minor ticks
-                                top = False, # turn off top ticks
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
+                self.axC.tick_params(
+                    axis='x',
+                    which='both',  # bothe major and minor ticks
+                    top=False,  # turn off top ticks
+                    labelsize=self.parent.MainParamDict['NumFontSize'])
 
-                self.axC.tick_params(axis='y',          # changes apply to the y-axis
-                                which='both',      # both major and minor ticks are affected
-                                left=False,      # ticks along the bottom edge are off
-                                right=False,         # ticks along the top edge are off
-                                labelleft=False)
-            else: #Cbar is on the vertical
-                self.cbar = self.axC.imshow(np.transpose(self.gradient)[::-1], aspect='auto',
-                                            cmap=new_cmaps.cmaps[self.cmap], origin='upper')
+                self.axC.tick_params(
+                    axis='y',       # changes apply to the y-axis
+                    which='both',   # both major and minor ticks are affected
+                    left=False,     # ticks along the bottom edge are off
+                    right=False,    # ticks along the top edge are off
+                    labelleft=False)
+
+            else:  # Cbar is on the vertical
+                self.cbar = self.axC.imshow(
+                    np.transpose(self.gradient)[::-1],
+                    aspect='auto',
+                    origin='upper')
                 # Make the colobar axis more like the real colorbar
                 self.cbar.set_extent([0, 1.0, 0, 1.0])
-                self.axC.tick_params(axis='x',
-                                which = 'both', # bothe major and minor ticks
-                                top = False, # turn off top ticks
-                                bottom = False, # turn off top ticks
-                                labelbottom = False, # turn off top ticks
-                                labelsize=self.parent.MainParamDict['NumFontSize'])
 
-                self.axC.tick_params(axis='y',          # changes apply to the y-axis
-                                which='both',      # both major and minor ticks are affected
-                                left=False,      # ticks along the bottom edge are off
-                                right=True,         # ticks along the top edge are off
-                                labelleft=False,
-                                labelright = True,
-                                labelsize = self.parent.MainParamDict['NumFontSize'])
+                self.axC.tick_params(
+                    axis='x',
+                    which='both',  # both the major and minor ticks
+                    top=False,  # turn off top ticks
+                    bottom=False,  # turn off top ticks
+                    labelbottom=False,  # turn off top ticks
+                    labelsize=self.parent.MainParamDict['NumFontSize'])
 
-            if not self.GetPlotParam('show_cbar'):
+                self.axC.tick_params(
+                    axis='y',        # changes apply to the y-axis
+                    which='both',    # both major and minor ticks are affected
+                    left=False,      # ticks along the bottom edge are off
+                    right=True,      # ticks along the top edge are off
+                    labelleft=False,
+                    labelright=True,
+                    labelsize=self.parent.MainParamDict['NumFontSize'])
+
+            if not self.param_dict['show_cbar']:
                 self.axC.set_visible(False)
-            else:
-                self.CbarTickFormatter()
 
             if int(matplotlib.__version__[0]) < 2:
-                self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
+                self.axes.set_axis_bgcolor(self.param_dict['face_color'])
             else:
-                self.axes.set_facecolor(self.GetPlotParam('face_color'))
+                self.axes.set_facecolor(self.param_dict['face_color'])
 
-            self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
+            self.axes.tick_params(
+                labelsize=self.parent.MainParamDict['NumFontSize'],
+                color=tick_color)
 
-            if self.parent.MainParamDict['SetxLim']:
-                if self.parent.MainParamDict['xLimsRelative']:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                else:
-                    self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xmin,self.xmax)
+            self.axes.set_xlabel(
+                r'$x$',
+                labelpad=self.parent.MainParamDict['xLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
-            if self.parent.MainParamDict['SetyLim']:
-                self.axes.set_ylim(self.parent.MainParamDict['yBottom']*self.c_omp/self.istep, self.parent.MainParamDict['yTop']*self.c_omp/self.istep)
-            else:
-                self.axes.set_ylim(self.ymin, self.ymax)
-            #self.axes.set_xlabel(r'$x\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_xlabel(r'$x$', labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
             if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                #self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$y$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+                self.axes.set_ylabel(
+                    r'$y$',
+                    labelpad=self.parent.MainParamDict['yLabelPad'],
+                    color='black',
+                    size=self.parent.MainParamDict['AxLabelSize'])
+
             if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                #self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$z$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
+                self.axes.set_ylabel(
+                    r'$z$',
+                    labelpad=self.parent.MainParamDict['yLabelPad'],
+                    color='black',
+                    size=self.parent.MainParamDict['AxLabelSize'])
 
-
+        # 1D simulations
         else:
-            self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
+            self.xaxis = sim.get_data(
+                n, data_class='axes',
+                attribute='x')
+
             # Do the 1D Plots
-            self.axes = self.figure.add_subplot(self.gs[self.parent.axes_extent[0]:self.parent.axes_extent[1], self.parent.axes_extent[2]:self.parent.axes_extent[3]])
+            self.axes = self.figure.add_subplot(
+                self.gs[
+                    self.parent.axes_extent[0]:self.parent.axes_extent[1],
+                    self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
-            # Make the 1-D plots
-            if self.parent.MainParamDict['Average1D']:
-                self.linedens = self.axes.plot(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0), color = self.dens_color)
-            else:
-                self.linedens = self.axes.plot(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:], color = self.dens_color)
-
-            #if self.GetPlotParam('normalize_density'):
-            #    self.linedens[0].set_data(self.linedens[0].get_data()[0], self.linedens[0].get_data()[1]*self.ppc0**(-1))
-
-            #### Set the ylims... there is a problem where it scales the ylims for the invisible lines:
-            min_max = [self.linedens[0].get_data()[1].min(), self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
-            #self.shock_line =self.axes.axvline(self.parent.shock_loc, linewidth = 1.5, linestyle = '--', color = self.parent.shock_color, path_effects=[PathEffects.Stroke(linewidth=2, foreground='k'),
-            #        PathEffects.Normal()])
-            #self.shock_line.set_visible(self.GetPlotParam('show_shock'))
+            self.linedens = self.axes.plot(
+                [1, 1], [-0.5, 0.5],
+                color=self.dens_color)
 
             if int(matplotlib.__version__[0]) < 2:
                 self.axes.set_axis_bgcolor(self.GetPlotParam('face_color'))
             else:
                 self.axes.set_facecolor(self.GetPlotParam('face_color'))
 
-            self.axes.tick_params(labelsize = self.parent.MainParamDict['NumFontSize'], color=tick_color)
+            self.axes.tick_params(
+                labelsize=self.parent.MainParamDict['NumFontSize'],
+                color=tick_color)
 
-            #if self.parent.MainParamDict['SetxLim']:
-            #    if self.parent.MainParamDict['xLimsRelative']:
-            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-            #                           self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-            #    else:
-            #        self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            #else:
-            self.axes.set_xlim(self.xaxis['data'][0],self.xaxis['data'][-1])
+            self.axes.set_xlim(
+                self.xaxis['data'][0],
+                self.xaxis['data'][-1])
 
-            if self.GetPlotParam('set_v_min'):
-                self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
-            if self.GetPlotParam('set_v_max'):
-                self.axes.set_ylim(top = self.GetPlotParam('v_max'))
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(
+                    bottom=self.param_dict['v_min'])
+            if self.param_dict['set_v_max']:
+                self.axes.set_ylim(
+                    top=self.param_dict['v_max'])
 
             # Handle the axes labeling
+            self.axes.set_xlabel(
+                self.xaxis['label'],
+                labelpad=self.parent.MainParamDict['xLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
+            self.axes.set_ylabel(
+                self.scalar_fld['label'],
+                labelpad=self.parent.MainParamDict['yLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
-            #if self.GetPlotParam('normalize_density'):
-            #    tmp_str += r'$\ [n_0]$'
-            self.axes.set_xlabel(self.xaxis['label'], labelpad = self.parent.MainParamDict['xLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            self.axes.set_ylabel(self.scalar_fld['label'], labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-
-
-        #if self.GetPlotParam('show_cpu_domains'):
-        #    self.parent.SetCpuDomainLines()
+        self.refresh(sim=sim, n=n)
 
     def CbarTickFormatter(self):
-        ''' A helper function that sets the cbar ticks & labels. This used to be
-        easier, but because I am no longer using the colorbar class i have to do
-        stuff manually.'''
+        ''' A helper function that sets the cbar ticks & labels. This used to
+        be easier, but because I am no longer using the colorbar class i have
+        to do stuff manually.'''
         clim = np.copy(self.image.get_clim())
-        if self.GetPlotParam('show_cbar'):
-            if self.GetPlotParam('cnorm_type') == "Log":
-                self.cbar.set_extent([np.log10(clim[0]),np.log10(clim[1]),0,1])
-                self.axC.set_xlim(np.log10(clim[0]),np.log10(clim[1]))
+        if self.param_dict['show_cbar']:
+            if self.param_dict['cnorm_type'] == "Log":
+                self.cbar.set_extent(
+                    [np.log10(clim[0]), np.log10(clim[1]), 0, 1])
+                self.axC.set_xlim(
+                    np.log10(clim[0]),
+                    np.log10(clim[1]))
 
-            elif self.GetPlotParam('cnorm_type') == "Pow":
+            elif self.param_dict['cnorm_type'] == "Pow":
                 # re-create the gradient with the data values
-                # First make a colorbar in the negative region that is linear in the pow_space
-                data_range = np.linspace(clim[0],clim[1],512)
+                # First make a colorbar in the negative region that
+                # is linear in the pow_space
+                data_range = np.linspace(clim[0], clim[1], 512)
 
-                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = self.GetPlotParam('cpow_num'), midpoint = self.GetPlotParam('div_midpoint'), div_cmap = self.GetPlotParam('UseDivCmap'), stretch_colors = self.GetPlotParam('stretch_colors'))
-                cbardata = np.vstack((cbardata,cbardata))
+                cbardata = PowerNormFunc(
+                    data_range,
+                    vmin=data_range[0],
+                    vmax=data_range[-1],
+                    gamma=self.param_dict['cpow_num'],
+                    midpoint=self.param_dict['div_midpoint'],
+                    div_cmap=self.param_dict['UseDivCmap'],
+                    stretch_colors=self.param_dict['stretch_colors'])
+                cbardata = np.vstack((cbardata, cbardata))
+
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_data(cbardata)
-                    self.cbar.set_extent([clim[0],clim[1],0,1])
-                    self.axC.set_xlim(clim[0],clim[1])
+                    self.cbar.set_extent([clim[0], clim[1], 0, 1])
+                    self.axC.set_xlim(clim[0], clim[1])
+
                 else:
                     self.cbar.set_data(np.transpose(cbardata)[::-1])
-                    self.cbar.set_extent([0,1,clim[0],clim[1]])
-                    self.axC.set_ylim(clim[0],clim[1])
-                    self.axC.locator_params(axis='y',nbins=6)
+                    self.cbar.set_extent([0, 1, clim[0], clim[1]])
+                    self.axC.set_ylim(clim[0], clim[1])
+                    self.axC.locator_params(axis='y', nbins=6)
 
-            elif self.GetPlotParam('cnorm_type') == "Linear" and self.GetPlotParam('UseDivCmap'):
+            elif self.param_dict['UseDivCmap']:
                 # re-create the gradient with the data values
-                # First make a colorbar in the negative region that is linear in the pow_space
-                data_range = np.linspace(clim[0],clim[1],512)
+                # First make a colorbar in the negative region
+                # that is linear in the pow_space
+                data_range = np.linspace(clim[0], clim[1], 512)
 
-                cbardata = PowerNormFunc(data_range, vmin = data_range[0], vmax = data_range[-1], gamma = 1.0, div_cmap = self.GetPlotParam('UseDivCmap'), midpoint = self.GetPlotParam('div_midpoint'), stretch_colors = self.GetPlotParam('stretch_colors'))
-                cbardata = np.vstack((cbardata,cbardata))
+                cbardata = PowerNormFunc(
+                    data_range,
+                    vmin=data_range[0],
+                    vmax=data_range[-1],
+                    gamma=1.0,
+                    div_cmap=True,
+                    midpoint=self.param_dict['div_midpoint'],
+                    stretch_colors=self.param_dict['stretch_colors'])
+                cbardata = np.vstack((cbardata, cbardata))
+
                 if self.parent.MainParamDict['HorizontalCbars']:
                     self.cbar.set_data(cbardata)
-                    self.cbar.set_extent([clim[0],clim[1],0,1])
-                    self.axC.set_xlim(clim[0],clim[1])
+                    self.cbar.set_extent([clim[0], clim[1], 0, 1])
+                    self.axC.set_xlim(clim[0], clim[1])
+
                 else:
                     self.cbar.set_data(np.transpose(cbardata)[::-1])
-                    self.cbar.set_extent([0,1,clim[0],clim[1]])
-                    self.axC.set_ylim(clim[0],clim[1])
-                    self.axC.locator_params(axis='y',nbins=6)
+                    self.cbar.set_extent([0, 1, clim[0], clim[1]])
+                    self.axC.set_ylim(clim[0], clim[1])
+                    self.axC.locator_params(axis='y', nbins=6)
 
-            else:# self.GetPlotParam('cnorm_type') == "Linear":
+            else:  # self.GetPlotParam('cnorm_type') == "Linear":
                 if self.parent.MainParamDict['HorizontalCbars']:
-#                    self.cbar.set_data(self.gradient)
-                    self.cbar.set_extent([clim[0],clim[1],0,1])
-                    self.axC.set_xlim(clim[0],clim[1])
+                    self.cbar.set_extent([clim[0], clim[1], 0, 1])
+                    self.axC.set_xlim(clim[0], clim[1])
                 else:
-#                    self.cbar.set_data(np.transpose(self.gradient)[::-1])
-                    self.cbar.set_extent([0,1,clim[0],clim[1]])
-                    self.axC.set_ylim(clim[0],clim[1])
-                    self.axC.locator_params(axis='y',nbins=6)
-    def refresh(self, sim = None, n = None):
 
+                    self.cbar.set_extent([0, 1, clim[0], clim[1]])
+                    self.axC.set_ylim(clim[0], clim[1])
+                    self.axC.locator_params(axis='y', nbins=6)
+
+    def refresh(self, sim=None, n=None):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
-        hasn't changed, or isn't viewed, don't touch it. The difference between this and last
-        time, is that we won't actually do any drawing in the plot. The plot
-        will be redrawn after all subplots data is changed. '''
+        hasn't changed, or isn't viewed, don't touch it. The difference between
+        this and last time, is that we won't actually do any drawing in the
+        plot. The plot will be redrawn after all subplots data is changed. '''
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
-        # if n is None:
-        #     n = self.parent.cur_times[self.param_dict['sim_num']]
-        self.scalar_fld = sim.get_data(n, data_class = 'scalar_flds', fld = self.GetPlotParam('flds_type'))
-        self.xaxis =  sim.get_data(n, data_class = 'axes', attribute = 'x')
-        self.c_omp = sim.get_data(n, data_class = 'param', attribute = 'c_omp')
-        self.istep = sim.get_data(n, data_class = 'param', attribute = 'istep')
+
+        self.scalar_fld = sim.get_data(
+            n, data_class='scalar_flds',
+            fld=self.param_dict['flds_type'])
+        self.xaxis = sim.get_data(
+            n, data_class='axes',
+            attribute='x')
+        self.c_omp = sim.get_data(
+            n, data_class='param',
+            attribute='c_omp')
+        self.istep = sim.get_data(
+            n, data_class='param',
+            attribute='istep')
+
         # FIND THE SLICE
 
-        MaxYInd = len(sim.get_data(n, data_class='axes', attribute='y')['data']) - 1
-        MaxZInd = len(sim.get_data(n, data_class='axes', attribute='z')['data']) - 1
-
-
-        self.ySlice = int(np.around(self.parent.MainParamDict['ySlice']*MaxYInd))
-        self.zSlice = int(np.around(self.parent.MainParamDict['zSlice']*MaxZInd))
+        self.ySlice = self.parent.calc_slices('y', sim, n)
+        self.zSlice = self.parent.calc_slices('z', sim, n)
 
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
-        if self.GetPlotParam('twoD') == 0:
+        if self.param_dict['twoD'] == 0:
 
             if self.parent.MainParamDict['Average1D']:
-                self.linedens[0].set_data(self.xaxis['data'], np.average(self.scalar_fld['data'].reshape(-1,self.scalar_fld['data'].shape[-1]), axis = 0))
-            else: # x-y plane
-                self.linedens[0].set_data(self.xaxis['data'], self.scalar_fld['data'][self.zSlice,self.ySlice,:])
+                self.linedens[0].set_data(
+                    self.xaxis['data'],
+                    np.average(
+                        self.scalar_fld['data'].reshape(
+                            -1, self.scalar_fld['data'].shape[-1]), axis=0))
 
-            #### Set the ylims...
-            min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
-            if self.GetPlotParam('set_v_min'):
-                self.axes.set_ylim(bottom = self.GetPlotParam('v_min'))
-            if self.GetPlotParam('set_v_max'):
-                self.axes.set_ylim(top = self.GetPlotParam('v_max'))
-            #if self.GetPlotParam('show_shock'):
-            #    self.shock_line.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
+            else:  #
+                self.linedens[0].set_data(
+                    self.xaxis['data'],
+                    self.scalar_fld['data'][self.zSlice, self.ySlice, :])
 
-            if self.parent.MainParamDict['SetxLim']:
-                #if self.parent.MainParamDict['xLimsRelative']:
-                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                #else:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xaxis['data'][0], self.xaxis['data'][-1])
-
-
-        else: # Now refresh the plot if it is 2D
-            if self.parent.MainParamDict['2DSlicePlane'] == 0: # x-y plane
-                self.image.set_data(self.scalar_fld['data'][self.zSlice,:,:])
-            elif self.parent.MainParamDict['2DSlicePlane'] == 1: # x-z plane
-                self.image.set_data(self.scalar_fld['data'][:,self.ySlice,:])
-
-            #if self.GetPlotParam('normalize_density'):
-            #    self.image.set_data(self.image.get_array()/self.ppc0)
-
-
-            self.ymin = 0
-            self.ymax =  self.image.get_array().shape[0]/self.c_omp*self.istep
-            self.xmin = 0
-            self.xmax =  self.xaxis['data'][-1]
-            self.image.set_extent([self.xmin,self.xmax, self.ymin, self.ymax])
-            if self.parent.MainParamDict['SetxLim']:
-                #if self.parent.MainParamDict['xLimsRelative']:
-                #    self.axes.set_xlim(self.parent.MainParamDict['xLeft'] + self.parent.shock_loc,
-                #                       self.parent.MainParamDict['xRight'] + self.parent.shock_loc)
-                #else:
-                self.axes.set_xlim(self.parent.MainParamDict['xLeft'], self.parent.MainParamDict['xRight'])
-            else:
-                self.axes.set_xlim(self.xmin,self.xmax)
-
-            if self.parent.MainParamDict['SetyLim']:
-                self.axes.set_ylim(self.parent.MainParamDict['yBottom'],self.parent.MainParamDict['yTop'])
-            else:
-                self.axes.set_ylim(self.ymin,self.ymax)
-
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                #self.axes.set_ylabel(r'$y\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$y$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-            if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                #self.axes.set_ylabel(r'$z\ [c/\omega_{\rm pe}]$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-                self.axes.set_ylabel(r'$z$', labelpad = self.parent.MainParamDict['yLabelPad'], color = 'black', size = self.parent.MainParamDict['AxLabelSize'])
-
-
-            #if self.GetPlotParam('show_shock'):
-            #    self.shockline_2d.set_xdata([self.parent.shock_loc,self.parent.shock_loc])
-        self.set_v_max_min()
-    def set_v_max_min(self):
-        if not self.param_dict['twoD']:
-            #### Set the ylims...
-            min_max = [self.linedens[0].get_data()[1].min(),self.linedens[0].get_data()[1].max()]
+            # Set the ylims...
+            min_max = [
+                self.linedens[0].get_data()[1].min(),
+                self.linedens[0].get_data()[1].max()]
             dist = min_max[1]-min_max[0]
             min_max[0] -= 0.04*dist
             min_max[1] += 0.04*dist
             self.axes.set_ylim(min_max)
             if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom = self.param_dict['v_min'])
+                self.axes.set_ylim(bottom=self.param_dict['v_min'])
+            if self.GetPlotParam('set_v_max'):
+                self.axes.set_ylim(top=self.param_dict['v_max'])
+
+            if self.parent.MainParamDict['SetxLim']:
+                self.axes.set_xlim(
+                    self.parent.MainParamDict['xLeft'],
+                    self.parent.MainParamDict['xRight'])
+            else:
+                self.axes.set_xlim(
+                    self.xaxis['data'][0],
+                    self.xaxis['data'][-1])
+
+        else:  # Now refresh the plot if it is 2D
+            if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+                self.image.set_data(
+                    self.scalar_fld['data'][self.zSlice, :, :])
+            elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z plane
+                self.image.set_data(
+                    self.scalar_fld['data'][:, self.ySlice, :])
+
+            self.ymin = 0
+            self.ymax = self.image.get_array().shape[0]/self.c_omp*self.istep
+            self.xmin = 0
+            self.xmax = self.xaxis['data'][-1]
+            self.image.set_extent([
+                self.xmin, self.xmax, self.ymin, self.ymax])
+            if self.parent.MainParamDict['SetxLim']:
+                self.axes.set_xlim(
+                    self.parent.MainParamDict['xLeft'],
+                    self.parent.MainParamDict['xRight'])
+            else:
+                self.axes.set_xlim(self.xmin, self.xmax)
+
+            if self.parent.MainParamDict['SetyLim']:
+                self.axes.set_ylim(
+                    self.parent.MainParamDict['yBottom'],
+                    self.parent.MainParamDict['yTop'])
+            else:
+                self.axes.set_ylim(self.ymin, self.ymax)
+
+            if self.parent.MainParamDict['2DSlicePlane'] == 0:
+                self.axes.set_ylabel(
+                    r'$y$',
+                    labelpad=self.parent.MainParamDict['yLabelPad'],
+                    color='black',
+                    size=self.parent.MainParamDict['AxLabelSize'])
+
+            if self.parent.MainParamDict['2DSlicePlane'] == 1:
+                self.axes.set_ylabel(
+                    r'$z$',
+                    labelpad=self.parent.MainParamDict['yLabelPad'],
+                    color='black',
+                    size=self.parent.MainParamDict['AxLabelSize'])
+
+        self.set_v_max_min()
+
+    def set_v_max_min(self):
+        if not self.param_dict['twoD']:
+            min_max = [
+                self.linedens[0].get_data()[1].min(),
+                self.linedens[0].get_data()[1].max()]
+            dist = min_max[1]-min_max[0]
+            min_max[0] -= 0.04*dist
+            min_max[1] += 0.04*dist
+            self.axes.set_ylim(min_max)
+            if self.param_dict['set_v_min']:
+                self.axes.set_ylim(bottom=self.param_dict['v_min'])
             if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top = self.param_dict['v_max'])
+                self.axes.set_ylim(top=self.param_dict['v_max'])
         else:
             self.vmin = self.image.get_array().min()
             if self.param_dict['set_v_min']:
@@ -482,13 +502,15 @@ class scalarFldsPlot:
             self.vmax = self.image.get_array().max()
             if self.param_dict['set_v_max']:
                 self.vmax = self.param_dict['v_max']
-            if self.param_dict['UseDivCmap'] and not self.param_dict['stretch_colors']:
-                self.vmax = max(np.abs(self.vmin), self.vmax)
-                self.vmin = -self.vmax
+            if self.param_dict['UseDivCmap']:
+                if not self.param_dict['stretch_colors']:
+                    self.vmax = max(np.abs(self.vmin), self.vmax)
+                    self.vmin = -self.vmax
             self.image.norm.vmin = self.vmin
             self.image.norm.vmax = self.vmax
             if self.param_dict['show_cbar']:
                 self.CbarTickFormatter()
+
     def remove(self):
         try:
             self.axC.remove()
@@ -501,14 +523,16 @@ class scalarFldsPlot:
     def GetPlotParam(self, keyname):
         return self.param_dict[keyname]
 
-if __name__== '__main__':
+
+if __name__ == '__main__':
     import os
     from oengus import Oengus
     from pic_sim import picSim
     import matplotlib.pyplot as plt
     oengus = Oengus(interactive=False)
+    oengus.open_sim(
+        picSim(
+            os.path.join(os.path.dirname(__file__), '../output')))
 
-
-    oengus.open_sim(picSim(os.path.join(os.path.dirname(__file__),'../output')))
     oengus.create_graphs()
     plt.savefig('test.png')

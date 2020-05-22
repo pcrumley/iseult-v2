@@ -117,7 +117,7 @@ class vectorFldsPlot:
         self.gs = gridspec.GridSpecFromSubplotSpec(
             100, 100, subplot_spec=self.parent.gs0[self.pos])
 
-        # Now that the data is loaded, start making the plots
+        # Make the plots
         if self.param_dict['twoD']:
             self.axes = self.figure.add_subplot(
                 self.gs[
@@ -506,6 +506,7 @@ class vectorFldsPlot:
                         self.vec_z['data'][self.zSlice, self.ySlice, :])
 
         self.set_v_max_min()
+
     def update_labels_and_colors(self, sim=None, n=None):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
