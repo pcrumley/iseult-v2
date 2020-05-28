@@ -285,7 +285,8 @@ class phasePlot:
             self.axes.set_xlim(xmin, xmax)
 
         else:
-            self.image.set_data(np.ones((2, 2))*np.NaN)
+            self.image.set_data(
+                np.ones((2, 2))*np.NaN)
 
     def CbarTickFormatter(self):
         ''' A helper function that sets the cbar ticks & labels. This used to

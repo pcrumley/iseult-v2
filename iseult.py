@@ -47,7 +47,10 @@ if __name__ == '__main__':
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'src', 'popup_windows'))
+    sys.path.append(
+        os.path.join(os.path.dirname(__file__),
+        'src',
+        'popup_windows'))
     sys.path.append(os.path.join(os.path.dirname(__file__), 'src', 'utils'))
     sys.path.append(os.path.join(os.path.dirname(__file__), 'src', 'plots'))
 

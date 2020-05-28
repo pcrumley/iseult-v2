@@ -274,13 +274,6 @@ class scalarFldsPlot:
                 self.xaxis['data'][0],
                 self.xaxis['data'][-1])
 
-            if self.param_dict['set_v_min']:
-                self.axes.set_ylim(
-                    bottom=self.param_dict['v_min'])
-            if self.param_dict['set_v_max']:
-                self.axes.set_ylim(
-                    top=self.param_dict['v_max'])
-
             # Handle the axes labeling
             self.axes.set_xlabel(
                 self.xaxis['label'],
@@ -403,7 +396,7 @@ class scalarFldsPlot:
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.param_dict['twoD'] == 0:
-
+            print(self.xaxis['data'],self.scalar_fld['data'][self.zSlice, self.ySlice, :])
             if self.parent.MainParamDict['Average1D']:
                 self.linedens[0].set_data(
                     self.xaxis['data'],
@@ -415,19 +408,6 @@ class scalarFldsPlot:
                 self.linedens[0].set_data(
                     self.xaxis['data'],
                     self.scalar_fld['data'][self.zSlice, self.ySlice, :])
-
-            # Set the ylims...
-            min_max = [
-                self.linedens[0].get_data()[1].min(),
-                self.linedens[0].get_data()[1].max()]
-            dist = min_max[1]-min_max[0]
-            min_max[0] -= 0.04*dist
-            min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
-            if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom=self.param_dict['v_min'])
-            if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top=self.param_dict['v_max'])
 
             if self.parent.MainParamDict['SetxLim']:
                 self.axes.set_xlim(

@@ -23,7 +23,9 @@ class picSim(object):
     available_units = ['file']  # ['c_ompe', 'file', 'c_ompi']
 
     def __init__(self,
-                 name=None, dirpath=os.curdir, cfg_file=default_cfg):
+                 name=None,
+                 dirpath=os.curdir,
+                 cfg_file=default_cfg):
 
         self._outdir = dirpath
         self._xtra_stride = 1
@@ -282,7 +284,7 @@ class picSim(object):
 
         elif lookup['data_class'] == 'scalar_flds':
             response_dict = {
-                'data': np.empty((1, 1, 1)),
+                'data': np.empty((2, 2, 2)),
                 'label': ''
             }
 
@@ -305,7 +307,7 @@ class picSim(object):
 
         elif lookup['data_class'] == 'vec_flds':
             response_dict = {
-                'data': np.empty((1, 1, 1)),
+                'data': np.empty((2, 2, 2)),
                 'axis_label': '',
                 'label': ''
             }
@@ -332,7 +334,7 @@ class picSim(object):
 
         elif lookup['data_class'] == 'axes':
             response_dict = {
-                'data': np.empty(1),
+                'data': np.arange(2),
                 'label': ''
             }
             try:
