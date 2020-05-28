@@ -36,11 +36,13 @@ class picSim(object):
         self.parser = ExprParser()
         self._cfg_file = ''
         if 'iseult_conf.yml' in os.listdir(self.outdir):
+
             self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
             try:
                 self.sim_type = self._cfgDict['name']
             except KeyError:
                 self.sim_type = 'Undefined'
+
             self.clear_caches()
             if len(self) == 0:
                 self.outdir = os.path.join(self.outdir, 'output')
@@ -103,15 +105,16 @@ class picSim(object):
                 ]
 
                 path_dict[key].sort()
+                tmp_list = []
                 for i in range(len(path_dict[key])):
                     elm = path_dict[key][i]
                     try:
                         int(elm.split('.')[-1])
+                        tmp_list.append(elm)
                     except ValueError:
                         if elm.split('.')[-1] == '***':
                             has_star += 1
-                        path_dict[key].remove(elm)
-
+                path_dict[key] =  tmp_list
             # GET THE NUMBERS THAT HAVE ALL SET OF FILES:
             list_of_files = path_dict[output_file_keys[0]]
             all_there = set(elm.split('.')[-1] for elm in list_of_files)
