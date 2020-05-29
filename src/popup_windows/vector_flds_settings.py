@@ -4,6 +4,10 @@ import new_cmaps
 
 
 class VectorFieldsSettings(Tk.Toplevel):
+    interpolation_methods = [
+        'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
+        'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
+        'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
     def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)
@@ -24,7 +28,7 @@ class VectorFieldsSettings(Tk.Toplevel):
         ttk.Label(frm, text="Interpolation Method:").grid(row=0, column=2)
         InterplChooser = ttk.OptionMenu(
             frm, self.InterpolVar, self.params['interpolation'],
-            *tuple(self.subplot.interpolation_methods))
+            *tuple(self.interpolation_methods))
         InterplChooser.grid(row=0, column=3, sticky=Tk.W + Tk.E)
 
         # Create the OptionMenu to chooses the Chart Type:

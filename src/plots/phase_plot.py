@@ -1,16 +1,10 @@
-import matplotlib
-import sys
 import numpy as np
-import numpy.ma as ma
 import new_cmaps
-from new_cnorms import PowerNormWithNeg
 from prtl_hists import Fast2DHist, Fast2DWeightedHist
-import matplotlib.colors as mcolors
-import matplotlib.gridspec as gridspec
-import matplotlib.patheffects as PathEffects
+from base_plot import iseultPlot
 
 
-class phasePlot:
+class phasePlot(iseultPlot):
     # A dictionary of all of the parameters for this plot with the
     # default parameters
 
@@ -41,6 +35,7 @@ class phasePlot:
         'set_y_max': False,
         'spatial_x': True,
         'spatial_y': False,
+        'UseDivCmap': False,
         'interpolation': 'nearest',
         'face_color': 'gainsboro'}
 
@@ -50,23 +45,13 @@ class phasePlot:
 
     def __init__(self, parent, pos, param_dict):
         self.param_dict = {}
+        self.param_dict.update(super().plot_param_dict)
         self.param_dict.update(self.plot_param_dict)
         self.param_dict.update(param_dict)
         self.pos = pos
         self.parent = parent
         self.chart_type = 'PhasePlot'
         self.figure = self.parent.figure
-        self.interpolation_methods = [
-            'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
-            'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
-            'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
-
-    def norm(self, vmin=None, vmax=None):
-        if self.param_dict['cnorm_type'] == 'Log':
-            return mcolors.LogNorm(vmin, vmax)
-
-        else:
-            return mcolors.Normalize(vmin, vmax)
 
     def update_labels_and_colors(self):
         if self.param_dict['prtl_type'] == 'ions':  # protons
@@ -90,16 +75,7 @@ class phasePlot:
     def draw(self, sim=None, n=None):
 
         self.IntRegionLines = []
-        tick_color = 'black'
-
-        self.gs = gridspec.GridSpecFromSubplotSpec(
-            100, 100,
-            subplot_spec=self.parent.gs0[self.pos])
-
-        self.axes = self.figure.add_subplot(
-            self.gs[
-                self.parent.axes_extent[0]:self.parent.axes_extent[1],
-                self.parent.axes_extent[2]:self.parent.axes_extent[3]])
+        self.build_axes()
 
         self.image = self.axes.imshow(
             [[np.nan, np.nan], [np.nan, np.nan]],
@@ -111,69 +87,8 @@ class phasePlot:
         self.image.set_extent([0, 1, 0, 1])
         self.image.set_clim([1, 10])
 
-        self.axC = self.figure.add_subplot(
-            self.gs[
-                self.parent.cbar_extent[0]:self.parent.cbar_extent[1],
-                self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
-
-        # Technically I should use the colorbar class here,
-        # but I found it annoying in some of it's limitations.
-        if self.parent.MainParamDict['HorizontalCbars']:
-            self.cbar = self.axC.imshow(
-                self.gradient, aspect='auto',
-                cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
-
-            # Make the colobar axis more like the real colorbar
-            self.axC.tick_params(
-                axis='x',
-                which='both',  # bothe major and minor ticks
-                top=False,  # turn off top ticks
-                labelsize=self.parent.MainParamDict['NumFontSize'])
-
-            self.axC.tick_params(
-                axis='y',          # changes apply to the y-axis
-                which='both',      # both major and minor ticks are affected
-                left=False,        # ticks along the bottom edge are off
-                right=False,       # ticks along the top edge are off
-                labelleft=False)
-
-        else:
-            self.cbar = self.axC.imshow(
-                np.transpose(self.gradient)[::-1],
-                aspect='auto', origin='upper',
-                cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
-
-            # Make the colobar axis more like the real colorbar
-            self.axC.tick_params(
-                axis='x',
-                which='both',   # both major and minor ticks
-                top=False,      # turn off top ticks
-                bottom=False,
-                labelbottom=False,
-                labelsize=self.parent.MainParamDict['NumFontSize'])
-
-            self.axC.tick_params(
-                axis='y',           # changes apply to the y-axis
-                which='both',       # both major and minor ticks are affected
-                left=False,         # ticks along the bottom edge are off
-                right=True,         # ticks along the top edge are off
-                labelleft=False,
-                labelright=True,
-                labelsize=self.parent.MainParamDict['NumFontSize'])
-
-        self.cbar.set_extent([0, 1.0, 0, 1.0])
-
         if not self.param_dict['show_cbar']:
             self.axC.set_visible(False)
-
-        if int(matplotlib.__version__[0]) < 2:
-            self.axes.set_axis_bgcolor(self.param_dict['face_color'])
-        else:
-            self.axes.set_facecolor(self.param_dict['face_color'])
-
-        self.axes.tick_params(
-            labelsize=self.parent.MainParamDict['NumFontSize'],
-            color=tick_color)
 
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
@@ -269,7 +184,10 @@ class phasePlot:
             self.image.set_clim(self.clim)
 
             if self.param_dict['show_cbar']:
-                self.CbarTickFormatter()
+                label = self.x_values['hist_cbar_label']
+                if self.param_dict['cnorm_type'] == 'Log':
+                    label = '$\log\ $' + label
+                self.CbarTickFormatter(label)
 
             if self.param_dict['show_shock']:
                 self.shock_line.set_xdata(
@@ -287,55 +205,3 @@ class phasePlot:
         else:
             self.image.set_data(
                 np.ones((2, 2))*np.NaN)
-
-    def CbarTickFormatter(self):
-        ''' A helper function that sets the cbar ticks & labels. This used to
-        be easier, but because I am no longer using the colorbar class i have
-        to do stuff manually.'''
-        clim = np.copy(self.image.get_clim())
-        if self.param_dict['show_cbar']:
-            if self.param_dict['cnorm_type'] == 'Log':
-                if self.parent.MainParamDict['HorizontalCbars']:
-                    self.cbar.set_extent(
-                        [np.log10(clim[0]), np.log10(clim[1]), 0, 1])
-                    self.axC.set_xlim(
-                        np.log10(clim[0]), np.log10(clim[1]))
-                    self.axC.xaxis.set_label_position('top')
-                    self.axC.set_xlabel(
-                        '$\log\ $' + self.x_values['hist_cbar_label'],
-                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
-                        size=self.parent.MainParamDict['AxLabelSize'])
-
-                else:
-                    self.cbar.set_extent(
-                        [0, 1, np.log10(clim[0]), np.log10(clim[1])])
-                    self.axC.set_ylim(
-                        np.log10(clim[0]), np.log10(clim[1]))
-
-                    self.axC.locator_params(axis='y', nbins=6)
-                    self.axC.yaxis.set_label_position("right")
-                    self.axC.set_ylabel(
-                        '$\log\ $' + self.x_values['hist_cbar_label'],
-                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
-                        rotation=-90,
-                        size=self.parent.MainParamDict['AxLabelSize'])
-
-            else:
-                if self.parent.MainParamDict['HorizontalCbars']:
-                    self.cbar.set_extent([clim[0], clim[1], 0, 1])
-                    self.axC.set_xlim(clim[0], clim[1])
-                    self.axC.set_xlabel(
-                        self.x_values['hist_cbar_label'],
-                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
-                        size=self.parent.MainParamDict['AxLabelSize'])
-
-                else:
-                    self.cbar.set_extent([0, 1, clim[0], clim[1]])
-                    self.axC.set_ylim(clim[0], clim[1])
-                    self.axC.locator_params(axis='y', nbins=6)
-                    self.axC.yaxis.set_label_position("right")
-                    self.axC.set_ylabel(
-                        self.x_values['hist_cbar_label'],
-                        labelpad=self.parent.MainParamDict['cbarLabelPad'],
-                        rotation=-90,
-                        size=self.parent.MainParamDict['AxLabelSize'])

@@ -4,6 +4,11 @@ import new_cmaps
 
 
 class phaseSettings(Tk.Toplevel):
+    interpolation_methods = [
+        'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
+        'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
+        'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
+
     def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)
@@ -26,7 +31,7 @@ class phaseSettings(Tk.Toplevel):
         ttk.OptionMenu(
             frm, self.InterpolVar,
             self.params['interpolation'],
-            *tuple(self.subplot.interpolation_methods)).grid(
+            *tuple(self.interpolation_methods)).grid(
                 row=0, column=3,
                 sticky=Tk.W + Tk.E)
 

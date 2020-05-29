@@ -24,6 +24,14 @@ class Oengus():
         self.sims_shown = []
         self.dirname = ''
 
+        # Create a dictionary to save the axes lims in case spatial
+        # axes are shared across plots.
+        # self.axes_lims = {
+        #    'x': [None, None],
+        #    'y': [None, None],
+        #    'z': [None, None]
+        # }
+
         self.interactive = interactive
         # Create the figure
         self.figure = plt.figure(edgecolor='none', facecolor='w')
@@ -33,7 +41,11 @@ class Oengus():
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
+        # self.canvas.mpl_connect('draw_event', self.on_draw)
         self.load_view(preset_view)
+
+    #    def on_draw(self, event):
+    #        print(event.name)
 
     def GenMainParamDict(self):
         ''' The function that reads in a config file and then makes
@@ -304,8 +316,10 @@ class Oengus():
     def draw_output(self):
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
+                #xlim = self.SubPlotList[i][j].axes.save_axes_pos()
                 self.SubPlotList[i][j].refresh()
-
+                #self.SubPlotList[i][j].axes.set_xlim(xlim)
+                #self.SubPlotList[i][j].axes.set_ylim(ylim)
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
             outname = os.path.abspath(sim.outdir)
