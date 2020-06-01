@@ -251,6 +251,7 @@ class scalarFldsPlot(iseultPlot):
                     size=self.parent.MainParamDict['AxLabelSize'])
 
         self.set_v_max_min()
+        self.save_home()
 
     def set_v_max_min(self):
         if not self.param_dict['twoD']:

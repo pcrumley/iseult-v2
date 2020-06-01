@@ -38,6 +38,7 @@ class Oengus():
         if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
+            self.tkApp = tkApp
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
@@ -299,6 +300,7 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()  # self.sim, -1)
+                self.SubPlotList[i][j].save_home()
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
@@ -313,13 +315,21 @@ class Oengus():
                     f'{outname} is empty',
                     size=self.MainParamDict['TitleFontSize'])
 
+    def home(self):
+        for i in range(self.MainParamDict['NumOfRows']):
+            for j in range(self.MainParamDict['NumOfCols']):
+                self.SubPlotList[i][j].go_home()
+        self.tkApp.toolbar.update()
+        self.canvas.draw()
+
     def draw_output(self):
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                #xlim = self.SubPlotList[i][j].axes.save_axes_pos()
+                self.SubPlotList[i][j].save_axes_pos()
                 self.SubPlotList[i][j].refresh()
-                #self.SubPlotList[i][j].axes.set_xlim(xlim)
-                #self.SubPlotList[i][j].axes.set_ylim(ylim)
+                self.SubPlotList[i][j].load_axes_pos()
+        self.tkApp.toolbar.update()
+
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
             outname = os.path.abspath(sim.outdir)

@@ -205,3 +205,5 @@ class phasePlot(iseultPlot):
         else:
             self.image.set_data(
                 np.ones((2, 2))*np.NaN)
+
+        self.save_home()

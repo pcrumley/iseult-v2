@@ -32,6 +32,14 @@ class iseultPlot:
         self.pos = pos
         self.parent = parent
         self.figure = self.parent.figure
+        self._zoom_x_min = None
+        self._zoom_x_max = None
+        self._zoom_y_min = None
+        self._zoom_y_max = None
+
+        self.home_x = None
+        self.home_y = None
+
     @property
     def annotate_kwargs(self):
         if self.param_dict['OutlineText']:
@@ -42,12 +50,12 @@ class iseultPlot:
                 'path_effects': [
                     PathEffects.withStroke(linewidth=1.5, foreground="k")]
             }
-
         else:
             return {
                 'horizontalalignment': 'right',
                 'verticalalignment': 'top',
                 'size': self.parent.MainParamDict['annotateTextSize']}
+
     def draw(self, sim=None, n=None):
         raise NotImplementedError
 
@@ -209,6 +217,35 @@ class iseultPlot:
                     labelpad=self.parent.MainParamDict['cbarLabelPad'],
                     rotation=-90,
                     size=self.parent.MainParamDict['AxLabelSize'])
+
+    def save_axes_pos(self):
+        xmin, xmax = self.axes.get_xlim()
+        self._zoom_x_min = xmin if xmin != self.home_x[0] else None
+        self._zoom_x_max = xmax if xmax != self.home_x[1] else None
+
+        ymin, ymax = self.axes.get_ylim()
+        self._zoom_y_min = ymin if ymin != self.home_y[0] else None
+        self._zoom_y_max = ymax if ymax != self.home_y[1] else None
+
+    def save_home(self):
+        self.home_x = self.axes.get_xlim()
+        self.home_y = self.axes.get_ylim()
+
+    def go_home(self):
+        self.axes.set_xlim(self.home_x)
+        self.axes.set_ylim(self.home_y)
+    def load_axes_pos(self):
+
+        if self._zoom_x_min is not None:
+            self.axes.set_xlim(left=self._zoom_x_min)
+        if self._zoom_x_max is not None:
+            self.axes.set_xlim(right=self._zoom_x_max)
+
+        if self._zoom_y_min is not None:
+            self.axes.set_ylim(bottom=self._zoom_y_min)
+
+        if self._zoom_y_max is not None:
+            self.axes.set_ylim(top=self._zoom_y_max)
 
     def remove(self):
         try:

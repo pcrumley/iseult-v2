@@ -312,6 +312,7 @@ class vectorFldsPlot(iseultPlot):
                         self.vec_z['data'][self.zSlice, self.ySlice, :])
 
         self.set_v_max_min()
+        self.save_home()
 
     def update_labels_and_colors(self, sim=None, n=None):
         if sim is None:

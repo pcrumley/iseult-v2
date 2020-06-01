@@ -10,3 +10,6 @@ class myCustomToolbar(NavigationToolbar2Tk):
         NavigationToolbar2Tk.__init__(self, plotCanvas, parent)
         # print(self._nav_stack)
         self.parent = parent
+
+    def home(self):
+        self.parent.oengus.home()
