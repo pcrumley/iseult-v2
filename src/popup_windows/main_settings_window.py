@@ -186,6 +186,24 @@ class SettingsFrame(Tk.Toplevel):
         self.AspectVar.set(self.main_params['ImageAspect'])
         self.AspectVar.trace('w', self.AspectVarChanged)
 
+        # Control whether or not axes are shared with a radio box:
+        self.toLinkList = ['None', 'All spatial', 'All Fields Plots']
+        self.LinkedVar = Tk.IntVar()
+        self.LinkedVar.set(self.oengus.MainParamDict['LinkSpatial'])
+
+        ttk.Label(
+            frm, text='Share spatial axes:').grid(
+                row=0, column=2, sticky=Tk.W)
+
+        for i in range(len(self.toLinkList)):
+            ttk.Radiobutton(
+                frm,
+                text=self.toLinkList[i],
+                variable=self.LinkedVar,
+                command=self.RadioLinked,
+                value=i).grid(
+                    row=1+i, column=2, sticky=Tk.N)
+
         ttk.Checkbutton(
             frm, text="Aspect = 1",
             variable=self.AspectVar).grid(
@@ -209,6 +227,18 @@ class SettingsFrame(Tk.Toplevel):
             frm, text="Horizontal Cbars",
             variable=self.CbarOrientation).grid(
                 row=16, sticky=Tk.W)
+
+    def RadioLinked(self, *args):
+        # If the shared axes are changed, the whole plot must be redrawn
+        if self.LinkedVar.get() == self.oengus.MainParamDict['LinkSpatial']:
+            pass
+        else:
+            self.oengus.MainParamDict['LinkSpatial'] = self.LinkedVar.get()
+            for i in range(self.oengus.MainParamDict['NumOfRows']):
+                for j in range(self.oengus.MainParamDict['NumOfCols']):
+                    self.oengus.SubPlotList[i][j].link_handler()
+                    self.oengus.SubPlotList[i][j].refresh()
+            self.oengus.canvas.draw()
 
     def AspectVarChanged(self, *args):
         if self.AspectVar.get() == self.main_params['ImageAspect']:
@@ -255,12 +285,13 @@ class SettingsFrame(Tk.Toplevel):
             self.oengus.canvas.draw()
 
     def xRelChanged(self, *args):
+        pass
         # If the shared axes are changed, the whole plot must be redrawn
-        if self.xRelVar.get() == self.main_params['xLimsRelative']:
-            pass
-        else:
-            self.main_params['xLimsRelative'] = self.xRelVar.get()
-            self.parent.RenewCanvas()
+        # if self.xRelVar.get() == self.main_params['xLimsRelative']:
+        #    pass
+        # else:
+        #    self.main_params['xLimsRelative'] = self.xRelVar.get()
+        #    self.parent.RenewCanvas()
 
     def CmapChanged(self, *args):
         # Note here that Tkinter passes an event object to onselect()

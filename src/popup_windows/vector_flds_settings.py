@@ -344,7 +344,7 @@ class VectorFieldsSettings(Tk.Toplevel):
             pass
         else:
             self.params['twoD'] = self.TwoDVar.get()
-            self.params['spatial_y'] = self.TwoDVar.get()
+
             # Make sure only one dimension checked
             if self.params['twoD']:
                 if self.params['show_x']:
@@ -356,6 +356,8 @@ class VectorFieldsSettings(Tk.Toplevel):
                     self.ShowZVar.set(0)
                     self.params['show_z'] = 0
             self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
 

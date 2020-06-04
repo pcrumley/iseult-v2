@@ -299,8 +299,11 @@ class Oengus():
 
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
+                self.SubPlotList[i][j].build_axes()
+
+        for i in range(self.MainParamDict['NumOfRows']):
+            for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()  # self.sim, -1)
-                self.SubPlotList[i][j].save_home()
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
@@ -319,8 +322,34 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].go_home()
-        self.tkApp.toolbar.update()
+        if self.interactive:
+            self.tkApp.toolbar.update()
         self.canvas.draw()
+
+    def link_axes(self, ax, ax_type=None, subplot=None):
+        ax_info = None
+        lims = None
+        dtype = None
+        if ax_type == 'x':
+            ax_info = subplot.x_axis_info
+            lims = ax.get_xlim()
+        if ax_type == 'y':
+            ax_info = subplot.y_axis_info
+            lims = ax.get_ylim()
+
+        if ax_info is not None:
+            dtype = ax_info['data_ax']
+            for elm in subplot.get_linked_ax():
+                if elm['data_ax'] == dtype:
+                    i, j = elm['pos']
+                    if elm['axes'] == 'x':
+                        cur_lim = self.SubPlotList[i][j].axes.get_xlim()
+                        if (lims[0] != cur_lim[0] and lims[1] != cur_lim[1]):
+                            self.SubPlotList[i][j].axes.set_xlim(lims)
+                    elif elm['axes'] == 'y':
+                        cur_lim = self.SubPlotList[i][j].axes.get_ylim()
+                        if (lims[0] != cur_lim[0] and lims[1] != cur_lim[1]):
+                            self.SubPlotList[i][j].axes.set_ylim(lims)
 
     def draw_output(self):
         for i in range(self.MainParamDict['NumOfRows']):
@@ -328,7 +357,8 @@ class Oengus():
                 self.SubPlotList[i][j].save_axes_pos()
                 self.SubPlotList[i][j].refresh()
                 self.SubPlotList[i][j].load_axes_pos()
-        self.tkApp.toolbar.update()
+        if self.interactive:
+            self.tkApp.toolbar.update()
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]

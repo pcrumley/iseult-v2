@@ -6,7 +6,7 @@ from new_cnorms import PowerNormWithNeg, PowerNormFunc
 import matplotlib.colors as mcolors
 import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
-
+from functools import partial
 
 class iseultPlot:
     '''The base class that all of the subplots must be subclasses of.
@@ -26,6 +26,8 @@ class iseultPlot:
         'interpolation': 'nearest',
         'face_color': 'gainsboro'}
 
+    _linked_axes = []
+
     def __init__(self, parent, pos, param_dict):
         self.param_dict = {}
         self.param_dict.update(param_dict)
@@ -36,9 +38,10 @@ class iseultPlot:
         self._zoom_x_max = None
         self._zoom_y_min = None
         self._zoom_y_max = None
-
         self.home_x = None
         self.home_y = None
+        self.x_axis_info = None
+        self.y_axis_info = None
 
     @property
     def annotate_kwargs(self):
@@ -95,10 +98,23 @@ class iseultPlot:
                 self.parent.axes_extent[0]:self.parent.axes_extent[1],
                 self.parent.axes_extent[2]:self.parent.axes_extent[3]])
 
+        self.axes.callbacks.connect(
+            'xlim_changed',
+            partial(
+                self.parent.link_axes,
+                ax_type='x',
+                subplot=self))
+        self.axes.callbacks.connect(
+            'ylim_changed',
+            partial(
+                self.parent.link_axes,
+                ax_type='y',
+                subplot=self))
         self.axC = self.figure.add_subplot(
             self.gs[
                 self.parent.cbar_extent[0]:self.parent.cbar_extent[1],
                 self.parent.cbar_extent[2]:self.parent.cbar_extent[3]])
+        self.axC.set_navigate(False)
 
         # Technically I should use the colorbar class here,
         # but I found it annoying in some of it's limitations.
@@ -234,8 +250,8 @@ class iseultPlot:
     def go_home(self):
         self.axes.set_xlim(self.home_x)
         self.axes.set_ylim(self.home_y)
-    def load_axes_pos(self):
 
+    def load_axes_pos(self):
         if self._zoom_x_min is not None:
             self.axes.set_xlim(left=self._zoom_x_min)
         if self._zoom_x_max is not None:
@@ -246,6 +262,34 @@ class iseultPlot:
 
         if self._zoom_y_max is not None:
             self.axes.set_ylim(top=self._zoom_y_max)
+
+    @classmethod
+    def link_up(cls, payload):
+        if payload is not None:
+            cls._linked_axes.append(payload)
+
+    @classmethod
+    def unlink(cls, pos):
+        tmpList = []
+        for elm in cls._linked_axes:
+            if elm['pos'][0] == pos[0] and elm['pos'][1] == pos[1]:
+                pass
+            else:
+                tmpList.append(elm)
+        cls._linked_axes = tmpList
+
+    @classmethod
+    def get_linked_ax(cls):
+        return cls._linked_axes
+
+    def link_handler(self):
+        raise NotImplementedError
+
+    def axis_info(self):
+        # A function that should return None if the x-axis are not spatial
+        # otherwise it should set x_axis_info to
+        # {'data_ax': val, 'pos': self.pos, 'axes': 'x'}
+        raise NotImplementedError
 
     def remove(self):
         try:

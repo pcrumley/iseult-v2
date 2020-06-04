@@ -51,16 +51,41 @@ class vectorFldsPlot(iseultPlot):
     gradient = np.vstack((gradient, gradient))
 
     def __init__(self, parent, pos, param_dict):
-        self.param_dict = {}
-        self.param_dict.update(super().plot_param_dict)
-        self.param_dict.update(self.plot_param_dict)
-        self.param_dict.update(param_dict)
-        self.pos = pos
-
+        tmp_dict = {}
+        tmp_dict.update(self.plot_param_dict)
+        tmp_dict.update(param_dict)
+        iseultPlot.__init__(self, parent, pos, tmp_dict)
         self.chart_type = 'VectorFlds'
-        self.changedD = False
-        self.parent = parent
-        self.figure = self.parent.figure
+
+    def axis_info(self):
+        if self.parent.MainParamDict['LinkSpatial'] != 0:
+            self.x_axis_info = {'data_ax': 'x', 'pos': self.pos, 'axes': 'x'}
+
+            if self.param_dict['twoD']:
+                if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+                    self.y_axis_info = {
+                        'data_ax': 'y',
+                        'pos': self.pos,
+                        'axes': 'y'
+                    }
+                elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z
+                    self.y_axis_info = {
+                        'data_ax': 'z',
+                        'pos': self.pos,
+                        'axes': 'y'
+                    }
+            else:
+                self.y_axis_info = None
+        else:
+            self.x_axis_info = None
+            self.y_axis_info = None
+
+    def link_handler(self):
+        # First unlink this plot
+        iseultPlot.unlink(self.pos)
+        self.axis_info()
+        iseultPlot.link_up(self.x_axis_info)
+        iseultPlot.link_up(self.y_axis_info)
 
     def draw(self, sim=None, n=None):
         if sim is None:
@@ -70,7 +95,6 @@ class vectorFldsPlot(iseultPlot):
         self.istep = sim.get_data(n, data_class='param', attribute='istep')
 
         # Make the plots
-        self.build_axes()
         if self.param_dict['twoD']:
 
             self.image = self.axes.imshow(
@@ -145,7 +169,6 @@ class vectorFldsPlot(iseultPlot):
                     fld=self.param_dict['field_type'],
                     component='z')
 
-
             # Make the 1-D plots
             self.line_x = self.axes.plot([1, 1], [-0.5, 0.5])
             self.line_y = self.axes.plot([1, 1], [-0.5, 0.5])
@@ -198,6 +221,7 @@ class vectorFldsPlot(iseultPlot):
 
         self.update_labels_and_colors(sim, n)
         self.refresh(sim=sim, n=n)
+        self.link_handler()
 
     def refresh(self, sim=None, n=None):
         '''This is a function that will be called only if self.axes already

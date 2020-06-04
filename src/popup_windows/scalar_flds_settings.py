@@ -309,8 +309,9 @@ class ScalarFieldsSettings(Tk.Toplevel):
             pass
         else:
             self.params['twoD'] = self.TwoDVar.get()
-            self.params['spatial_y'] = self.TwoDVar.get()
             self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
 

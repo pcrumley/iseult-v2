@@ -2,6 +2,7 @@ import numpy as np
 import new_cmaps
 from base_plot import iseultPlot
 
+
 class scalarFldsPlot(iseultPlot):
     # A dictionary of all of the parameters for this plot with the
     # default parameters
@@ -32,15 +33,41 @@ class scalarFldsPlot(iseultPlot):
         'face_color': 'gainsboro'}
 
     def __init__(self, parent, pos, param_dict):
-        self.param_dict = {}
-        self.param_dict.update(self.plot_param_dict)
-        self.param_dict.update(param_dict)
-        self.pos = pos
-
+        tmp_dict = {}
+        tmp_dict.update(self.plot_param_dict)
+        tmp_dict.update(param_dict)
+        iseultPlot.__init__(self, parent, pos, tmp_dict)
         self.chart_type = 'ScalarFlds'
-        self.changedD = False
-        self.parent = parent
-        self.figure = self.parent.figure
+
+    def axis_info(self):
+        if self.parent.MainParamDict['LinkSpatial'] != 0:
+            self.x_axis_info = {'data_ax': 'x', 'pos': self.pos, 'axes': 'x'}
+
+            if self.param_dict['twoD']:
+                if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+                    self.y_axis_info = {
+                        'data_ax': 'y',
+                        'pos': self.pos,
+                        'axes': 'y'
+                    }
+                elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z
+                    self.y_axis_info = {
+                        'data_ax': 'z',
+                        'pos': self.pos,
+                        'axes': 'y'
+                    }
+            else:
+                self.y_axis_info = None
+        else:
+            self.x_axis_info = None
+            self.y_axis_info = None
+
+    def link_handler(self):
+        # First unlink this plot
+        iseultPlot.unlink(self.pos)
+        self.axis_info()
+        iseultPlot.link_up(self.x_axis_info)
+        iseultPlot.link_up(self.y_axis_info)
 
     def draw(self, sim=None, n=None):
         if sim is None:
@@ -72,7 +99,6 @@ class scalarFldsPlot(iseultPlot):
 
         # Now that the data is loaded, start making the plots
         # Make the plots
-        self.build_axes()
         if self.param_dict['twoD']:
             self.image = self.axes.imshow(
                 np.array([[1, 1], [1, 1]]),
@@ -154,8 +180,7 @@ class scalarFldsPlot(iseultPlot):
                 size=self.parent.MainParamDict['AxLabelSize'])
 
         self.refresh(sim=sim, n=n)
-
-
+        self.link_handler()
 
     def refresh(self, sim=None, n=None):
         '''This is a function that will be called only if self.axes already

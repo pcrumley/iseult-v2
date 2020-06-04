@@ -114,7 +114,7 @@ class picSim(object):
                     except ValueError:
                         if elm.split('.')[-1] == '***':
                             has_star += 1
-                path_dict[key] =  tmp_list
+                path_dict[key] = tmp_list
             # GET THE NUMBERS THAT HAVE ALL SET OF FILES:
             list_of_files = path_dict[output_file_keys[0]]
             all_there = set(elm.split('.')[-1] for elm in list_of_files)

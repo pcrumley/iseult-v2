@@ -33,8 +33,6 @@ class phasePlot(iseultPlot):
         'cmap': 'None',
         'set_y_min': False,
         'set_y_max': False,
-        'spatial_x': True,
-        'spatial_y': False,
         'UseDivCmap': False,
         'interpolation': 'nearest',
         'face_color': 'gainsboro'}
@@ -44,14 +42,46 @@ class phasePlot(iseultPlot):
     gradient = np.vstack((gradient, gradient))
 
     def __init__(self, parent, pos, param_dict):
-        self.param_dict = {}
-        self.param_dict.update(super().plot_param_dict)
-        self.param_dict.update(self.plot_param_dict)
-        self.param_dict.update(param_dict)
-        self.pos = pos
-        self.parent = parent
+        tmp_dict = {}
+        tmp_dict.update(self.plot_param_dict)
+        tmp_dict.update(param_dict)
+        iseultPlot.__init__(self, parent, pos, tmp_dict)
         self.chart_type = 'PhasePlot'
-        self.figure = self.parent.figure
+
+    def axis_info(self):
+        if self.parent.MainParamDict['LinkSpatial'] == 1:
+            for val in ['x', 'y', 'z']:
+                if self.param_dict['x_val'] == val:
+                    self.x_axis_info = {
+                        'data_ax': val,
+                        'pos': self.pos,
+                        'axes': 'x'
+                    }
+                    break
+            else:
+                self.x_axis_info = None
+
+            for val in ['x', 'y', 'z']:
+                if self.param_dict['y_val'] == val:
+                    self.x_axis_info = {
+                        'data_ax': val,
+                        'pos': self.pos,
+                        'axes': 'y'
+                    }
+                    break
+            else:
+                self.y_axis_info = None
+        else:
+            self.x_axis_info = None
+            self.y_axis_info = None
+
+    def link_handler(self):
+        # First unlink this plot
+        iseultPlot.unlink(self.pos)
+        self.axis_info()
+
+        iseultPlot.link_up(self.x_axis_info)
+        iseultPlot.link_up(self.y_axis_info)
 
     def update_labels_and_colors(self):
         if self.param_dict['prtl_type'] == 'ions':  # protons
@@ -75,7 +105,6 @@ class phasePlot(iseultPlot):
     def draw(self, sim=None, n=None):
 
         self.IntRegionLines = []
-        self.build_axes()
 
         self.image = self.axes.imshow(
             [[np.nan, np.nan], [np.nan, np.nan]],
@@ -105,6 +134,7 @@ class phasePlot(iseultPlot):
 
         self.update_labels_and_colors()
         self.refresh(sim=sim, n=n)
+        self.link_handler()
 
     def refresh(self, sim=None, n=None):
         '''This is a function that will be called only if self.axes already
@@ -171,6 +201,8 @@ class phasePlot(iseultPlot):
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
 
+            xmin *= c_omp**-1
+            xmax *= c_omp**-1
             # set the colors
             self.image.set_data(hist2d)
             self.image.set_extent([xmin, xmax, ymin, ymax])

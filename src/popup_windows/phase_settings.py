@@ -234,6 +234,7 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['y_val'] = self.yval_var.get()
+            self.subplot.axis_info()
             self.subplot.refresh()
             self.subplot.update_labels_and_colors()
             self.parent.oengus.canvas.draw()
@@ -243,7 +244,7 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['x_val'] = self.xval_var.get()
-
+            self.subplot.axis_info()
             self.subplot.refresh()
             self.subplot.update_labels_and_colors()
             self.parent.oengus.canvas.draw()
