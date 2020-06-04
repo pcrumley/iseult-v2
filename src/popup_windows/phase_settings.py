@@ -52,7 +52,7 @@ class phaseSettings(Tk.Toplevel):
         self.ctypevar.set(self.subplot.chart_type)  # default value
         self.ctypevar.trace('w', self.ctypeChanged)
 
-        ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column = 0)
+        ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column=0)
         ttk.OptionMenu(
             frm, self.ctypevar,
             self.subplot.chart_type,
@@ -66,9 +66,9 @@ class phaseSettings(Tk.Toplevel):
         self.quantity.trace('w', self.quantityChanged)
 
         cur_sim = self.parent.oengus.sims[self.params['sim_num']]
-        avail_prtls.get_available_quantities()['prtls']
+        avail_prtls = cur_sim.get_available_quantities()['prtls']
         ttk.Label(frm, text="Choose Particle:").grid(
-            row=2, sticky = Tk.W)
+            row=2, sticky=Tk.W)
         ttk.OptionMenu(
             frm, self.quantity,
             self.params['prtl_type'],
@@ -145,7 +145,7 @@ class phaseSettings(Tk.Toplevel):
         self.Zmax.set(str(self.params['v_max']))
 
         ttk.Checkbutton(
-            frm, text ='Set v min',
+            frm, text='Set v min',
             variable=self.setZminVar).grid(
                 row=3, column=2, sticky=Tk.W)
         ttk.Entry(
