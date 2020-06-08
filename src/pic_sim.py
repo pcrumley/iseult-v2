@@ -4,7 +4,7 @@ import os
 import h5py
 import yaml
 import numpy as np
-from my_parser import ExprParser
+from my_parser import ExprParser, AttributeNotFound
 
 
 def h5_getter(filepath, attribute, prtl_stride=None):
@@ -247,17 +247,17 @@ class picSim(object):
                 'hist_cbar_label': ''
             }
             try:
-                f_end = self._fnum[n]
+                f_suffix = self._fnum[n]
                 if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
                     prtl = self._cfgDict['prtls'][lookup['prtl_type']]
                     if lookup['attribute'] in prtl['attrs'].keys():
                         hash_key = 'prtls' + lookup['prtl_type']
-                        hash_key += lookup['attribute'] + f_end
+                        hash_key += lookup['attribute'] + f_suffix
                         if hash_key not in self._data_dictionary:
                             expr = prtl['attrs'][lookup['attribute']]['expr']
                             if expr is not None:
                                 self.parser.string = expr
-                                self.parser.f_end = f_end
+                                self.parser.f_suffix = f_suffix
                                 val = self.parser.getValue()
                                 self._data_dictionary[hash_key] = val
                         response_dict['data'] = self._data_dictionary[hash_key]
@@ -267,21 +267,25 @@ class picSim(object):
                         response_dict['hist_cbar_label'] = cbar_label
             except IndexError:
                 pass
+            except AttributeNotFound:
+                pass
             return response_dict
 
         elif lookup['data_class'] == 'param':
             try:
-                f_end = self._fnum[n]
+                f_suffix = self._fnum[n]
                 expr = self._cfgDict['param'][lookup['attribute']]['expr']
                 if expr is not None:
                     hash_key = 'param' + lookup['attribute']
                     if hash_key not in self._data_dictionary:
                         self.parser.string = expr
-                        self.parser.f_end = f_end
+                        self.parser.f_suffix = f_suffix
                         self._data_dictionary[hash_key] = np.squeeze(
                             self.parser.getValue())
                     return self._data_dictionary[hash_key]
             except IndexError:
+                pass
+            except AttributeNotFound:
                 pass
             return 1.0
 
@@ -292,19 +296,21 @@ class picSim(object):
             }
 
             try:
-                f_end = self._fnum[n]
+                f_suffix = self._fnum[n]
                 if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
                     fld = self._cfgDict['scalar_flds'][lookup['fld']]
-                    hash_key = 'scalar_flds' + lookup['fld'] + f_end
+                    hash_key = 'scalar_flds' + lookup['fld'] + f_suffix
                     if hash_key not in self._data_dictionary:
                         expr = fld['expr']
                         self.parser.string = expr
-                        self.parser.f_end = f_end
+                        self.parser.f_suffix = f_suffix
                         val = self.parser.getValue()
                         self._data_dictionary[hash_key] = val
                     response_dict['data'] = self._data_dictionary[hash_key]
                     response_dict['label'] = fld['label']
             except IndexError:
+                pass
+            except AttributeNotFound:
                 pass
             return response_dict
 
@@ -315,16 +321,16 @@ class picSim(object):
                 'label': ''
             }
             try:
-                f_end = self._fnum[n]
+                f_suffix = self._fnum[n]
                 if lookup['fld'] in self._cfgDict['vec_flds'].keys():
                     fld = self._cfgDict['vec_flds'][lookup['fld']]
                     if lookup['component'] in fld.keys():
                         hash_key = 'vec_flds' + lookup['fld']
-                        hash_key = hash_key + lookup['component'] + f_end
+                        hash_key = hash_key + lookup['component'] + f_suffix
                         if hash_key not in self._data_dictionary:
                             expr = fld[lookup['component']]['expr']
                             self.parser.string = expr
-                            self.parser.f_end = f_end
+                            self.parser.f_suffix = f_suffix
                             val = self.parser.getValue()
                             self._data_dictionary[hash_key] = val
                         response_dict['data'] = self._data_dictionary[hash_key]
@@ -332,6 +338,8 @@ class picSim(object):
                         label = fld[lookup['component']]['label']
                         response_dict['label'] = label
             except IndexError:
+                pass
+            except AttributeNotFound:
                 pass
             return response_dict
 
@@ -341,17 +349,19 @@ class picSim(object):
                 'label': ''
             }
             try:
-                f_end = self._fnum[n]
-                hash_key = 'axes' + lookup['attribute'] + f_end
+                f_suffix = self._fnum[n]
+                hash_key = 'axes' + lookup['attribute'] + f_suffix
                 if hash_key not in self._data_dictionary:
                     expr = self._cfgDict['axes'][lookup['attribute']]['expr']
                     self.parser.string = expr
-                    self.parser.f_end = f_end
+                    self.parser.f_suffix = f_suffix
                     self._data_dictionary[hash_key] = self.parser.getValue()
                 response_dict['data'] = self._data_dictionary[hash_key]
                 label = self._cfgDict['axes'][lookup['attribute']]['label']
                 response_dict['label'] = label
             except IndexError:
+                pass
+            except AttributeNotFound:
                 pass
             return response_dict
 

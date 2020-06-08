@@ -66,12 +66,21 @@ _FUNCTIONS = {
 }
 
 
+class AttributeNotFound(Exception):
+    """raised when it cannot find a h5_attr in the file listed in the yml"""
+    pass
+
+
 def h5_getter(filepath, attribute, prtl_stride=None):
     with h5py.File(filepath, 'r') as f:
-        if prtl_stride is not None:
-            return f[attribute][::prtl_stride]
+        if attribute in f.keys():
+            if prtl_stride is not None:
+                return f[attribute][::prtl_stride]
+            else:
+                return f[attribute][:]
         else:
-            return f[attribute][:]
+            print(f'{attribute} not found in {filepath}')
+            raise AttributeNotFound
 
 
 class ExprParser:
@@ -80,7 +89,7 @@ class ExprParser:
         self.index = 0
         self.__vars = {}
         self.vars = vars
-        self.f_end = ''
+        self.f_suffix = ''
 
     def getValue(self, expr=None):
         if expr is not None:
@@ -180,7 +189,7 @@ class ExprParser:
 
                 if denominator == 0:
                     raise Exception(
-                        "Division by 0 (occured at index " + str(div_index) + ")"
+                        f'Division by 0 (occured at index {div_index})'
                     )
                 values.append(1.0 / denominator)
             else:
@@ -266,7 +275,7 @@ class ExprParser:
             return constant
         fpath = self.vars.get(var, None)
 
-        value = h5_getter(fpath+self.f_end, var)
+        value = h5_getter(fpath+self.f_suffix, var)
         return value
         # if len(value) > 0:
 
@@ -305,6 +314,7 @@ class ExprParser:
                     + char + "'. What's up with that?")
 
         return float(strValue)
+
 
 def evaluate(expression, vars=None):
     try:
