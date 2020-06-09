@@ -168,13 +168,13 @@ prtls:
         expr: we
       x:
         label: $x$
-        expr: xe
+        expr: xe * pow(c_omp, -1)
       y:
         label: $y$
-        expr: ye
+        expr: ye * pow(c_omp, -1)
       z:
         label: $z$
-        expr: ze
+        expr: ze * pow(c_omp, -1)
 
   ions:
     hist_cbar_label: $f_i (p)$
@@ -202,13 +202,13 @@ prtls:
         expr: wi
       x:
         label: $x$
-        expr: xi
+        expr: xi * pow(c_omp, -1)
       y:
         label: $y$
-        expr: yi
+        expr: yi * pow(c_omp, -1)
       z:
         label: $z$
-        expr: zi
+        expr: zi * pow(c_omp, -1)
 
 scalar_flds:
   B_total:

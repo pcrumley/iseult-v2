@@ -365,6 +365,28 @@ class picSim(object):
                 pass
             return response_dict
 
+        elif lookup['data_class'] == 'scalar':
+            response_dict = {
+                'data': np.arange(2),
+                'label': ''
+            }
+            try:
+                f_suffix = self._fnum[n]
+                hash_key = 'axes' + lookup['attribute'] + f_suffix
+                if hash_key not in self._data_dictionary:
+                    expr = self._cfgDict['axes'][lookup['attribute']]['expr']
+                    self.parser.string = expr
+                    self.parser.f_suffix = f_suffix
+                    self._data_dictionary[hash_key] = self.parser.getValue()
+                response_dict['data'] = self._data_dictionary[hash_key]
+                label = self._cfgDict['axes'][lookup['attribute']]['label']
+                response_dict['label'] = label
+            except IndexError:
+                pass
+            except AttributeNotFound:
+                pass
+            return response_dict
+
 
 if __name__ == '__main__':
     sim = picSim(os.path.join(os.path.dirname(__file__), '../output'))

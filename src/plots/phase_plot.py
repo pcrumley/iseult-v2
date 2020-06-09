@@ -146,14 +146,11 @@ class phasePlot(iseultPlot):
         if sim is None:
             sim = self.parent.sims[self.param_dict['sim_num']]
 
-        c_omp = sim.get_data(
-            n, data_class='param',
-            attribute='c_omp')
-
         self.x_values = sim.get_data(
             n, data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
             attribute=self.param_dict['x_val'])
+
         self.y_values = sim.get_data(
             n, data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
@@ -201,8 +198,6 @@ class phasePlot(iseultPlot):
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
 
-            xmin *= c_omp**-1
-            xmax *= c_omp**-1
             # set the colors
             self.image.set_data(hist2d)
             self.image.set_extent([xmin, xmax, ymin, ymax])
