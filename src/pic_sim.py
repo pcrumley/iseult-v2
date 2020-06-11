@@ -4,6 +4,8 @@ import os
 import h5py
 import yaml
 import numpy as np
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+
 from my_parser import ExprParser, AttributeNotFound
 
 
@@ -138,7 +140,6 @@ class picSim(object):
             self.parser.string = self._cfgDict['time']
             self.parser.f_suffix = suffix
             self.time_array[i] = self.parser.getValue()
-        print(self.time_array)
 
     def clear_caches(self):
         self.refresh_directory()
@@ -234,13 +235,73 @@ class picSim(object):
 
         response_dict = {}
 
-        if lookup['data_class'] == 'prtls':
+        if lookup['data_class'] == 'scalar_v_time':
+
+            response_dict = {
+                'data': np.array([]),
+                'times': np.array([]),
+                'label': ''
+            }
+            try:
+                if n < len(self.file_list):
+                    f_suffix = self.file_list[n]
+                else:
+                    return response_dict
+
+                if lookup['scalar'] in self._cfgDict['scalars'].keys():
+                    expr = self._cfgDict['scalars'][lookup['scalar']]['expr']
+
+                    if expr is not None:
+                        hash_key = '{0}_v_time'.format(lookup['scalar'])
+                        if hash_key not in self._data_dictionary:
+                            self._data_dictionary[hash_key] = response_dict
+
+                        scalar_data = self._data_dictionary[hash_key]
+
+                        # Get the current time:
+                        self.parser.string = self._cfgDict['time']
+                        self.parser.f_suffix = f_suffix
+                        cur_time = self.parser.getValue()
+
+                        time_arr = self._data_dictionary[hash_key]['times']
+
+                        #if time_arr.take(
+                        #    time_arr.searchsorted(cur_time),
+                        #    mode='clip'
+                        #) != cur_time:
+
+                        time_arr = np.sort(np.append(time_arr, cur_time))
+                        self._data_dictionary[hash_key]['times'] = time_arr
+
+                        ind = time_arr.searchsorted(cur_time)[0]
+                        data_arr = self._data_dictionary[hash_key]['data']
+                        self.parser.string = expr
+                        val = self.parser.getValue()
+
+                        data_arr = np.append(
+                            np.append(
+                                data_arr[0:ind], val),
+                            data_arr[ind:])
+                        self._data_dictionary[hash_key]['data'] = data_arr
+
+                    response_dict = self._data_dictionary[hash_key]
+                    label = self._cfgDict['scalars'][lookup['scalar']]['label']
+                    response_dict['label'] = label
+
+            except IndexError:
+                pass
+            except AttributeNotFound:
+                pass
+            return response_dict
+
+        elif lookup['data_class'] == 'prtls':
             response_dict = {
                 'data': np.array([]),
                 'axis_label': '',
                 'hist_cbar_label': ''
             }
             try:
+
                 f_suffix = self.file_list[n]
                 if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
                     prtl = self._cfgDict['prtls'][lookup['prtl_type']]
@@ -383,13 +444,17 @@ class picSim(object):
 
 
 if __name__ == '__main__':
-    sim = picSim(os.path.join(os.path.dirname(__file__), '../output'))
+    sim = picSim(dirpath=os.path.join(os.path.dirname(__file__), '../output'))
+    print(len(sim))
     print(
         sim.get_data(
-            n=15, data_class='prtls', prtl_type='ions', attribute='KE'))
+            n=2, data_class='prtls', prtl_type='ions', attribute='KE'))
     print(
         sim.get_data(
-            n=15, data_class='prtls', prtl_type='electrons', attribute='z'))
-    print(sim.get_data(n=15, data_class='vec_flds', fld='E', component='x'))
-    print(sim.get_data(n=15, data_class='scalar_flds', fld='density'))
-    print(sim.get_data(n=15, data_class='param', attribute='c_omp'))
+            n=2, data_class='prtls', prtl_type='electrons', attribute='z'))
+    print(sim.get_data(n=2, data_class='vec_flds', fld='E', component='x'))
+    print(sim.get_data(n=2, data_class='scalar_flds', fld='density'))
+    print(sim.get_data(n=2, data_class='param', attribute='c_omp'))
+    print(sim.get_data(n=2, data_class='scalar_v_time', scalar='Total KE_e'))
+    print(sim.get_data(n=0, data_class='scalar_v_time', scalar='Total KE_e'))
+    print(sim.get_data(n=1, data_class='scalar_v_time', scalar='Total KE_e'))
