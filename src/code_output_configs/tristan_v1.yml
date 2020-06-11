@@ -233,6 +233,9 @@ scalar_flds:
     label: $E\cdot B$
     expr: ex*bx + ey*by + ez*bz
 
+# Must define out to calculate time at each output in units 1/c_omp
+time: time
+
 scalars:
   Total KE_e:
     expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
@@ -246,9 +249,6 @@ scalars:
   shock_loc:
     expr: null
     label: $x_s$
-  time:
-    expr: time
-    label: $t$
 
 vec_flds:
   B:

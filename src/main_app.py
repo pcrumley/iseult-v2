@@ -218,7 +218,7 @@ class MainApp(Tk.Tk):
         MovieDialog(self, self.oengus)
 
     def set_knob(self, value):
-        self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
+        # self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()
         # self.time_step.set_max(
         #    len(self.oengus.sims[self.playbackbar.cur_sim]))
         self.oengus.sims[self.playbackbar.cur_sim].set_time(value - 1)

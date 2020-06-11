@@ -177,9 +177,9 @@ scalars:
   shock_loc:
     expr: ''
     label: $x_s$
-  time:
-    expr: time
-    label: $t$
+
+# Must define out to calculate time at each output in units 1/c_omp
+time: time
 
 vec_flds:
   B:

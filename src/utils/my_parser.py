@@ -29,12 +29,16 @@
 import math
 import numpy as np
 import h5py
+from functools import lru_cache
 
 _CONSTANTS = {
     'pi': math.pi,
     'e': math.e,
     # 'phi': (1 + 5 ** .5) / 2
 }
+
+_fld_cache_size = 32
+_prtl_cache_size = 32
 
 _FUNCTIONS = {
     'abs': abs,
@@ -70,8 +74,25 @@ class AttributeNotFound(Exception):
     """raised when it cannot find a h5_attr in the file listed in the yml"""
     pass
 
+# A bunch of hdf5 helper functions that allow us to cache outputs.
 
-def h5_getter(filepath, attribute, prtl_stride=None):
+
+def h5_getter(filepath, attribute):
+    with h5py.File(filepath, 'r') as f:
+        if attribute in f.keys():
+            return f[attribute][:]
+        else:
+            print(f'{attribute} not found in {filepath}')
+            raise AttributeNotFound
+
+
+@lru_cache(maxsize=_fld_cache_size)
+def flds_getter(filepath, attribute):
+    self.h5_getter(filepath, attribute)
+
+
+@lru_cache(maxsize=_prtl_cache_size)
+def prtl_getter(filepath, attribute, prtl_stride=None):
     with h5py.File(filepath, 'r') as f:
         if attribute in f.keys():
             if prtl_stride is not None:
@@ -81,6 +102,15 @@ def h5_getter(filepath, attribute, prtl_stride=None):
         else:
             print(f'{attribute} not found in {filepath}')
             raise AttributeNotFound
+
+
+def get_h5attr(filepath, attribute, prtl_stride=None):
+    if filepath.split('.') == 'flds':
+        return flds_getter(filepath, attribute)
+    elif filepath.split('.') == 'prtl':
+        return prtl_getter(self, filepath, attribute, prtl_stride)
+    else:
+        return h5_getter(filepath, attribute)
 
 
 class ExprParser:
@@ -103,6 +133,10 @@ class ExprParser:
                 + self.peek() + "' at index " + str(self.index)
             )
         return value
+
+    def clear_caches(self):
+        prtl_getter.cache_clear()
+        flds_getter.cache_clear()
 
     @property
     def vars(self):
@@ -275,7 +309,7 @@ class ExprParser:
             return constant
         fpath = self.vars.get(var, None)
 
-        value = h5_getter(fpath+self.f_suffix, var)
+        value = get_h5attr(fpath+self.f_suffix, var)
         return value
         # if len(value) > 0:
 

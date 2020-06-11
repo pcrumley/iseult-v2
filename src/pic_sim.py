@@ -7,14 +7,6 @@ import numpy as np
 from my_parser import ExprParser, AttributeNotFound
 
 
-def h5_getter(filepath, attribute, prtl_stride=None):
-    with h5py.File(filepath, 'r') as f:
-        if prtl_stride is not None:
-            return f[attribute][::prtl_stride]
-        else:
-            return f[attribute][:]
-
-
 default_cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
 
@@ -32,7 +24,8 @@ class picSim(object):
         self._data_dictionary = {}
         self._name = name
         self.__cur_n = -1
-        self._fnum = 0
+        self._fnum = []  # An array that holds the suffix of all the files
+        self.time_array = []  # An array that holds the times
         self.parser = ExprParser()
         self._cfg_file = ''
         if 'iseult_conf.yml' in os.listdir(self.outdir):
@@ -58,12 +51,6 @@ class picSim(object):
             return self.__cur_n
         elif units == 'file':
             return self.file_list[self.__cur_n]
-        # elif self.units == 'lap':
-        #    self.__units = 'lap'
-        # elif self.units == 'c_ompe':
-        #    self.__units = 'c_ompe'
-        # elif self.units == 'c_ompi':
-        #    self.__units = 'c_ompi'
 
     def set_time(self, t_arg, units=None):
         if units is None:
@@ -73,11 +60,6 @@ class picSim(object):
         # THIS IS O(N) NEED IMPROVEMENT
         if units == 'file':
             self.__cur_n = self.file_list.index(t_arg)
-        #    self.__units = 'lap'
-        # elif units == 'c_ompe':
-        #    self.__unit = 'c_ompe'
-        # elif units_str == 'c_ompi':
-    #    self.__units = 'c_ompi'
 
     def get_f_numbers(self):
         """A function that gets passed a directory and simulation type
@@ -129,7 +111,7 @@ class picSim(object):
             return []
 
     def __len__(self):
-        return len(self._fnum)
+        return len(self.file_list)
 
     @property
     def cfg_file(self):
@@ -147,12 +129,24 @@ class picSim(object):
     def file_list(self):
         return self._fnum
 
+    @file_list.setter
+    def file_list(self, val):
+        self._fnum = val
+        self.time_array = np.empty(len(self._fnum))
+        self.parser.string = self._cfgDict['time']
+        for i, suffix in enumerate(self._fnum):
+            self.parser.string = self._cfgDict['time']
+            self.parser.f_suffix = suffix
+            self.time_array[i] = self.parser.getValue()
+        print(self.time_array)
+
     def clear_caches(self):
-        self._fnum = self.get_f_numbers()
+        self.refresh_directory()
+        self.parser.clear_caches()
         self._data_dictionary = {}
 
     def refresh_directory(self):
-        self._fnum = self.get_f_numbers()
+        self.file_list = self.get_f_numbers()
 
     def try_default_sim_types(self):
         default_sim_types = {}
@@ -247,7 +241,7 @@ class picSim(object):
                 'hist_cbar_label': ''
             }
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 if lookup['prtl_type'] in self._cfgDict['prtls'].keys():
                     prtl = self._cfgDict['prtls'][lookup['prtl_type']]
                     if lookup['attribute'] in prtl['attrs'].keys():
@@ -273,7 +267,7 @@ class picSim(object):
 
         elif lookup['data_class'] == 'param':
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 expr = self._cfgDict['param'][lookup['attribute']]['expr']
                 if expr is not None:
                     hash_key = 'param' + lookup['attribute']
@@ -296,7 +290,7 @@ class picSim(object):
             }
 
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 if lookup['fld'] in self._cfgDict['scalar_flds'].keys():
                     fld = self._cfgDict['scalar_flds'][lookup['fld']]
                     hash_key = 'scalar_flds' + lookup['fld'] + f_suffix
@@ -321,7 +315,7 @@ class picSim(object):
                 'label': ''
             }
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 if lookup['fld'] in self._cfgDict['vec_flds'].keys():
                     fld = self._cfgDict['vec_flds'][lookup['fld']]
                     if lookup['component'] in fld.keys():
@@ -349,7 +343,7 @@ class picSim(object):
                 'label': ''
             }
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 hash_key = 'axes' + lookup['attribute'] + f_suffix
                 if hash_key not in self._data_dictionary:
                     expr = self._cfgDict['axes'][lookup['attribute']]['expr']
@@ -371,7 +365,7 @@ class picSim(object):
                 'label': ''
             }
             try:
-                f_suffix = self._fnum[n]
+                f_suffix = self.file_list[n]
                 hash_key = 'axes' + lookup['attribute'] + f_suffix
                 if hash_key not in self._data_dictionary:
                     expr = self._cfgDict['axes'][lookup['attribute']]['expr']
