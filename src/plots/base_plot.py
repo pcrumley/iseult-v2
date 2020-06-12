@@ -59,10 +59,10 @@ class iseultPlot:
                 'verticalalignment': 'top',
                 'size': self.parent.MainParamDict['annotateTextSize']}
 
-    def draw(self, sim=None, n=None):
+    def draw(self):
         raise NotImplementedError
 
-    def refresh(self, sim=None, n=None):
+    def refresh(self):
         raise NotImplementedError
 
     def norm(self, vmin=None, vmax=None):

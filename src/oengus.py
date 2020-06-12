@@ -11,7 +11,7 @@ import new_cmaps
 from scalar_flds_plot import scalarFldsPlot
 from vector_flds_plot import vectorFldsPlot
 from phase_plot import phasePlot
-
+from scalar_v_time import scalar_vs_timePlot
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
@@ -166,7 +166,7 @@ class Oengus():
             while tmp_num < len(self.sims):
                 self.pop_sim()
 
-    def calc_slices(self, ax, sim, n):
+    def calc_slices(self, ax, sim, n=None):
         # FIND THE SLICE
         attr, param = 'x', 'xSlice'
         if ax == 'y':
@@ -231,15 +231,13 @@ class Oengus():
         # Create the list of all of subplot wrappers
         self.SubPlotList = [[] for i in range(self.MainParamDict['MaxRows'])]
         self.showingCPUs = False
-        self.showingTotEnergy = False
+        # self.showingTotEnergy = False
         self.plot_types_dict = {
             'ScalarFlds': scalarFldsPlot,
             'VectorFlds': vectorFldsPlot,
-            'PhasePlot': phasePlot
-            # 'FieldsPlot': FieldsPanel,
-            # 'DensityPlot': DensPanel,
+            'PhasePlot': phasePlot,
+            'ScalarVsTime': scalar_vs_timePlot
             # 'SpectraPlot': SpectralPanel,
-            # 'MagPlots': BPanel,
             # 'FFTPlots': FFTPanel,
             # 'TotalEnergyPlot': TotEnergyPanel,
             # 'Moments': MomentsPanel
@@ -252,7 +250,7 @@ class Oengus():
                     self.SubPlotList[i].append(
                         self.plot_types_dict[tmpchart_type](
                             self, (i, j), self.cfgDict[tmp_str]))
-                    self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
+                    # self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
                     try:
                         show_cpus = self.cfgDict[tmp_str]['show_cpu_domains']
                         self.showingCPUs += show_cpus

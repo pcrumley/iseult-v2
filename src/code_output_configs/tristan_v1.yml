@@ -239,7 +239,7 @@ time: time
 scalars:
   Total KE_e:
     expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
-    label: ''
+    label: r'${\rm KE_e}$'
   Total KE_i:
     expr: sum(sqrt(ui * ui + vi * vi + wi * wi + 1) -1) * stride * abs(qi) * c * c * mi / me
     label: ''

@@ -4,22 +4,20 @@ import os
 import h5py
 import yaml
 import numpy as np
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-
 from my_parser import ExprParser, AttributeNotFound
 
 
-default_cfg = os.path.join(
+_default_cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
 
 
 class picSim(object):
-    available_units = ['file']  # ['c_ompe', 'file', 'c_ompi']
+    available_units = ['file', 'c_ompe']  #, 'c_ompi']
 
     def __init__(self,
                  name=None,
                  dirpath=os.curdir,
-                 cfg_file=default_cfg):
+                 cfg_file=_default_cfg):
 
         self._outdir = dirpath
         self._xtra_stride = 1
@@ -53,6 +51,8 @@ class picSim(object):
             return self.__cur_n
         elif units == 'file':
             return self.file_list[self.__cur_n]
+        elif units == 'c_ompe':
+            return self.time_array[self.__cur_n]
 
     def set_time(self, t_arg, units=None):
         if units is None:

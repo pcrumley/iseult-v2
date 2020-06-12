@@ -69,9 +69,8 @@ class scalarFldsPlot(iseultPlot):
         iseultPlot.link_up(self.x_axis_info)
         iseultPlot.link_up(self.y_axis_info)
 
-    def draw(self, sim=None, n=None):
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+    def draw(self):
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
         if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:
@@ -86,15 +85,15 @@ class scalarFldsPlot(iseultPlot):
         self.dens_color = new_cmaps.cmap_to_hex(0.5, self.cmap)
 
         # get c_omp and istep to convert cells to physical units
-        self.c_omp = sim.get_data(n, data_class='param', attribute='c_omp')
-        self.istep = sim.get_data(n, data_class='param', attribute='istep')
+        self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
+        self.istep = sim.get_data(data_class='param', attribute='istep')
 
         # FIND THE SLICE
-        self.ySlice = self.parent.calc_slices('y', sim, n)
-        self.zSlice = self.parent.calc_slices('z', sim, n)
+        self.ySlice = self.parent.calc_slices('y', sim)
+        self.zSlice = self.parent.calc_slices('z', sim)
 
         self.scalar_fld = sim.get_data(
-            n, data_class='scalar_flds',
+            data_class='scalar_flds',
             fld=self.param_dict['flds_type'])
 
         # Now that the data is loaded, start making the plots
@@ -155,7 +154,7 @@ class scalarFldsPlot(iseultPlot):
         else:
             self.axC.set_visible(False)
             self.xaxis = sim.get_data(
-                n, data_class='axes',
+                data_class='axes',
                 attribute='x')
 
             self.linedens = self.axes.plot(
@@ -179,35 +178,34 @@ class scalarFldsPlot(iseultPlot):
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
-        self.refresh(sim=sim, n=n)
+        self.refresh()
         self.link_handler()
 
-    def refresh(self, sim=None, n=None):
+    def refresh(self):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference between
         this and last time, is that we won't actually do any drawing in the
         plot. The plot will be redrawn after all subplots data is changed. '''
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
         self.scalar_fld = sim.get_data(
-            n, data_class='scalar_flds',
+            data_class='scalar_flds',
             fld=self.param_dict['flds_type'])
         self.xaxis = sim.get_data(
-            n, data_class='axes',
+            data_class='axes',
             attribute='x')
         self.c_omp = sim.get_data(
-            n, data_class='param',
+            data_class='param',
             attribute='c_omp')
         self.istep = sim.get_data(
-            n, data_class='param',
+            data_class='param',
             attribute='istep')
 
         # FIND THE SLICE
 
-        self.ySlice = self.parent.calc_slices('y', sim, n)
-        self.zSlice = self.parent.calc_slices('z', sim, n)
+        self.ySlice = self.parent.calc_slices('y', sim)
+        self.zSlice = self.parent.calc_slices('z', sim)
 
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler

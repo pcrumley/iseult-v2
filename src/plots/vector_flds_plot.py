@@ -87,12 +87,11 @@ class vectorFldsPlot(iseultPlot):
         iseultPlot.link_up(self.x_axis_info)
         iseultPlot.link_up(self.y_axis_info)
 
-    def draw(self, sim=None, n=None):
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+    def draw(self):
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
-        self.c_omp = sim.get_data(n, data_class='param', attribute='c_omp')
-        self.istep = sim.get_data(n, data_class='param', attribute='istep')
+        self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
+        self.istep = sim.get_data(data_class='param', attribute='istep')
 
         # Make the plots
         if self.param_dict['twoD']:
@@ -148,24 +147,24 @@ class vectorFldsPlot(iseultPlot):
         else:
             self.axC.set_visible(False)
             self.xaxis = sim.get_data(
-                n, data_class='axes',
+                data_class='axes',
                 attribute='x')
 
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='x')
 
             if self.param_dict['show_y']:
                 self.vec_y = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='y')
 
             if self.param_dict['show_z']:
                 self.vec_z = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='z')
 
@@ -219,11 +218,11 @@ class vectorFldsPlot(iseultPlot):
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
-        self.update_labels_and_colors(sim, n)
-        self.refresh(sim=sim, n=n)
+        self.update_labels_and_colors()
+        self.refresh()
         self.link_handler()
 
-    def refresh(self, sim=None, n=None):
+    def refresh(self):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown.  If
         hasn't changed, or isn't viewed, don't touch it. The difference
@@ -231,30 +230,29 @@ class vectorFldsPlot(iseultPlot):
         matplotlib objects, instead just update their data. the plot
         will be redrawn after all subplots data are changed.'''
 
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
-        self.ySlice = self.parent.calc_slices('y', sim, n)
-        self.zSlice = self.parent.calc_slices('z', sim, n)
-        self.c_omp = sim.get_data(n, data_class='param', attribute='c_omp')
-        self.istep = sim.get_data(n, data_class='param', attribute='istep')
+        self.ySlice = self.parent.calc_slices('y', sim)
+        self.zSlice = self.parent.calc_slices('z', sim)
+        self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
+        self.istep = sim.get_data(data_class='param', attribute='istep')
 
         # Now that the data is loaded, start making the plots
         if self.param_dict['twoD']:
             if self.param_dict['show_x']:
                 self.vec_2d = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='x')
 
             elif self.param_dict['show_y']:
                 self.vec_2d = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='y')
             else:
                 self.vec_2d = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='z')
 
@@ -276,24 +274,24 @@ class vectorFldsPlot(iseultPlot):
         # First do the 1D plots, because it is simpler
         else:
             self.xaxis = sim.get_data(
-                n, data_class='axes',
+                data_class='axes',
                 attribute='x')
 
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='x')
 
             if self.param_dict['show_y']:
                 self.vec_y = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='y')
 
             if self.param_dict['show_z']:
                 self.vec_z = sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='z')
 
@@ -338,9 +336,8 @@ class vectorFldsPlot(iseultPlot):
         self.set_v_max_min()
         self.save_home()
 
-    def update_labels_and_colors(self, sim=None, n=None):
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+    def update_labels_and_colors(self):
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
         if self.param_dict['cmap'] == 'None':
             cmap = self.parent.MainParamDict['ColorMap']
@@ -365,12 +362,12 @@ class vectorFldsPlot(iseultPlot):
 
             self.axes.set_ylabel(
                 sim.get_data(
-                    n, data_class='vec_flds',
+                    data_class='vec_flds',
                     fld=self.param_dict['field_type'],
                     component='x')['axis_label'])
 
             self.vec_x = sim.get_data(
-                n, data_class='vec_flds',
+                data_class='vec_flds',
                 fld=self.param_dict['field_type'],
                 component='x')
             self.anx.set_text(self.vec_x['label'])
@@ -378,7 +375,7 @@ class vectorFldsPlot(iseultPlot):
             self.anx.set_color(x_color)
 
             self.vec_y = sim.get_data(
-                n, data_class='vec_flds',
+                data_class='vec_flds',
                 fld=self.param_dict['field_type'],
                 component='y')
             self.any.set_text(self.vec_y['label'])
@@ -386,7 +383,7 @@ class vectorFldsPlot(iseultPlot):
             self.any.set_color(y_color)
 
             self.vec_z = sim.get_data(
-                n, data_class='vec_flds',
+                data_class='vec_flds',
                 fld=self.param_dict['field_type'],
                 component='z')
 

@@ -102,7 +102,7 @@ class phasePlot(iseultPlot):
             color='black',
             size=self.parent.MainParamDict['AxLabelSize'])
 
-    def draw(self, sim=None, n=None):
+    def draw(self):
 
         self.IntRegionLines = []
 
@@ -119,40 +119,38 @@ class phasePlot(iseultPlot):
         if not self.param_dict['show_cbar']:
             self.axC.set_visible(False)
 
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
         # Generate the X-axis values
         self.x_values = sim.get_data(
-            n, data_class='prtls',
+            data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
             attribute=self.param_dict['x_val'])
         self.y_values = sim.get_data(
-            n, data_class='prtls',
+            data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
             attribute=self.param_dict['y_val'])
 
         self.update_labels_and_colors()
-        self.refresh(sim=sim, n=n)
+        self.refresh()
         self.link_handler()
 
-    def refresh(self, sim=None, n=None):
+    def refresh(self):
         '''This is a function that will be called only if self.axes already
         holds a density type plot. We only update things that have shown. If
         hasn't changed, or isn't viewed, don't touch it. The difference
         between this and last time, is that we won't create any mpl objects.
         The plot will be redrawn after all subplots data is changed. '''
 
-        if sim is None:
-            sim = self.parent.sims[self.param_dict['sim_num']]
+        sim = self.parent.sims[self.param_dict['sim_num']]
 
         self.x_values = sim.get_data(
-            n, data_class='prtls',
+            data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
             attribute=self.param_dict['x_val'])
 
         self.y_values = sim.get_data(
-            n, data_class='prtls',
+            data_class='prtls',
             prtl_type=self.param_dict['prtl_type'],
             attribute=self.param_dict['y_val'])
 
@@ -161,7 +159,7 @@ class phasePlot(iseultPlot):
 
         if self.param_dict['weighted']:
             self.weights = sim.get_data(
-                n, data_class='prtls',
+                data_class='prtls',
                 prtl_type=self.param_dict['prtl_type'],
                 attribute=self.param_dict['weights'])
 
