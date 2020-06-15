@@ -7,7 +7,7 @@ import numpy as np
 from my_parser import ExprParser, AttributeNotFound
 
 
-_default_   cfg = os.path.join(
+_default_cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
 
 

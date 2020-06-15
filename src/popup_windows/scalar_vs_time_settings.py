@@ -3,17 +3,13 @@ from tkinter import ttk
 import new_cmaps
 
 
-class VectorFieldsSettings(Tk.Toplevel):
-    interpolation_methods = [
-        'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
-        'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
-        'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
+class ScalarVsTimeSettings(Tk.Toplevel):
 
     def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)
         self.loc = loc
-        self.wm_title(f'Vector Flds Plot {self.loc} Settings')
+        self.wm_title(f'Scalar vs Time Plot {self.loc} Settings')
         self.parent = parent
         frm = ttk.Frame(self)
         frm.pack(fill=Tk.BOTH, expand=True)
@@ -21,16 +17,6 @@ class VectorFieldsSettings(Tk.Toplevel):
         self.bind('<Return>', self.TxtEnter)
         self.subplot = self.parent.oengus.SubPlotList[self.loc[0]][self.loc[1]]
         self.params = self.subplot.param_dict
-        # Create the OptionMenu to chooses the Chart Type:
-        self.InterpolVar = Tk.StringVar(self)
-        self.InterpolVar.set(self.params['interpolation'])  # default value
-        self.InterpolVar.trace('w', self.InterpolChanged)
-
-        ttk.Label(frm, text="Interpolation Method:").grid(row=0, column=2)
-        InterplChooser = ttk.OptionMenu(
-            frm, self.InterpolVar, self.params['interpolation'],
-            *tuple(self.interpolation_methods))
-        InterplChooser.grid(row=0, column=3, sticky=Tk.W + Tk.E)
 
         # Create the OptionMenu to chooses the Chart Type:
         self.ctypevar = Tk.StringVar(self)
@@ -42,217 +28,6 @@ class VectorFieldsSettings(Tk.Toplevel):
             frm, self.ctypevar, self.subplot.chart_type,
             *tuple(self.parent.oengus.plot_types_dict.keys()))
         ctypeChooser.grid(row=0, column=1, sticky=Tk.W + Tk.E)
-        # OptionMenu to choose simulation
-        self.SimVar = Tk.StringVar(self)
-        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])
-        self.SimVar.trace('w', self.SimChanged)
-
-        ttk.Label(frm, text="simulation:").grid(row=1, column=0)
-        SimChooser = ttk.OptionMenu(
-            frm, self.SimVar,
-            self.parent.oengus.sim_names[self.params['sim_num']],
-            *tuple(self.parent.oengus.sim_names))
-        SimChooser.grid(row=1, column=1, sticky=Tk.W + Tk.E)
-        # Create a var to track whether or not to plot in 2-D
-        self.TwoDVar = Tk.IntVar(self)
-        self.TwoDVar.set(self.params['twoD'])
-        cb = ttk.Checkbutton(
-            frm, text="Show in 2-D", variable=self.TwoDVar,
-            command=self.Change2d)
-        cb.grid(row=1, column=2, sticky=Tk.W)
-        # the Radiobox Control to choose the Field Type
-        self.quantity = Tk.StringVar(self)
-        self.quantity.set(self.params['field_type'])
-        self.quantity.trace('w', self.quantityChanged)
-
-        ttk.Label(frm, text="Choose Quantity:").grid(row=2, sticky=Tk.W)
-        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
-        avail_flds = cur_sim.get_available_quantities()['vec_flds'].keys()
-        quantChooser = ttk.OptionMenu(
-            frm, self.quantity, self.params['field_type'],
-            *tuple(avail_flds))
-        quantChooser.grid(row=3, column=0, sticky=Tk.W + Tk.E)
-        # the Check boxes for the dimension
-        self.label = ttk.Label(frm, text='Dimension:')
-        self.label.grid(row=2, column=1, sticky=Tk.W)
-
-        # Create a var to track whether or not to show X
-        self.ShowXVar = Tk.IntVar(self)
-        self.ShowXVar.set(self.params['show_x'])
-        self.cbx = ttk.Checkbutton(
-            frm, text="Show x",
-            variable=self.ShowXVar,
-            command=self.Selector)
-        self.cbx.grid(row=3, column=1, sticky=Tk.W)
-
-        # Create a var to track whether or not to plot Y
-        self.ShowYVar = Tk.IntVar(self)
-        self.ShowYVar.set(self.params['show_y'])
-        self.cby = ttk.Checkbutton(
-            frm, text="Show y",
-            variable=self.ShowYVar,
-            command=self.Selector)
-        self.cby.grid(
-            row=4, column=1,
-            sticky=Tk.W)
-
-        # Create a var to track whether or not to plot Z
-        self.ShowZVar = Tk.IntVar(self)
-        self.ShowZVar.set(self.params['show_z'])
-        self.cbz = ttk.Checkbutton(
-            frm, text="Show z",
-            variable=self.ShowZVar,
-            command=self.Selector)
-        self.cbz.grid(row=5, column=1, sticky=Tk.W)
-        # Control whether or not Cbar is shown
-        self.CbarVar = Tk.IntVar()
-        self.CbarVar.set(self.params['show_cbar'])
-        cb = ttk.Checkbutton(
-            frm, text="Show Color bar",
-            variable=self.CbarVar,
-            command=self.CbarHandler)
-        cb.grid(
-            row=6,
-            sticky=Tk.W)
-
-        # show shock
-        self.ShockVar = Tk.IntVar()
-        self.ShockVar.set(self.params['show_shock'])
-        cb = ttk.Checkbutton(
-            frm, text="Show Shock",
-            variable=self.ShockVar,
-            command=self.ShockVarHandler)
-        cb.grid(
-            row=6, column=1,
-            sticky=Tk.W)
-
-        # Normalize Density Var
-        # self.NormDVar = Tk.IntVar()
-        # self.NormDVar.set(self.parent.GetPlotParam('normalize_density'))
-        # cb = ttk.Checkbutton(frm, text = "Normalize to ppc0",
-        #                variable = self.NormDVar,
-        #                command = self.NormPPCHandler)
-        # cb.grid(row = 7, sticky = Tk.W)
-
-        # show labels
-        self.ShowLabels = Tk.IntVar()
-        self.ShowLabels.set(self.params['show_labels'])
-        cb = ttk.Checkbutton(
-            frm, text="Show Labels 2D",
-            variable=self.ShowLabels,
-            command=self.LabelHandler)
-        cb.grid(
-            row=7, column=1,
-            sticky=Tk.W)
-
-        # Control whether or not diverging cmap is used
-        self.DivVar = Tk.IntVar()
-        self.DivVar.set(self.params['UseDivCmap'])
-        cb = ttk.Checkbutton(
-            frm, text="Use Diverging Cmap",
-            variable=self.DivVar,
-            command=self.DivHandler)
-        cb.grid(row=8, sticky=Tk.W)
-
-        # Use full div cmap
-        self.StretchVar = Tk.IntVar()
-        self.StretchVar.set(self.params['stretch_colors'])
-        cb = ttk.Checkbutton(
-            frm, text="Asymmetric Color Space",
-            variable=self.StretchVar,
-            command=self.StretchHandler)
-
-        cb.grid(
-            row=9, column=0,
-            columnspan=2, sticky=Tk.W)
-
-        # self.CPUVar = Tk.IntVar()
-        # self.CPUVar.set(self.parent.GetPlotParam('show_cpu_domains'))
-        # cb = ttk.Checkbutton(frm, text = "Show CPU domains",
-        #                variable = self.CPUVar,
-        #                command = self.CPUVarHandler)
-        # cb.grid(row = 10, column = 0, sticky = Tk.W)
-
-        # Create the OptionMenu to chooses the cnorm_type:
-        self.cnormvar = Tk.StringVar(self)
-        self.cnormvar.set(self.params['cnorm_type'])  # default value
-        self.cnormvar.trace('w', self.cnormChanged)
-
-        ttk.Label(
-            frm,
-            text="Choose Color Norm:").grid(
-                row=6, column=2)
-        cnormChooser = ttk.OptionMenu(
-            frm, self.cnormvar,
-            self.params['cnorm_type'],
-            *tuple(['Pow', 'Linear']))
-        cnormChooser.grid(
-            row=6, column=3,
-            sticky=Tk.W + Tk.E)
-
-        # Now the gamma of the pow norm
-        self.powGamma = Tk.StringVar()
-        self.powGamma.set(str(self.params['cpow_num']))
-        ttk.Label(
-            frm,
-            text='gamma =').grid(
-                row=7, column=2,
-                sticky=Tk.E)
-        ttk.Label(
-            frm, text='If cnorm is Pow =>').grid(
-                row=8, column=2,
-                columnspan=2,
-                sticky=Tk.W)
-        ttk.Label(
-            frm, text='sign(data)*|data|**gamma').grid(
-                row=9, column=2,
-                columnspan=2,
-                sticky=Tk.E)
-
-        self.GammaEnter = ttk.Entry(
-            frm, textvariable=self.powGamma,
-            width=7)
-        self.GammaEnter.grid(
-            row=7, column=3)
-
-        # Now the field lim
-        self.setZminVar = Tk.IntVar()
-        self.setZminVar.set(self.params['set_v_min'])
-        self.setZminVar.trace('w', self.setZminChanged)
-
-        self.setZmaxVar = Tk.IntVar()
-        self.setZmaxVar.set(self.params['set_v_max'])
-        self.setZmaxVar.trace('w', self.setZmaxChanged)
-
-        self.Zmin = Tk.StringVar()
-        self.Zmin.set(str(self.params['v_min']))
-
-        self.Zmax = Tk.StringVar()
-        self.Zmax.set(str(self.params['v_max']))
-
-        cb = ttk.Checkbutton(
-            frm, text='Set flds min',
-            variable=self.setZminVar)
-        cb.grid(
-            row=3, column=2,
-            sticky=Tk.W)
-        self.ZminEnter = ttk.Entry(
-            frm, textvariable=self.Zmin, width=7)
-        self.ZminEnter.grid(
-            row=3, column=3)
-
-        cb = ttk.Checkbutton(
-            frm, text='Set flds max',
-            variable=self.setZmaxVar)
-        cb.grid(
-            row=4, column=2,
-            sticky=Tk.W)
-
-        self.ZmaxEnter = ttk.Entry(
-            frm, textvariable=self.Zmax,
-            width=7)
-        self.ZmaxEnter.grid(
-            row=4, column=3)
 
     def ShockVarHandler(self, *args):
         if self.params['show_shock'] == self.ShockVar.get():
