@@ -8,6 +8,7 @@ class VectorFieldsSettings(Tk.Toplevel):
         'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
         'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
         'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
+
     def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)

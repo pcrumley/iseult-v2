@@ -7,12 +7,12 @@ import numpy as np
 from my_parser import ExprParser, AttributeNotFound
 
 
-_default_cfg = os.path.join(
+_default_   cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
 
 
 class picSim(object):
-    available_units = ['file', 'c_ompe']  #, 'c_ompi']
+    available_units = ['file', 'c_ompe']  # 'c_ompi']
 
     def __init__(self,
                  name=None,
@@ -265,10 +265,10 @@ class picSim(object):
 
                         time_arr = self._data_dictionary[hash_key]['times']
 
-                        #if time_arr.take(
-                        #    time_arr.searchsorted(cur_time),
-                        #    mode='clip'
-                        #) != cur_time:
+                        # if time_arr.take(
+                        #     time_arr.searchsorted(cur_time),
+                        #     mode='clip'
+                        # ) != cur_time:
 
                         time_arr = np.sort(np.append(time_arr, cur_time))
                         self._data_dictionary[hash_key]['times'] = time_arr
