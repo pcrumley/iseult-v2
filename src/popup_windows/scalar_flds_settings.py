@@ -273,6 +273,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
                 self.subplot.remove()
+                self.subplot.build_axes()
+                self.subplot.axis_info()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
@@ -283,6 +285,9 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.params['cnorm_type'] = self.cnormvar.get()
             if self.params['twoD']:
                 self.subplot.remove()
+                self.subplot.build_axes()
+                self.subplot.axis_info()
+
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
@@ -292,6 +297,9 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['flds_type'] = self.quantity.get()
             self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
+
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
 
@@ -359,6 +367,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 self.params['cpow_num'] = user_num
                 if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
                     self.subplot.remove()
+                    self.subplot.build_axes()
+                    self.subplot.axis_info()
                     self.subplot.draw()
                     self.parent.oengus.canvas.draw()
         except ValueError:

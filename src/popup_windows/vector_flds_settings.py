@@ -8,6 +8,7 @@ class VectorFieldsSettings(Tk.Toplevel):
         'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
         'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
         'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
+
     def __init__(self, parent, loc):
         self.parent = parent
         Tk.Toplevel.__init__(self)
@@ -308,6 +309,8 @@ class VectorFieldsSettings(Tk.Toplevel):
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
                 self.subplot.remove()
+                self.subplot.build_axes()
+                self.subplot.axis_info()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
@@ -318,6 +321,8 @@ class VectorFieldsSettings(Tk.Toplevel):
             self.params['cnorm_type'] = self.cnormvar.get()
             if self.params['twoD']:
                 self.subplot.remove()
+                self.subplot.build_axes()
+                self.subplot.axis_info()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
@@ -405,6 +410,9 @@ class VectorFieldsSettings(Tk.Toplevel):
                 self.params['cpow_num'] = user_num
                 if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
                     self.subplot.remove()
+                    self.subplot.build_axes()
+                    self.subplot.axis_info()
+
                     self.subplot.draw()
                     self.parent.oengus.canvas.draw()
         except ValueError:
