@@ -129,6 +129,16 @@ class phaseSettings(Tk.Toplevel):
                 row=6, column=1,
                 sticky=Tk.W)
 
+        # Set aspect to one
+        self.aspect_var = Tk.IntVar()
+        self.aspect_var.set(self.params['aspect_one'])
+        ttk.Checkbutton(
+            frm, text="Apsect == 1",
+            variable=self.aspect_var,
+            command=self.aspectHandler).grid(
+                row=7, column=0,
+                sticky=Tk.W)
+
         # Now the field lim
         self.setZminVar = Tk.IntVar()
         self.setZminVar.set(self.params['set_v_min'])
@@ -276,6 +286,18 @@ class phaseSettings(Tk.Toplevel):
             self.parent.playbackbar.update_sim_list()
             self.subplot.refresh()
             self.parent.oengus.canvas.draw()
+
+    def aspectHandler(self, *args):
+        if self.aspect_var == self.params['aspect_one']:
+            pass
+        else:
+            self.params['aspect_one'] = self.aspect_var.get()
+            if self.params['aspect_one']:
+                self.subplot.axes.set_aspect('equal')
+            else:
+                self.subplot.axes.set_aspect('auto')
+            self.parent.oengus.canvas.draw()
+
 
     def setZminChanged(self, *args):
         if self.setZminVar.get() == self.params['set_v_min']:

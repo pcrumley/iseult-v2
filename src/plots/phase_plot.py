@@ -26,6 +26,7 @@ class phasePlot(iseultPlot):
         'y_bins': 200,
         'v_min': -2.0,
         'v_max': 0,
+        'aspect_one': False,
         'set_v_min': False,
         'set_v_max': False,
         'y_min': -2.0,
@@ -109,10 +110,10 @@ class phasePlot(iseultPlot):
         self.image = self.axes.imshow(
             [[np.nan, np.nan], [np.nan, np.nan]],
             cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
-            norm=self.norm(), origin='lower',
-            aspect='auto',
+            norm=self.norm(), origin='lower', aspect='auto',
             interpolation=self.param_dict['interpolation'])
-
+        if self.plot_param_dict['aspect_one']:
+            self.axes.set_aspect('equal')
         self.image.set_extent([0, 1, 0, 1])
         self.image.set_clim([1, 10])
 

@@ -20,7 +20,6 @@ class scalar_vs_timePlot(iseultPlot):
             'plot_args': {
                 'ls': ':',
                 'marker': 'v',
-                'markeredgecolor': 'red',
                 'color': 'red',
                 'label': r'${\rm KE_e}$'
             }
@@ -33,6 +32,7 @@ class scalar_vs_timePlot(iseultPlot):
         'set_y_max': False,
         'UseDivCmap': False,
         'face_color': 'gainsboro',
+        'show_legend': False,
         'show_cur_time': True}
 
     def __init__(self, parent, pos, param_dict):
@@ -43,6 +43,7 @@ class scalar_vs_timePlot(iseultPlot):
         self.chart_type = 'ScalarVsTime'
         self.x_axis_info = None
         self.y_axis_info = None
+        self.legend_loc = 1
 
     def axis_info(self):
         pass
@@ -57,6 +58,7 @@ class scalar_vs_timePlot(iseultPlot):
                 self.axes.plot(
                     np.arange(2),
                     np.arange(2),
+                    markeredgecolor=line['plot_args']['color'],
                     **line['plot_args']))
 
         self.time_line = self.axes.axvline(
@@ -66,6 +68,31 @@ class scalar_vs_timePlot(iseultPlot):
             color='k',
             alpha=0.4,
             visible=self.plot_param_dict['show_cur_time'])
+
+        # See if an legend already exists;
+        if hasattr(self, 'legend'):
+            # Save its location, checking if _get_loc exists because
+            # private method and may go away in matplotlib.
+            if hasattr(self.legend, '_get_loc'):
+                self.legend_loc = self.legend._get_loc()
+
+        # Build the legend
+        legend_handles = [line[0] for line in self.plot_list]
+        legend_labels = []
+        for line in self.plot_param_dict['lines']:
+            legend_labels.append(line['plot_args']['label'])
+
+        self.legend = self.axes.legend(
+            legend_handles,
+            legend_labels,
+            framealpha=.05,
+            fontsize=self.parent.MainParamDict['legendLabelSize'])
+
+        self.legend.set_visible(self.plot_param_dict['show_legend'])
+        self.legend.get_frame().set_facecolor('k')
+        self.legend.get_frame().set_linewidth(0.0)
+        self.legend.set_draggable(True, update='loc')
+        self.legend._set_loc(self.legend_loc)
 
     def draw(self):
         self.axC.set_visible(False)
@@ -99,7 +126,6 @@ class scalar_vs_timePlot(iseultPlot):
             sim = self.parent.sims[self.parent.cur_sim]
             t = sim.get_time(units='c_ompe')
             self.time_line.set_xdata([t, t])
-
 
         xmin_max = [np.inf, -np.inf]
         ymin_max = [np.inf, -np.inf]
@@ -136,6 +162,15 @@ class scalar_vs_timePlot(iseultPlot):
             ymin_max[1] += 0.04*dist
             if self.plot_param_dict['yLog']:
                 ymin_max = [10**elm for elm in ymin_max]
+
+        if self.param_dict['set_x_min']:
+            xmin_max[0] = self.param_dict['x_min']
+        if self.param_dict['set_x_max']:
+            xmin_max[1] = self.param_dict['x_max']
+        if self.param_dict['set_y_min']:
+            ymin_max[0] = self.param_dict['y_min']
+        if self.param_dict['set_y_max']:
+            ymin_max[1] = self.param_dict['y_max']
 
         self.axes.set_xlim(xmin_max)
         self.axes.set_ylim(ymin_max)

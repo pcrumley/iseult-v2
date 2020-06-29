@@ -242,13 +242,15 @@ scalars:
     label: r'${\rm KE_e}$'
   Total KE_i:
     expr: sum(sqrt(ui * ui + vi * vi + wi * wi + 1) -1) * stride * abs(qi) * c * c * mi / me
-    label: ''
+    label: r'${\rm KE_i}$'
+  E_zSq:
+    expr: sum(ez*ez)
   #const_shock_speed:
   #  expr: null
   #  label: $v_s$
-  shock_loc:
-    expr: null
-    label: $x_s$
+  #shock_loc:
+  #  expr: null
+  #  label: $x_s$
 
 vec_flds:
   B:

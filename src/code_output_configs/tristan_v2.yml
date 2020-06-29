@@ -174,9 +174,9 @@ scalars:
   #const_shock_speed:
   #  expr: ''
   #  label: $v_s$
-  shock_loc:
-    expr: ''
-    label: $x_s$
+  #shock_loc:
+  #  expr: ''
+  #  label: $x_s$
 
 # Must define out to calculate time at each output in units 1/c_omp
 time: time
