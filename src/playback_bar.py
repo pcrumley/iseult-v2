@@ -107,6 +107,10 @@ class playbackBar(Tk.Frame):
         # attach the parameter to the Playbackbar
         self.param.attach(self)
 
+    def update_slider(self):
+        self.param.set_max(len(self.oengus.sims[self._cur_sim]))
+        self.slider.config(to=self.param.maximum)
+
     @property
     def cur_sim(self):
         return self._cur_sim
@@ -115,8 +119,7 @@ class playbackBar(Tk.Frame):
     def cur_sim(self, val):
         self._cur_sim = val
         self.oengus.cur_sim = val
-        self.param.set_max(len(self.oengus.sims[self._cur_sim]))
-        self.slider.config(to=self.param.maximum)
+        self.update_slider()
 
     def update_sim_list(self):
         menu = self.sim_menu["menu"]

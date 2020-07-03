@@ -171,4 +171,5 @@ class OpenSimDialog(Tk.Toplevel):
         for i, dir in enumerate(self.dirs):
             if self.parent.oengus.sims[i].outdir != str(dir.get()):
                 self.parent.oengus.sims[i].outdir = str(dir.get())
+        self.parent.playbackbar.cur_sim = self.parent.playbackbar.cur_sim
         self.parent.oengus.draw_output()
