@@ -1,5 +1,6 @@
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox
+from functools import partial
 import os
 import sys
 
@@ -45,6 +46,8 @@ class OpenSimDialog(Tk.Toplevel):
         self.labels = []
         self.names = []
         self.dirs = []
+        self.buttons = []
+
         for i in range(len(self.parent.oengus.sims)):
             self.labels.append(ttk.Label(master, text=f'{i}'))
             self.labels[-1].grid(row=i+1, column=0)
@@ -58,6 +61,19 @@ class OpenSimDialog(Tk.Toplevel):
                 e_dir.insert(0, self.parent.oengus.sims[i].outdir)
             e_dir.grid(row=i+1, column=2, sticky=Tk.E)
             self.dirs.append(e_dir)
+
+            btn = Tk.Button(
+                master,
+                text='Open Dir',
+                command=partial(self.open_dir, i))
+            btn.grid(row=i+1, column=3)
+            self.buttons.append(btn)
+
+
+    def open_dir(self, i, *args):
+        name = filedialog.askdirectory(initialdir=self.parent.oengus.IseultDir)
+        self.dirs[i].delete(0,Tk.END)
+        self.dirs[i].insert(0,name)
 
     def buttonbox(self):
         # add standard button box. override if you don't want the
@@ -97,6 +113,12 @@ class OpenSimDialog(Tk.Toplevel):
             e_dir.insert(0, self.parent.oengus.sims[n].outdir)
         e_dir.grid(row=n+1, column=2, sticky=Tk.E)
         self.dirs.append(e_dir)
+        btn = Tk.Button(
+            self.body,
+            text='Open Dir',
+            command=partial(self.open_dir, n))
+        btn.grid(row=n+1, column=3)
+        self.buttons.append(btn)
 
     def remove(self, event=None):
         if len(self.labels) > 1:
@@ -106,7 +128,10 @@ class OpenSimDialog(Tk.Toplevel):
             self.names.pop()
             self.dirs[-1].destroy()
             self.dirs.pop()
+            self.buttons[-1].destroy()
+            self.buttons.pop()
             self.parent.oengus.pop_sim()
+
 
     def ok(self, event=None):
         if not self.validate():

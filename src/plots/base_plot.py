@@ -8,6 +8,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.patheffects as PathEffects
 from functools import partial
 
+
 class iseultPlot:
     '''The base class that all of the subplots must be subclasses of.
     Will elaborate documentation more later.'''
