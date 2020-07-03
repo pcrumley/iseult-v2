@@ -69,11 +69,11 @@ class OpenSimDialog(Tk.Toplevel):
             btn.grid(row=i+1, column=3)
             self.buttons.append(btn)
 
-
     def open_dir(self, i, *args):
-        name = filedialog.askdirectory(initialdir=self.parent.oengus.IseultDir)
-        self.dirs[i].delete(0,Tk.END)
-        self.dirs[i].insert(0,name)
+        name = filedialog.askdirectory(
+            initialdir=self.parent.oengus.IseultDir)
+        self.dirs[i].delete(0, Tk.END)
+        self.dirs[i].insert(0, name)
 
     def buttonbox(self):
         # add standard button box. override if you don't want the
@@ -131,7 +131,6 @@ class OpenSimDialog(Tk.Toplevel):
             self.buttons[-1].destroy()
             self.buttons.pop()
             self.parent.oengus.pop_sim()
-
 
     def ok(self, event=None):
         if not self.validate():
