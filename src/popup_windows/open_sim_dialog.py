@@ -71,7 +71,7 @@ class OpenSimDialog(Tk.Toplevel):
 
     def open_dir(self, i, *args):
         name = filedialog.askdirectory(
-            initialdir=self.parent.oengus.IseultDir)
+            initialdir=os.curdir)
         self.dirs[i].delete(0, Tk.END)
         self.dirs[i].insert(0, name)
 
