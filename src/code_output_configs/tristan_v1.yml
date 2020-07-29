@@ -121,24 +121,6 @@ param:
     expr: stride
   time:
     expr: time
-  #btheta:
-  #  expr: null
-  #bx0:
-  #  expr: null
-  #by0:
-  #  expr: null
-  #bz0:
-  #  expr: null
-  #e0:
-  #  expr: null
-  #ex0:
-  #  expr: null
-  #ey0:
-  #  expr: null
-  #ez0:
-  #  expr: null
-  #e0:
-  #  expr: null
 
 prtls:
 
@@ -258,13 +240,6 @@ scalars:
   B_tot_Sq:
     expr: sum(bx*bx + by*by + bz*bz)
     label: $|B|^2$
-
-  #const_shock_speed:
-  #  expr: null
-  #  label: $v_s$
-  #shock_loc:
-  #  expr: null
-  #  label: $x_s$
 
 vec_flds:
   B:
