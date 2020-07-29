@@ -66,6 +66,11 @@ class iseultPlot:
     def refresh(self):
         raise NotImplementedError
 
+    def get_sim_nums(self):
+        if 'sim_num' in self.param_dict.keys():
+            return [self.param_dict['sim_num']]
+        else:
+            return []
     def norm(self, vmin=None, vmax=None):
         if self.param_dict['cnorm_type'] == "Linear":
             if self.param_dict['UseDivCmap']:

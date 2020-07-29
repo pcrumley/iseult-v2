@@ -268,9 +268,10 @@ class Oengus():
         self.sims_shown = []
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
-                sim_num = self.SubPlotList[i][j].param_dict['sim_num']
-                if sim_num not in self.sims_shown:
-                    self.sims_shown.append(sim_num)
+                sim_nums = self.SubPlotList[i][j].get_sim_nums()
+                for sim_num in sim_nums:
+                    if sim_num not in self.sims_shown:
+                        self.sims_shown.append(sim_num)
         self.sims_shown.sort()
 
     def add_sim(self, name):

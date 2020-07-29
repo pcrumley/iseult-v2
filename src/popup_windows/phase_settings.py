@@ -61,20 +61,22 @@ class phaseSettings(Tk.Toplevel):
                 sticky=Tk.W + Tk.E)
 
         # the Radiobox Control to choose the Field Type
-        self.quantity = Tk.StringVar(self)
-        self.quantity.set(self.params['prtl_type'])
-        self.quantity.trace('w', self.quantityChanged)
+        self.prtl_var = Tk.StringVar(self)
+        self.prtl_var.set(self.params['prtl_type'])
+        self.prtl_var.trace('w', self.ptype_changed)
 
         cur_sim = self.parent.oengus.sims[self.params['sim_num']]
         avail_prtls = cur_sim.get_available_quantities()['prtls']
+
         ttk.Label(frm, text="Choose Particle:").grid(
             row=2, sticky=Tk.W)
-        ttk.OptionMenu(
-            frm, self.quantity,
+        self.prtl_menu = ttk.OptionMenu(
+            frm, self.prtl_var,
             self.params['prtl_type'],
-            *tuple(avail_prtls.keys())).grid(
-                row=3, column=0,
-                sticky=Tk.W + Tk.E)
+            *tuple(avail_prtls.keys()))
+        self.prtl_menu.grid(
+            row=3, column=0,
+            sticky=Tk.W + Tk.E)
 
         # choose the prtl quantity on the x-axis
         ttk.Label(
@@ -83,12 +85,16 @@ class phaseSettings(Tk.Toplevel):
         self.xval_var = Tk.StringVar(self)
         self.xval_var.set(self.params['x_val'])
         self.xval_var.trace('w', self.x_valChanged)
-
-        avail_attrs = avail_prtls[self.params['prtl_type']]['attrs'].keys()
-        ttk.OptionMenu(
+        if self.params['prtl_type'] in avail_prtls.keys():
+            avail_attrs = avail_prtls[self.params['prtl_type']]['attrs'].keys()
+        else:
+            avail_attrs = []
+        self.xval_menu = ttk.OptionMenu(
             frm, self.xval_var,
             self.params['x_val'],
-            *tuple(avail_attrs)).grid(
+            *tuple())
+
+        self.xval_menu.grid(
                 row=5, column=0,
                 sticky=Tk.W + Tk.E)
 
@@ -101,13 +107,15 @@ class phaseSettings(Tk.Toplevel):
         self.yval_var.set(self.params['y_val'])
         self.yval_var.trace('w', self.y_valChanged)
 
-        ttk.OptionMenu(
+        self.yval_menu = ttk.OptionMenu(
             frm, self.yval_var,
             self.params['y_val'],
-            *tuple(avail_attrs)).grid(
-                row=5, column=1,
-                sticky=Tk.W + Tk.E)
+            *tuple())
 
+        self.yval_menu.grid(
+            row=5, column=1,
+            sticky=Tk.W + Tk.E)
+        self.update_attr_menus()
         # the Check boxes for the dimension
 
         # Control whether or not Cbar is shown
@@ -155,16 +163,17 @@ class phaseSettings(Tk.Toplevel):
         self.Zmax.set(str(self.params['v_max']))
 
         ttk.Checkbutton(
-            frm, text='Set v min',
+            frm, text='Set log f min',
             variable=self.setZminVar).grid(
                 row=3, column=2, sticky=Tk.W)
+
         ttk.Entry(
             frm, textvariable=self.Zmin,
             width=7).grid(
                 row=3, column=3)
 
         ttk.Checkbutton(
-            frm, text='Set flds max',
+            frm, text='Set log f max',
             variable=self.setZmaxVar).grid(
                 row=4, column=2, sticky=Tk.W)
 
@@ -230,11 +239,10 @@ class phaseSettings(Tk.Toplevel):
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
-    def quantityChanged(self, *args):
-        if self.params['prtl_type'] == self.quantity.get():
-            pass
-        else:
-            self.params['prtl_type'] = self.quantity.get()
+    def ptype_changed(self, *args):
+        if self.params['prtl_type'] != self.prtl_var.get():
+            self.params['prtl_type'] = self.prtl_var.get()
+            self.update_attr_menus()
             self.subplot.refresh()
             self.subplot.update_labels_and_colors()
             self.parent.oengus.canvas.draw()
@@ -282,6 +290,8 @@ class phaseSettings(Tk.Toplevel):
         else:
             self.params['sim_num'] = self.parent.oengus.sim_names.index(
                 self.SimVar.get())
+            self.update_prtl_menu()
+            self.update_attr_menus()
             self.parent.oengus.calc_sims_shown()
             self.parent.playbackbar.update_sim_list()
             self.subplot.refresh()
@@ -297,7 +307,6 @@ class phaseSettings(Tk.Toplevel):
             else:
                 self.subplot.axes.set_aspect('auto')
             self.parent.oengus.canvas.draw()
-
 
     def setZminChanged(self, *args):
         if self.setZminVar.get() == self.params['set_v_min']:
@@ -352,6 +361,40 @@ class phaseSettings(Tk.Toplevel):
         if to_reload:
             self.subplot.refresh()
             self.parent.oengus.canvas.draw()
+
+    def update_prtl_menu(self):
+        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
+        avail_prtls = cur_sim.get_available_quantities()['prtls']
+        menu = self.prtl_menu['menu']
+        menu.delete(0, "end")
+        for prtl_type in avail_prtls.keys():
+            menu.add_command(
+                label=prtl_type,
+                command=lambda value=prtl_type: self.prtl_var.set(value))
+
+    def update_attr_menus(self):
+        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
+        avail_prtls = cur_sim.get_available_quantities()['prtls']
+
+        if self.params['prtl_type'] in avail_prtls.keys():
+            avail_attrs = list(
+                avail_prtls[self.params['prtl_type']]['attrs'].keys())
+        else:
+            avail_attrs = []
+
+        if len(avail_attrs) > 0:
+            for attr_var, opt_menu in zip(
+                [self.xval_var, self.yval_var],
+                [self.xval_menu, self.yval_menu]):
+                menu = opt_menu['menu']
+                menu.delete(0, "end")
+                for attr in avail_attrs:
+                    menu.add_command(
+                        label=attr,
+                        command=lambda value=attr: attr_var.set(value))
+                if not (attr_var.get() in avail_attrs):
+                    attr_var.set(avail_attrs[0])
+
 
     def OnClosing(self):
         self.destroy()

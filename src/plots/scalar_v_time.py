@@ -1,6 +1,11 @@
 import numpy as np
 import new_cmaps
 from base_plot import iseultPlot
+from itertools import cycle
+import matplotlib.colors as mcolors
+from matplotlib.lines import Line2D as mlines
+from validate_plot_opts import validate_color, validate_ls, \
+    validate_marker, validate_marker_size
 
 
 class scalar_vs_timePlot(iseultPlot):
@@ -21,7 +26,9 @@ class scalar_vs_timePlot(iseultPlot):
                 'ls': ':',
                 'marker': 'v',
                 'color': 'red',
-                'label': r'${\rm KE_e}$'
+                'markersize': 5,
+                'label': r'${\rm KE_e}$',
+                'visible': True,
             }
         }],
         'y_axis_label': 'Total Energy',
@@ -44,16 +51,59 @@ class scalar_vs_timePlot(iseultPlot):
         self.x_axis_info = None
         self.y_axis_info = None
         self.legend_loc = 1
+        self.color_cycle = cycle([c for c in mcolors.TABLEAU_COLORS.keys()])
+        self.marker_cycle = cycle([m for m in mlines.markers.keys()])
+        self.ls_cycle = cycle([':'])
+        self.marker_size_cycle = cycle(['.'])
+        self.plot_list = []
 
     def axis_info(self):
         pass
 
     def link_handler(self):
-        pass
+        iseultPlot.unlink(self.pos)
+
+    def get_sim_nums(self):
+        sim_nums = []
+        for line in self.shown_lines:
+            if line['sim_num'] not in sim_nums:
+                sim_nums.append(line['sim_num'])
+        return sim_nums
+
+    def clear_lines(self):
+        if hasattr(self, 'time_line'):
+            self.time_line.remove()
+        #if hasattr(self, 'legend'):
+        #    self.legend.remove()
+        for line_artist in self.plot_list:
+            line_artist[0].remove()
 
     def build_lines(self):
+        self.clear_lines()
         self.plot_list = []
-        for line in self.plot_param_dict['lines']:
+        # make sure the line attributes are there...
+        kws = ['ls', 'marker', 'color', 'markersize']
+        validators = [validate_ls, validate_marker, validate_color, validate_marker_size]
+        cycles = [
+            self.ls_cycle,
+            self.marker_cycle,
+            self.color_cycle,
+            self.marker_size_cycle]
+
+        for line in self.param_dict['lines']:
+            plot_args = line['plot_args']
+            if 'visible' not in plot_args.keys():
+                plot_args['visible'] = True
+            for key, validator, cyc in zip(kws, validators, cycles):
+                exists = key in plot_args.keys()
+                if not exists or not validator(plot_args[key]):
+                    plot_args[key] = next(cyc)
+
+        self.shown_lines = [line for line in filter(
+            lambda x: x['plot_args']['visible'],
+            self.param_dict['lines'])]
+
+        for line in self.shown_lines:
             self.plot_list.append(
                 self.axes.plot(
                     np.arange(2),
@@ -67,7 +117,7 @@ class scalar_vs_timePlot(iseultPlot):
             linestyle='--',
             color='k',
             alpha=0.4,
-            visible=self.plot_param_dict['show_cur_time'])
+            visible=self.param_dict['show_cur_time'])
 
         # See if an legend already exists;
         if hasattr(self, 'legend'):
@@ -79,7 +129,7 @@ class scalar_vs_timePlot(iseultPlot):
         # Build the legend
         legend_handles = [line[0] for line in self.plot_list]
         legend_labels = []
-        for line in self.plot_param_dict['lines']:
+        for line in self.shown_lines:
             legend_labels.append(line['plot_args']['label'])
 
         self.legend = self.axes.legend(
@@ -88,7 +138,8 @@ class scalar_vs_timePlot(iseultPlot):
             framealpha=.05,
             fontsize=self.parent.MainParamDict['legendLabelSize'])
 
-        self.legend.set_visible(self.plot_param_dict['show_legend'])
+
+        self.legend.set_visible(self.param_dict['show_legend'])
         self.legend.get_frame().set_facecolor('k')
         self.legend.get_frame().set_linewidth(0.0)
         self.legend.set_draggable(True, update='loc')
@@ -97,7 +148,7 @@ class scalar_vs_timePlot(iseultPlot):
     def draw(self):
         self.axC.set_visible(False)
         self.axes.set_ylabel(
-            self.plot_param_dict['y_axis_label'],
+            self.param_dict['y_axis_label'],
             labelpad=self.parent.MainParamDict['xLabelPad'],
             color='black',
             size=self.parent.MainParamDict['AxLabelSize'])
@@ -108,7 +159,7 @@ class scalar_vs_timePlot(iseultPlot):
             color='black',
             size=self.parent.MainParamDict['AxLabelSize'])
 
-        if self.plot_param_dict['yLog']:
+        if self.param_dict['yLog']:
             self.axes.set_yscale('log')
 
         self.build_lines()
@@ -122,7 +173,8 @@ class scalar_vs_timePlot(iseultPlot):
         hasn't changed, or isn't viewed, don't touch it. The difference
         between this and last time, is that we won't create any mpl objects.
         The plot will be redrawn after all subplots data is changed. '''
-        if self.plot_param_dict['show_cur_time']:
+
+        if self.param_dict['show_cur_time']:
             sim = self.parent.sims[self.parent.cur_sim]
             t = sim.get_time(units='c_ompe')
             self.time_line.set_xdata([t, t])
@@ -131,7 +183,8 @@ class scalar_vs_timePlot(iseultPlot):
         ymin_max = [np.inf, -np.inf]
 
         # self.cur_time.set_xdata([self.time,self.time])
-        for plot, line in zip(self.plot_list, self.plot_param_dict['lines']):
+
+        for plot, line in zip(self.plot_list, self.shown_lines):
             sim = self.parent.sims[line['sim_num']]
             tmp_dict = sim.get_data(
                 data_class='scalar_v_time',
@@ -145,7 +198,7 @@ class scalar_vs_timePlot(iseultPlot):
         if np.isinf(xmin_max[0]):
             xmin_max = [None, None]
             ymin_max = [None, None]
-        if self.plot_param_dict['yLog']:
+        if self.param_dict['yLog']:
             for i in range(2):
                 if ymin_max[i] <= 0:
                     ymin_max[i] = None
@@ -160,7 +213,7 @@ class scalar_vs_timePlot(iseultPlot):
             dist = ymin_max[1]-ymin_max[0]
             ymin_max[0] -= 0.04*dist
             ymin_max[1] += 0.04*dist
-            if self.plot_param_dict['yLog']:
+            if self.param_dict['yLog']:
                 ymin_max = [10**elm for elm in ymin_max]
 
         if self.param_dict['set_x_min']:

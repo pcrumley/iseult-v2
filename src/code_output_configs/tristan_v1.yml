@@ -239,12 +239,26 @@ time: time
 scalars:
   Total KE_e:
     expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
-    label: r'${\rm KE_e}$'
+    label: ${\rm KE_e}$
   Total KE_i:
     expr: sum(sqrt(ui * ui + vi * vi + wi * wi + 1) -1) * stride * abs(qi) * c * c * mi / me
-    label: r'${\rm KE_i}$'
+    label: ${\rm KE_i}$
   E_zSq:
     expr: sum(ez*ez)
+    label: $E_z^2$
+  E_ySq:
+    expr: sum(ey*ey)
+    label: $E_y^2$
+  E_xSq:
+    expr: sum(ex*ex)
+    label: $E_x^2$
+  E_tot_Sq:
+    expr: sum(ey*ey+ex*ex+ez*ez)
+    label: $|E|^2$
+  B_tot_Sq:
+    expr: sum(bx*bx + by*by + bz*bz)
+    label: $|B|^2$
+
   #const_shock_speed:
   #  expr: null
   #  label: $v_s$

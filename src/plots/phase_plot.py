@@ -112,7 +112,7 @@ class phasePlot(iseultPlot):
             cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
             norm=self.norm(), origin='lower', aspect='auto',
             interpolation=self.param_dict['interpolation'])
-        if self.plot_param_dict['aspect_one']:
+        if self.param_dict['aspect_one']:
             self.axes.set_aspect('equal')
         self.image.set_extent([0, 1, 0, 1])
         self.image.set_clim([1, 10])

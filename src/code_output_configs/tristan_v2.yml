@@ -179,7 +179,7 @@ scalars:
   #  label: $x_s$
 
 # Must define out to calculate time at each output in units 1/c_omp
-time: time
+time: '10' # a placeholder. need to change
 
 vec_flds:
   B:
