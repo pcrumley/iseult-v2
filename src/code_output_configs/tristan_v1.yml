@@ -275,3 +275,15 @@ vec_flds:
     z:
       label: $J_z$
       expr: jz
+
+spectra:
+  # see ~/src/utils/spectra_utils how this is defined.
+  name_of_spect_class: tristan-v1-spec
+
+shock_methods:
+  # see ~/src/utils/shock_finders
+  shock_finder: Constant Velocity
+  opts:
+    # see ~/src/utils/shock_finders/constant_vel_v1
+    Constant Velocity: constant_vel_v1
+    Density Half Max: DensMaxShockFinderV1

@@ -5,7 +5,8 @@ import h5py
 import yaml
 import numpy as np
 from my_parser import ExprParser, AttributeNotFound
-
+from dict_of_spect_methods import _spect_classes
+from dict_of_shock_finder_methods import _shock_finders
 
 _default_cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
@@ -28,6 +29,8 @@ class picSim(object):
         self.time_array = []  # An array that holds the times
         self.parser = ExprParser()
         self._cfg_file = ''
+        self.shock_finder = _shock_finders['not_implemented'](self)
+
         if 'iseult_conf.yml' in os.listdir(self.outdir):
 
             self.cfg_file = os.path.join(self.outdir,  'iseult_conf.yml')
@@ -43,6 +46,22 @@ class picSim(object):
             # can't find the config file, gotta use the default ones
             # first see if v1 works:
             self.try_default_sim_types()
+
+    def get_shock_finder_opts(self):
+        try:
+            return [k for k in self._cfgDict['shock_methods']['opts'].keys()]
+        except KeyError:
+            return ['Not Implemented']
+
+    def set_shock_finder(self, shock_method_name):
+        if shock_method_name in self._cfgDict['shock_methods']['opts'].keys():
+            tmp = self._cfgDict['shock_methods']['opts'][shock_method_name]
+            self.shock_finder = _shock_finders[tmp](self)
+        else:
+            self.shock_finder = _shock_finders['not_implemented'](self)
+
+    def get_shock_loc(self, n=None):
+        self.shock_finder.calc_shock_loc(self, n)
 
     def get_time(self, units=None):
         if units not in self.available_units:
@@ -125,6 +144,17 @@ class picSim(object):
         with open(self._cfg_file, 'r') as f:
             self._cfgDict = yaml.safe_load(f)
         self.sim_type = self._cfgDict['name']
+        try:
+            self.SpectralClass = _spect_classes[
+                self._cfgDict['spectra']['name_of_spect_class']
+            ](self)
+        except KeyError:
+            self.SpectralClass = None
+            print("Cannot load spectral data")
+        try:
+            self.set_shock_finder(self._cfgDict['shock_methods']['shock_finder'])
+        except KeyError:
+            pass
         self.clear_caches()
 
     @property
@@ -247,7 +277,6 @@ class picSim(object):
                     f_suffix = self.file_list[n]
                 else:
                     return response_dict
-
                 if lookup['scalar'] in self._cfgDict['scalars'].keys():
                     expr = self._cfgDict['scalars'][lookup['scalar']]['expr']
 
@@ -331,7 +360,7 @@ class picSim(object):
                 f_suffix = self.file_list[n]
                 expr = self._cfgDict['param'][lookup['attribute']]['expr']
                 if expr is not None:
-                    hash_key = 'param' + lookup['attribute']
+                    hash_key = 'param' + lookup['attribute'] + f_suffix
                     if hash_key not in self._data_dictionary:
                         self.parser.string = expr
                         self.parser.f_suffix = f_suffix

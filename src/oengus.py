@@ -12,6 +12,7 @@ from scalar_flds_plot import scalarFldsPlot
 from vector_flds_plot import vectorFldsPlot
 from phase_plot import phasePlot
 from scalar_v_time import scalar_vs_timePlot
+from spectra_plot import SpectralPlot
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
@@ -236,7 +237,8 @@ class Oengus():
             'ScalarFlds': scalarFldsPlot,
             'VectorFlds': vectorFldsPlot,
             'PhasePlot': phasePlot,
-            'ScalarVsTime': scalar_vs_timePlot
+            'ScalarVsTime': scalar_vs_timePlot,
+            'Spectra': SpectralPlot,
             # 'SpectraPlot': SpectralPanel,
             # 'FFTPlots': FFTPanel,
             # 'TotalEnergyPlot': TotEnergyPanel,
