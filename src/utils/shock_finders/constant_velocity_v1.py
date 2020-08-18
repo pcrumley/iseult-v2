@@ -13,12 +13,11 @@ class ConstVelShockFinderV1(ShockFinderABC):
     def calc_shock_loc(self, n=None):
         if n is None:
             n = self.sim.get_time()
-
         time = self.sim.get_data(
             data_class='param', attribute='time')
         response_dict = {
             'shock_loc': self.calc_shock_speed() * time,
-            'axes': 'x'}
+            'axis': 'x'}
         return response_dict
 
     def calc_shock_speed(self):

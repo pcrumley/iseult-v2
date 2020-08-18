@@ -74,14 +74,18 @@ class TristanV1Spect(SpectraABC):
             n = self.sim.get_time()
 
         response_dict = {
-            'ndarrays': (np.array([]),np.array([]))
+            'ndarrays': (np.array([]), np.array([]))
         }
         if n < len(self.sim.file_list):
             f_suffix = self.sim.file_list[n]
         else:
             return response_dict
-        hash_key = '{0}{1}{2}{3}{4}{5}{6}{7}'.format(
-            spect_type, rest_frame, normed, rel_to_shock,
+        if rel_to_shock:
+            x_left += sim.get_shock_loc()['shock_loc']
+            x_right += sim.get_shock_loc()['shock_loc']
+
+        hash_key = '{0}{1}{2}{3}{4}{5}{6}'.format(
+            spect_type, rest_frame, normed,
             x_left, x_right, prtl_type, f_suffix)
         if hash_key not in self.sim._data_dictionary:
             self.sim.parser.string = "c_omp"

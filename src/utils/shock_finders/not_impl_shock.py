@@ -11,5 +11,5 @@ class ShockFindingNotImpl(ShockFinderABC):
 
     def calc_shock_loc(self, n=None):
         return {
-            'shock_loc': 0,
-            'axes': 'x'}
+            'shock_loc': -1,
+            'axis': 'x'}

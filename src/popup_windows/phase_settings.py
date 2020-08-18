@@ -186,12 +186,16 @@ class phaseSettings(Tk.Toplevel):
         if self.params['show_shock'] == self.ShockVar.get():
             pass
         else:
-            print('Not Implemented Yet')
-            # if self.params['twoD']:
-            #     self.subplot.shockline_2d.set_visible(self.ShockVar.get())
-            # else:
-            #     self.subplot.shock_line.set_visible(self.ShockVar.get())
             self.params['show_shock'] = self.ShockVar.get()
+            if self.params['show_shock']:
+                sim = self.parent.oengus.sims[self.params['sim_num']]
+                shock_loc = sim.get_shock_loc()
+                if shock_loc['shock_loc'] < 0 or shock_loc['axis'] != 'x':
+                    print('Not Implemented Yet')
+                    self.ShockVar.set(False)
+
+            self.subplot.shock_line.set_visible(self.ShockVar.get())
+            self.subplot.refresh()
             self.parent.oengus.canvas.draw()
 
     def CbarHandler(self, *args):

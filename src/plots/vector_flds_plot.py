@@ -2,6 +2,7 @@ import numpy as np
 import new_cmaps
 import matplotlib.transforms as mtransforms
 from base_plot import iseultPlot
+import matplotlib.patheffects as PathEffects
 
 
 class vectorFldsPlot(iseultPlot):
@@ -89,6 +90,22 @@ class vectorFldsPlot(iseultPlot):
 
     def draw(self):
         sim = self.parent.sims[self.param_dict['sim_num']]
+
+        shock_loc = sim.get_shock_loc()
+        # at some point we may need to support
+        # shocks along different axes but for now
+        if shock_loc['axis'] != 'x' or shock_loc['shock_loc'] == 0:
+            print("Shock must be defined along x axis.")
+            self.plot_param_dict['show_shock'] = False
+
+        self.shock_line = self.axes.axvline(
+            shock_loc['shock_loc'], linewidth=1.5,
+            linestyle='--', color='w',
+            path_effects=[
+                PathEffects.Stroke(linewidth=2, foreground='k'),
+                PathEffects.Normal()])
+        self.shock_line.set_visible(
+            self.plot_param_dict['show_shock'])
 
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
         self.istep = sim.get_data(data_class='param', attribute='istep')
@@ -333,6 +350,10 @@ class vectorFldsPlot(iseultPlot):
                         self.xaxis['data'],
                         self.vec_z['data'][self.zSlice, self.ySlice, :])
 
+        if self.param_dict['show_shock']:
+            tmp = sim.get_shock_loc()
+            if tmp['axis'] == 'x':
+                self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
         self.set_v_max_min()
         self.save_home()
 

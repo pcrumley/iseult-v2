@@ -1,7 +1,7 @@
 import numpy as np
 import new_cmaps
 from base_plot import iseultPlot
-
+import matplotlib.patheffects as PathEffects
 
 class scalarFldsPlot(iseultPlot):
     # A dictionary of all of the parameters for this plot with the
@@ -71,6 +71,21 @@ class scalarFldsPlot(iseultPlot):
 
     def draw(self):
         sim = self.parent.sims[self.param_dict['sim_num']]
+        shock_loc = sim.get_shock_loc()
+        # at some point we may need to support
+        # shocks along different axes but for now
+        if shock_loc['axis'] != 'x' or shock_loc['shock_loc'] == 0:
+            print("Shock must be defined along x axis.")
+            self.plot_param_dict['show_shock'] = False
+
+        self.shock_line = self.axes.axvline(
+            shock_loc['shock_loc'], linewidth=1.5,
+            linestyle='--', color='w',
+            path_effects=[
+                PathEffects.Stroke(linewidth=2, foreground='k'),
+                PathEffects.Normal()])
+        self.shock_line.set_visible(
+            self.plot_param_dict['show_shock'])
 
         if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:
@@ -272,7 +287,10 @@ class scalarFldsPlot(iseultPlot):
                     labelpad=self.parent.MainParamDict['yLabelPad'],
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])
-
+        if self.param_dict['show_shock']:
+            tmp = sim.get_shock_loc()
+            if tmp['axis'] == 'x':
+                self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
         self.set_v_max_min()
         self.save_home()
 

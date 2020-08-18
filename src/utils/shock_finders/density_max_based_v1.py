@@ -15,7 +15,7 @@ class DensMaxShockFinderV1(ShockFinderABC):
             n = self.sim.get_time()
         response_dict = {
             'shock_loc': 0,
-            'axes': 'x'}
+            'axis': 'x'}
         if n < len(self.sim.file_list):
             f_suffix = self.sim.file_list[n]
         else:

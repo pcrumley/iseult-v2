@@ -61,7 +61,7 @@ class picSim(object):
             self.shock_finder = _shock_finders['not_implemented'](self)
 
     def get_shock_loc(self, n=None):
-        self.shock_finder.calc_shock_loc(self, n)
+        return self.shock_finder.calc_shock_loc(n)
 
     def get_time(self, units=None):
         if units not in self.available_units:
