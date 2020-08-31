@@ -14,6 +14,7 @@ from phase_plot import phasePlot
 from scalar_v_time import scalar_vs_timePlot
 from spectra_plot import SpectralPlot
 
+
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, preset_view='Default', interactive=True, tkApp=None):

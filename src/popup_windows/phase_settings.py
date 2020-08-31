@@ -387,9 +387,8 @@ class phaseSettings(Tk.Toplevel):
             avail_attrs = []
 
         if len(avail_attrs) > 0:
-            for attr_var, opt_menu in zip(
-                [self.xval_var, self.yval_var],
-                [self.xval_menu, self.yval_menu]):
+            for attr_var, opt_menu in zip([self.xval_var, self.yval_var],
+                                          [self.xval_menu, self.yval_menu]):
                 menu = opt_menu['menu']
                 menu.delete(0, "end")
                 for attr in avail_attrs:
@@ -398,7 +397,6 @@ class phaseSettings(Tk.Toplevel):
                         command=lambda value=attr: attr_var.set(value))
                 if not (attr_var.get() in avail_attrs):
                     attr_var.set(avail_attrs[0])
-
 
     def OnClosing(self):
         self.destroy()

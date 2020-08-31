@@ -3,7 +3,7 @@ from tkinter import ttk
 import new_cmaps
 from functools import partial
 from validate_plot_opts import validate_color, validate_ls, \
-validate_marker, validate_marker_size
+    validate_marker, validate_marker_size
 
 
 class ScalarVsTimeSettings(Tk.Toplevel):
@@ -231,7 +231,6 @@ class ScalarVsTimeSettings(Tk.Toplevel):
 
     # standard button semantics
     def add_line_options(self, line_num=0, event=None):
-
         i = line_num
         line = self.lines[i]
         tmp_dict = {}

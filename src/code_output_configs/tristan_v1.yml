@@ -286,4 +286,4 @@ shock_methods:
   opts:
     # see ~/src/utils/shock_finders/constant_vel_v1
     Constant Velocity: constant_vel_v1
-    Density Half Max: DensMaxShockFinderV1
+    Density Half Max: density_max_v1

@@ -17,16 +17,35 @@ class Spinbox(ttk.Entry):
 
 class SettingsFrame(Tk.Toplevel):
     def __init__(self, oengus):
-        Tk.Toplevel.__init__(self)
-        self.wm_title('General Settings')
-        self.protocol('WM_DELETE_WINDOW', self.OnClosing)
-
-        self.bind('<Return>', self.SettingsCallback)
         self.oengus = oengus
         self.main_params = self.oengus.MainParamDict
-        frm = ttk.Frame(self)
-        frm.pack(fill=Tk.BOTH, expand=True)
 
+        Tk.Toplevel.__init__(self)
+        self.wm_title('Settings')
+
+        nb = ttk.Notebook(self)
+        f1 = ttk.Frame(nb)
+        f2 = ttk.Frame(nb)
+
+        nb.add(f1, text='General Settings')
+        nb.add(f2, text='Sim Settings')
+
+        self.bind('<Return>', self.SettingsCallback)
+        self.initial_focus = self.build_settings_panel(f1)
+        self.build_sim_settings_panel(f2)
+        nb.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=True)
+
+        if not self.initial_focus:
+            self.initial_focus = self
+
+        self.protocol("WM_DELETE_WINDOW", self.OnClosing)
+
+        """self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+                                  parent.winfo_rooty()+50))
+        """
+        self.initial_focus.focus_set()
+
+    def build_settings_panel(self, frm):
         # Make an entry to change the skip size
         self.skipSize = Tk.StringVar(self)
         self.skipSize.set(self.main_params['SkipSize'])  # default value
@@ -228,8 +247,49 @@ class SettingsFrame(Tk.Toplevel):
             variable=self.CbarOrientation).grid(
                 row=16, sticky=Tk.W)
 
+    def build_sim_settings_panel(self, frm):
+        """
+        The function that builds out individual simulations settings window.
+        For now we will just have it set the shock finder.
+        """
+        # OptionMenu to choose simulation
+        self.cur_sim_name_var = Tk.StringVar(self)
+        self.cur_sim_name_var.set(self.oengus.sim_names[0])
+        # self.cur_sim_var.trace('w', self.SimChanged)
+
+        ttk.Label(frm, text="Simulation:").grid(row=0, column=0)
+        ttk.OptionMenu(
+            frm, self.cur_sim_name_var,
+            self.oengus.sim_names[0],
+            *tuple(self.oengus.sim_names)).grid(
+                row=0, column=1, sticky=Tk.W + Tk.E)
+
+        ttk.Label(frm, text="Shock Finder:").grid(row=2, column=0)
+        self.cur_sim = self.oengus.sims[
+            self.oengus.sim_names.index(self.cur_sim_name_var.get())]
+
+        self.shock_finder_var = Tk.StringVar(self)
+        self.shock_finder_var.set(self.cur_sim.shock_finder_name)
+        self.shock_finder_var.trace('w', self.shock_finder_changed)
+
+        ttk.OptionMenu(
+            frm, self.shock_finder_var,
+            self.shock_finder_var.get(),
+            *tuple(self.cur_sim.get_shock_finder_opts())).grid(
+                row=2, column=1, sticky=Tk.W + Tk.E)
+
+    def shock_finder_changed(self, *args):
+        if self.cur_sim.shock_finder_name != self.shock_finder_var.get():
+            self.cur_sim.shock_finder = self.shock_finder_var.get()
+            self.shock_finder_var.set(self.cur_sim.shock_finder_name)
+            ### update shock lines
+            for i in range(self.oengus.MainParamDict['NumOfRows']):
+                for j in range(self.oengus.MainParamDict['NumOfCols']):
+                    self.oengus.SubPlotList[i][j].refresh()
+            self.oengus.canvas.draw()
     def RadioLinked(self, *args):
-        # If the shared axes are changed, the whole plot must be redrawn
+        # If the shared axes are changed, we have to call the link
+        # handler on every subplot
         if self.LinkedVar.get() == self.oengus.MainParamDict['LinkSpatial']:
             pass
         else:

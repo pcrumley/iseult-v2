@@ -3,6 +3,7 @@ import new_cmaps
 from base_plot import iseultPlot
 import matplotlib.patheffects as PathEffects
 
+
 class scalarFldsPlot(iseultPlot):
     # A dictionary of all of the parameters for this plot with the
     # default parameters

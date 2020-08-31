@@ -29,7 +29,8 @@ class picSim(object):
         self.time_array = []  # An array that holds the times
         self.parser = ExprParser()
         self._cfg_file = ''
-        self.shock_finder = _shock_finders['not_implemented'](self)
+        self.shock_finder_name = 'not_implemented'
+        self._shock_finder = _shock_finders[self.shock_finder_name](self)
 
         if 'iseult_conf.yml' in os.listdir(self.outdir):
 
@@ -47,6 +48,20 @@ class picSim(object):
             # first see if v1 works:
             self.try_default_sim_types()
 
+    @property
+    def shock_finder(self):
+        return self._shock_finder
+
+    @shock_finder.setter
+    def shock_finder(self, shock_method_name):
+        if shock_method_name in self._cfgDict['shock_methods']['opts'].keys():
+            tmp = self._cfgDict['shock_methods']['opts'][shock_method_name]
+            self.shock_finder_name = shock_method_name
+            self._shock_finder = _shock_finders[tmp](self)
+        else:
+            self.shock_finder_name = 'not_implemented'
+            self.shock_finder = _shock_finders['not_implemented'](self)
+
     def get_shock_finder_opts(self):
         try:
             return [k for k in self._cfgDict['shock_methods']['opts'].keys()]
@@ -56,7 +71,7 @@ class picSim(object):
     def set_shock_finder(self, shock_method_name):
         if shock_method_name in self._cfgDict['shock_methods']['opts'].keys():
             tmp = self._cfgDict['shock_methods']['opts'][shock_method_name]
-            self.shock_finder = _shock_finders[tmp](self)
+            self._shock_finder = _shock_finders[tmp](self)
         else:
             self.shock_finder = _shock_finders['not_implemented'](self)
 
@@ -152,7 +167,7 @@ class picSim(object):
             self.SpectralClass = None
             print("Cannot load spectral data")
         try:
-            self.set_shock_finder(self._cfgDict['shock_methods']['shock_finder'])
+            self.shock_finder = self._cfgDict['shock_methods']['shock_finder']
         except KeyError:
             pass
         self.clear_caches()
