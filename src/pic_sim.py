@@ -19,7 +19,6 @@ class picSim(object):
                  name=None,
                  dirpath=os.curdir,
                  cfg_file=_default_cfg):
-
         self._outdir = dirpath
         self._xtra_stride = 1
         self._data_dictionary = {}
@@ -67,13 +66,6 @@ class picSim(object):
             return [k for k in self._cfgDict['shock_methods']['opts'].keys()]
         except KeyError:
             return ['Not Implemented']
-
-    def set_shock_finder(self, shock_method_name):
-        if shock_method_name in self._cfgDict['shock_methods']['opts'].keys():
-            tmp = self._cfgDict['shock_methods']['opts'][shock_method_name]
-            self._shock_finder = _shock_finders[tmp](self)
-        else:
-            self.shock_finder = _shock_finders['not_implemented'](self)
 
     def get_shock_loc(self, n=None):
         return self.shock_finder.calc_shock_loc(n)

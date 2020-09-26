@@ -282,11 +282,12 @@ class SettingsFrame(Tk.Toplevel):
         if self.cur_sim.shock_finder_name != self.shock_finder_var.get():
             self.cur_sim.shock_finder = self.shock_finder_var.get()
             self.shock_finder_var.set(self.cur_sim.shock_finder_name)
-            ### update shock lines
+            # update shock lines
             for i in range(self.oengus.MainParamDict['NumOfRows']):
                 for j in range(self.oengus.MainParamDict['NumOfCols']):
                     self.oengus.SubPlotList[i][j].refresh()
             self.oengus.canvas.draw()
+
     def RadioLinked(self, *args):
         # If the shared axes are changed, we have to call the link
         # handler on every subplot

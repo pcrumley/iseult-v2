@@ -105,7 +105,6 @@ class phasePlot(iseultPlot):
             size=self.parent.MainParamDict['AxLabelSize'])
 
     def draw(self):
-
         self.IntRegionLines = []
 
         self.image = self.axes.imshow(
@@ -124,11 +123,13 @@ class phasePlot(iseultPlot):
         sim = self.parent.sims[self.param_dict['sim_num']]
 
         shock_loc = sim.get_shock_loc()
+
+
         # at some point we may need to support
         # shocks along different axes but for now
         if shock_loc['axis'] != 'x' or shock_loc['shock_loc'] == 0:
             print("Shock must be defined along x axis.")
-            self.plot_param_dict['show_shock'] = False
+            self.param_dict['show_shock'] = False
 
         self.shock_line = self.axes.axvline(
             shock_loc['shock_loc'], linewidth=1.5,
@@ -137,7 +138,7 @@ class phasePlot(iseultPlot):
                 PathEffects.Stroke(linewidth=2, foreground='k'),
                 PathEffects.Normal()])
         self.shock_line.set_visible(
-            self.plot_param_dict['show_shock'])
+            self.param_dict['show_shock'])
 
         # Generate the X-axis values
         self.x_values = sim.get_data(

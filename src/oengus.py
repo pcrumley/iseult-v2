@@ -62,11 +62,9 @@ class Oengus():
         # parameter does.
 
         self.MainParamDict = {
-            'zSlice': 0.0,  # THE RELATIVE POSITION OF THE SLICE 0.0 -> 1.0
             '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
             'NumberOfSims': 2,
             'Average1D': 0,
-            'ySlice': 0.5,  # THE RELATIVE POSITION OF THE SLICE 0.0->1.0
             'WindowSize': '1200x700',
             'yTop': 100.0,
             'yBottom': 0.0,
@@ -123,18 +121,14 @@ class Oengus():
             'xRight': 100.0,
             'LinkSpatial': 2,
             'HCbarExtent': [0, 4, 0, -1],
-            # 'Recording': False,
             'xLabelPad': 0,
             'annotateTextSize': 18,
             'FFTRight': 200.0,
             'ClearFig': True,
             'HorizontalCbars': False,
             'DivColorMap': 'BuYlRd',
-            'LinkK': True,
-            'GammaBoost': 0.0,
             'kLeft': 0.1,
             'LoopPlayback': True,
-            'PrtlStride': 5,
             'electron_color': '#fca636',
             'electron_fit_color': 'yellow',
             'ion_color': '#d6556d',
@@ -156,9 +150,9 @@ class Oengus():
             1, self.MainParamDict['NumberOfSims'])
 
         # Loading a config file may change the stride... watch out!
-        for sim in self.sims:
-            if sim.xtra_stride != self.MainParamDict['PrtlStride']:
-                sim.xtra_stride = self.MainParamDict['PrtlStride']
+        #for sim in self.sims:
+        #    if sim.xtra_stride != self.MainParamDict['PrtlStride']:
+        #        sim.xtra_stride = self.MainParamDict['PrtlStride']
 
         # Loading a config file may change the number of sims
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
@@ -280,7 +274,7 @@ class Oengus():
     def add_sim(self, name):
         self.sims.append(picSim(name=name))
         self.sim_names.append(self.sims[-1].name)
-        self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
+        # self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
         if self.MainParamDict['LinkTime']:
             unit = self.MainParamDict['TimeUnits']
             cur_t = self.sims[self.cur_sim].get_time(units=unit)

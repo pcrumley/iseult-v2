@@ -17,7 +17,7 @@ Chart0_0:
   set_y_min: false
   show_cbar: true
   show_int_region: true
-  show_shock: false
+  show_shock: true
   spatial_x: true
   spatial_y: false
   twoD: 1
@@ -120,7 +120,7 @@ Chart1_1:
   v_min: 0
 MainParamDict:
   2DSlicePlane: 0
-  Average1D: 0
+  # Average1D: 0
   AxLabelSize: 11
   ClearFig: true
   cmaps_with_green:
@@ -130,17 +130,12 @@ MainParamDict:
   - Cube YF
   - Linear_L
   ColorMap: Blue/Green/Red/Yellow
-  ConstantShockVel: true
+  # ConstantShockVel: true
   DivColorMap: Blue/Green/Red/Yellow
-  DoLorentzBoost: false
-  FFTLeft: 0.0
-  FFTRelative: true
-  FFTRight: 200.0
   FFT_color: k
   FigSize:
   - 12.0
   - 6.22
-  GammaBoost: 0.0
   HAxesExtent:
   - 18
   - 92
@@ -160,18 +155,16 @@ MainParamDict:
     wspace: 0.15
   HorizontalCbars: false
   ImageAspect: 0
-  LinkK: true
-  LinkSpatial: 2
+  # LinkSpatial: 2
   LoopPlayback: true
   MaxCols: 8
   MaxRows: 8
   NumFontSize: 11
   NumOfCols: 2
   NumOfRows: 2
-  PrtlStride: 1
+  # PrtlStride: 1
   Recording: false
   Reload2End: true
-  SetkLim: false
   SetxLim: false
   SetyLim: false
   ShowTitle: true
@@ -202,19 +195,21 @@ MainParamDict:
   electron_fit_color: yellow
   ion_color: '#d6556d'
   ion_fit_color: r
-  kLeft: 0.1
-  kRight: 1.0
   legendLabelSize: 11
-  shock_color: w
   xLabelPad: 0
   xLeft: 0.0
-  xLimsRelative: false
   xRight: 100.0
   yBottom: 0.0
   yLabelPad: 0
-  ySlice: 0.5
   yTop: 100.0
+  LinkSpatial: 2
+  ySlice: 0.5
   zSlice: 0.5
   xSlice: 0.0
+  xLimsRelative: false
+  Average1D: false
+  PrtlStride: 1
+  2DSlicePlane: 0
+
 general:
   ConfigName: Default
