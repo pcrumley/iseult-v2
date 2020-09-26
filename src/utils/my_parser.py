@@ -308,7 +308,7 @@ class ExprParser:
         if constant is not None:
             return constant
         fpath = self.vars.get(var, None)
-
+        print(var)
         value = get_h5attr(fpath+self.f_suffix, var)
         return value
         # if len(value) > 0:

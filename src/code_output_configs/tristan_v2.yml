@@ -57,10 +57,10 @@ axes:
     expr: arange(take(shape(bx), 2)) * out:istep / pls:c_omp
   y:
     label: $y$
-    expr: arange(take(shape(bx), 1)) * istep / pls:c_omp
+    expr: arange(take(shape(bx), 1)) * out:istep / pls:c_omp
   z:
     label: $z$
-    expr: arange(take(shape(bx), 0)) * istep / pls:c_omp
+    expr: arange(take(shape(bx), 0)) * out:istep / pls:c_omp
 param:
   c_omp:
     expr: pls:c_omp
