@@ -178,11 +178,14 @@ scalar_flds:
     expr: ex*bx + ey*by + ez*bz
 scalars:
   Total KE_e:
-    expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:c2) * alg:c * alg:c
-    label: ''
+    expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:ch2) * alg:c * alg:c
+    label: '$KE_e$'
   Total KE_i:
-    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:c2) * alg:c * alg:c * prt:m1 / prt:m2
-    label: ''
+    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:ch2) * alg:c * alg:c * prt:m1 / prt:m2
+    label: '$KE_i'
+  B_tot_Sq:
+    expr: sum(bx*bx + by*by + bz*bz)
+    label: $|B|^2$
   #const_shock_speed:
   #  expr: ''
   #  label: $v_s$
