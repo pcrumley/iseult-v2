@@ -39,35 +39,47 @@ h5_files_list:
     - sz
   spec.tot.*:
     - afeawegawe
+  params.*:
+    - pls:c_omp
+    - out:stride
+    - pls:ppc0
+    - out:istep
+    - prt:m1
+    - prt:m2
+    - timestep
+    - alg:c
+    - prt:ch1
+    - prt:ch2
+
 axes:
   x:
     label: $x$
-    expr: arange(take(shape(bx), 2))
+    expr: arange(take(shape(bx), 2)) * out:istep / pls:c_omp
   y:
     label: $y$
-    expr: arange(take(shape(bx), 1))
+    expr: arange(take(shape(bx), 1)) * istep / pls:c_omp
   z:
     label: $z$
-    expr: arange(take(shape(bx), 0))
+    expr: arange(take(shape(bx), 0)) * istep / pls:c_omp
 param:
   c_omp:
-    expr: '1'
+    expr: pls:c_omp
   istep:
-    expr: '1'
+    expr: out:istep
   me:
-    expr: '1'
+    expr: prt:m1
   mi:
-    expr: '1'
+    expr: prt:m2
   ppc0:
-    expr: '1'
+    expr: pls:ppc0
   qi:
-    expr: '1'
+    expr: prt:ch2
   sigma:
     expr: '1'
   stride:
-    expr: '1'
+    expr: out:stride
   time:
-    expr: '1'
+    expr: timestep
   btheta:
     expr: '1'
   b0:
@@ -166,10 +178,10 @@ scalar_flds:
     expr: ex*bx + ey*by + ez*bz
 scalars:
   Total KE_e:
-    expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
+    expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:c2) * alg:c * alg:c
     label: ''
   Total KE_i:
-    expr: sum(sqrt(ui * ui + vi * vi + wi * wi + 1) -1) * stride * abs(qi) * c * c * mi / me
+    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:c2) * alg:c * alg:c * prt:m1 / prt:m2
     label: ''
   #const_shock_speed:
   #  expr: ''
@@ -179,7 +191,7 @@ scalars:
   #  label: $x_s$
 
 # Must define out to calculate time at each output in units 1/c_omp
-time: '10' # a placeholder. need to change
+time: 'timestep / pls:c_omp' # a placeholder. need to change
 
 vec_flds:
   B:
