@@ -292,7 +292,7 @@ class ExprParser:
         while self.hasNext():
             char = self.peek()
 
-            if char.lower() in '_abcdefghijklmnopqrstuvwxyz0123456789':
+            if char.lower() in '_abcdefghijklmnopqrstuvwxyz0123456789:':
                 var.append(char)
                 self.index += 1
             else:
