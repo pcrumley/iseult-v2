@@ -1,23 +1,23 @@
 name:
-  Tristan_v2
+  Tristan_v_2
 h5_files_list:
   prtl.tot.*:
-    - ind1
-    - ind2
-    - proc1
-    - proc2
-    - u1
-    - u2
-    - v1
-    - v2
-    - w1
-    - w2
-    - x1
-    - x2
-    - y1
-    - y2
-    - z1
-    - z2
+    - ind_1
+    - ind_2
+    - proc_1
+    - proc_2
+    - u_1
+    - u_2
+    - v_1
+    - v_2
+    - w_1
+    - w_2
+    - x_1
+    - x_2
+    - y_1
+    - y_2
+    - z_1
+    - z_2
   flds.tot.*:
     - bx
     - by
@@ -80,10 +80,10 @@ prtls:
     hist_cbar_label: $f_e (p)$
     attrs:
       KE:
-        expr: sqrt(u1*u1 + pow(v1,2) + w1*w1 + 1) - 1
+        expr: sqrt(u_1*u_1 + pow(v_1,2) + w_1*w_1 + 1) - 1
         label: $KE_e$
       gamma:
-        expr: sqrt(u1*u1 + pow(v1,2) + w1*w1 + 1)
+        expr: sqrt(u_1*u_1 + pow(v_1,2) + w_1*w_1 + 1)
         label: $\gamma_e$
       index:
         expr: ind1
@@ -93,30 +93,30 @@ prtls:
         label: $\mathrm{proc}_e$
       px:
         label: $\gamma_e\beta_{e,x}$
-        expr: u1
+        expr: u_1
       py:
         label: $\gamma_e\beta_{e,y}$
-        expr: v1
+        expr: v_1
       pz:
         label: $\gamma_e\beta_{e,z}$
-        expr: w1
+        expr: w_1
       x:
         label: $x$
-        expr: x1
+        expr: x_1
       y:
         label: $y$
-        expr: y1
+        expr: y_1
       z:
         label: $z$
-        expr: z1
+        expr: z_1
   ions:
     hist_cbar_label: $f_i (p)$
     attrs:
       KE:
-        expr: sqrt(u2*u2 + pow(v2,2) + w2*w2 + 1) - 1
+        expr: sqrt(u_2*u_2 + pow(v_2,2) + w_2*w_2 + 1) - 1
         label: $KE_i$
       gamma:
-        expr: sqrt(u2*u2 + pow(v2,2) + w2*w2 + 1)
+        expr: sqrt(u_2*u_2 + pow(v_2,2) + w_2*w_2 + 1)
         label: $\gamma_i$
       index:
         expr: ind2
@@ -126,22 +126,22 @@ prtls:
         label: $\mathrm{proc}_i$
       px:
         label: $\gamma_i\beta_{i,x}$
-        expr: u2
+        expr: u_2
       py:
         label: $\gamma_i\beta_{i,y}$
-        expr: v2
+        expr: v_2
       pz:
         label: $\gamma_i\beta_{i,z}$
-        expr: w2
+        expr: w_2
       x:
         label: $x$
-        expr: x2
+        expr: x_2
       y:
         label: $y$
-        expr: y2
+        expr: y_2
       z:
         label: $z$
-        expr: z2
+        expr: z_2
 scalar_flds:
   B_total:
     label: $|B|$
