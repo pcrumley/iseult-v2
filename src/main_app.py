@@ -54,7 +54,7 @@ class MainApp(Tk.Tk):
             label='Open Simulation', command=self.open_sim_dialog)
         fileMenu.add_command(
            label='Make a Movie', command=self.open_movie_dialog)
-       fileMenu.add_command(label="Exit", underline=1,
+        fileMenu.add_command(label="Exit", underline=1,
                             command=quit, accelerator="Ctrl+Q")
         # fileMenu.add_command(
         #   label= 'Reset Session', command = self.ResetSession)
