@@ -47,14 +47,15 @@ class MainApp(Tk.Tk):
         fileMenu = Tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="File", underline=0, menu=fileMenu)
 
-        fileMenu.add_command(label="Exit", underline=1,
-                             command=quit, accelerator="Ctrl+Q")
+
         fileMenu.add_command(
             label='Save Current State', command=self.OpenSaveDialog)
         fileMenu.add_command(
             label='Open Simulation', command=self.open_sim_dialog)
         fileMenu.add_command(
            label='Make a Movie', command=self.open_movie_dialog)
+       fileMenu.add_command(label="Exit", underline=1,
+                            command=quit, accelerator="Ctrl+Q")
         # fileMenu.add_command(
         #   label= 'Reset Session', command = self.ResetSession)
         self.preset_menu = Tk.Menu(
