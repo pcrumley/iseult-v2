@@ -115,6 +115,7 @@ class phaseSettings(Tk.Toplevel):
         self.yval_menu.grid(
             row=5, column=1,
             sticky=Tk.W + Tk.E)
+
         self.update_attr_menus()
         # the Check boxes for the dimension
 
@@ -387,16 +388,27 @@ class phaseSettings(Tk.Toplevel):
             avail_attrs = []
 
         if len(avail_attrs) > 0:
-            for attr_var, opt_menu in zip([self.xval_var, self.yval_var],
-                                          [self.xval_menu, self.yval_menu]):
-                menu = opt_menu['menu']
-                menu.delete(0, "end")
-                for attr in avail_attrs:
-                    menu.add_command(
-                        label=attr,
-                        command=lambda value=attr: attr_var.set(value))
-                if not (attr_var.get() in avail_attrs):
-                    attr_var.set(avail_attrs[0])
+
+            menu = self.xval_menu['menu']
+            menu.delete(0, "end")
+            for attr in avail_attrs:
+                menu.add_command(
+                    label=attr,
+                    command=lambda value=attr: self.xval_var.set(value))
+
+            if not (self.xval_var.get() in avail_attrs):
+                self.xval_var.set(avail_attrs[0])
+            menu = self.yval_menu['menu']
+            menu.delete(0, "end")
+            for attr in avail_attrs:
+                menu.add_command(
+                    label=attr,
+                    command=lambda value=attr: self.yval_var.set(value))
+
+            if not (self.yval_var.get() in avail_attrs):
+                self.yval_var.set(avail_attrs[0])
+
+
 
     def OnClosing(self):
         self.destroy()

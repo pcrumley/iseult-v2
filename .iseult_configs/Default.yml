@@ -17,7 +17,7 @@ Chart0_0:
   set_y_min: false
   show_cbar: true
   show_int_region: true
-  show_shock: true
+  show_shock: false
   spatial_x: true
   spatial_y: false
   twoD: 1
