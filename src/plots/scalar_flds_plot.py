@@ -23,7 +23,7 @@ class scalarFldsPlot(iseultPlot):
         'OutlineText': True,
         'spatial_x': True,
         'spatial_y': False,
-        'interpolation': 'none',
+        'interpolation': 'bicubic',
         'normalize_density': True,  # Normalize dens to it's upstream values
         'cnorm_type': 'Linear',  # Colormap norm;  options are Pow or Linear
         'cpow_num': 0.6,  # Used in the PowerNorm

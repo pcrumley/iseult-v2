@@ -47,14 +47,15 @@ class MainApp(Tk.Tk):
         fileMenu = Tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="File", underline=0, menu=fileMenu)
 
-        fileMenu.add_command(label="Exit", underline=1,
-                             command=quit, accelerator="Ctrl+Q")
+
         fileMenu.add_command(
             label='Save Current State', command=self.OpenSaveDialog)
         fileMenu.add_command(
             label='Open Simulation', command=self.open_sim_dialog)
         fileMenu.add_command(
            label='Make a Movie', command=self.open_movie_dialog)
+        fileMenu.add_command(label="Exit", underline=1,
+                            command=quit, accelerator="Ctrl+Q")
         # fileMenu.add_command(
         #   label= 'Reset Session', command = self.ResetSession)
         self.preset_menu = Tk.Menu(
@@ -65,7 +66,7 @@ class MainApp(Tk.Tk):
 
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
-        # self.bind_all("S", self.OpenSettings)
+        self.bind_all("S", self.open_settings)
         self.oengus = Oengus(
             interactive=True, tkApp=self,
             preset_view=cmd_args.p)
@@ -219,6 +220,9 @@ class MainApp(Tk.Tk):
 
     def open_movie_dialog(self):
         MovieDialog(self, self.oengus)
+
+    def open_settings(self, *evnt_args):
+        self.playbackbar.open_settings()
 
     def set_knob(self, value):
         # self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()

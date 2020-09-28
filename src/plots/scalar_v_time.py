@@ -47,6 +47,7 @@ class scalar_vs_timePlot(iseultPlot):
         tmp_dict.update(self.plot_param_dict)
         tmp_dict.update(param_dict)
         iseultPlot.__init__(self, parent, pos, tmp_dict)
+        self.shown_lines = []
         self.chart_type = 'ScalarVsTime'
         self.x_axis_info = None
         self.y_axis_info = None

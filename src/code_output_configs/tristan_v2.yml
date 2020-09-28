@@ -113,14 +113,14 @@ prtls:
         label: $\gamma_e\beta_{e,z}$
         expr: w_1
       x:
-        label: $x$
-        expr: x_1
+        label: $x [c/\omega_{pe}]$
+        expr: x_1 / pls:c_omp
       y:
-        label: $y$
-        expr: y_1
+        label: $y [c/\omega_{pe}]$
+        expr: y_1 / pls:c_omp
       z:
-        label: $z$
-        expr: z_1
+        label: $z [c/\omega_{pe}]$
+        expr: z_1 / pls:c_omp
   ions:
     hist_cbar_label: $f_i (p)$
     attrs:
@@ -146,14 +146,14 @@ prtls:
         label: $\gamma_i\beta_{i,z}$
         expr: w_2
       x:
-        label: $x$
-        expr: x_2
+        label: $x [c/\omega_{pe}]$
+        expr: x_2 / pls:c_omp
       y:
-        label: $y$
-        expr: y_2
+        label: $y [c/\omega_{pe}]$
+        expr: y_2 / pls:c_omp
       z:
-        label: $z$
-        expr: z_2
+        label: $z [c/\omega_{pe}]$
+        expr: z_2 / pls:c_omp
 scalar_flds:
   B_total:
     label: $|B|$

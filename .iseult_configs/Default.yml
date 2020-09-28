@@ -17,7 +17,7 @@ Chart0_0:
   set_y_min: false
   show_cbar: true
   show_int_region: true
-  show_shock: true
+  show_shock: false
   spatial_x: true
   spatial_y: false
   twoD: 1
@@ -75,7 +75,7 @@ Chart1_0:
   div_midpoint: 0.0
   face_color: gainsboro
   flds_type: density
-  interpolation: none
+  interpolation: bicubic
   normalize_density: true
   set_color_limits: false
   set_v_max: false
@@ -100,7 +100,7 @@ Chart1_1:
   div_midpoint: 0.0
   face_color: gainsboro
   field_type: B
-  interpolation: none
+  interpolation: bicubic
   normalize_fields: true
   set_v_max: false
   set_v_min: false
