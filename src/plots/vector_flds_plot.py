@@ -34,7 +34,7 @@ class vectorFldsPlot(iseultPlot):
         # np.sign(x-midpoint)*np.abs(x-midpoint)**(-cpow_num) -> [0,midpoint,1]
         # if it is a divering cmap or [0,1] if it is not a divering cmap
         'div_midpoint': 0.0,
-        'interpolation': 'none',
+        'interpolation': 'bicubic',
         # If cmap is none, the plot will inherit the parent's cmap
         'cmap': 'None',
         'UseDivCmap': True,  # Use a diverging cmap for the 2d plots

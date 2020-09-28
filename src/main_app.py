@@ -66,7 +66,7 @@ class MainApp(Tk.Tk):
 
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
-        # self.bind_all("S", self.OpenSettings)
+        self.bind_all("S", self.open_settings)
         self.oengus = Oengus(
             interactive=True, tkApp=self,
             preset_view=cmd_args.p)
@@ -220,6 +220,9 @@ class MainApp(Tk.Tk):
 
     def open_movie_dialog(self):
         MovieDialog(self, self.oengus)
+
+    def open_settings(self, *evnt_args):
+        self.playbackbar.open_settings()
 
     def set_knob(self, value):
         # self.oengus.sims[self.playbackbar.cur_sim].refresh_directory()

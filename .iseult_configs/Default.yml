@@ -75,7 +75,7 @@ Chart1_0:
   div_midpoint: 0.0
   face_color: gainsboro
   flds_type: density
-  interpolation: none
+  interpolation: bicubic
   normalize_density: true
   set_color_limits: false
   set_v_max: false
@@ -100,7 +100,7 @@ Chart1_1:
   div_midpoint: 0.0
   face_color: gainsboro
   field_type: B
-  interpolation: none
+  interpolation: bicubic
   normalize_fields: true
   set_v_max: false
   set_v_min: false

@@ -24,7 +24,7 @@ class iseultPlot:
         'cmap': 'None',
         'UseDivCmap': False,
         'OutlineText': True,
-        'interpolation': 'nearest',
+        'interpolation': 'bicubic',
         'face_color': 'gainsboro'}
 
     _linked_axes = []
