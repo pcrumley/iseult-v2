@@ -285,14 +285,10 @@ class VectorFieldsSettings(Tk.Toplevel):
         else:
             self.params['UseDivCmap'] = self.DivVar.get()
             if self.params['twoD']:
-                tmp_cmap = None
-                if self.params['UseDivCmap']:
-                    tmp_cmap = self.parent.oengus.MainParamDict['DivColorMap']
-                else:
-                    tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
-                self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
-                self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
-                self.subplot.set_v_max_min()
+                self.subplot.remove()
+                self.subplot.build_axes()
+                self.subplot.axis_info()
+                self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
     def SimChanged(self, *args):
