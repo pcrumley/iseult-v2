@@ -6,7 +6,7 @@ Chart0_0:
   cpow_num: 0.6
   face_color: gainsboro
   interpolation: nearest
-  masked: 1
+  masked: True
   mom_dim: 0
   prtl_type: ions
   set_E_max: false
@@ -40,7 +40,7 @@ Chart0_1:
   cpow_num: 0.6
   face_color: gainsboro
   interpolation: nearest
-  masked: 1
+  masked: True
   mom_dim: 0
   prtl_type: electrons
   set_E_max: false

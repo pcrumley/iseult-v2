@@ -3,6 +3,7 @@ import new_cmaps
 from prtl_hists import Fast2DHist, Fast2DWeightedHist
 from base_plot import iseultPlot
 import matplotlib.patheffects as PathEffects
+import copy
 
 
 class phasePlot(iseultPlot):
@@ -12,7 +13,7 @@ class phasePlot(iseultPlot):
     plot_param_dict = {
         'twoD': 1,
         'sim_num': 0,
-        'masked': 1,
+        'masked': True,
         'cnorm_type': 'Log',  # Colormap normalization. Opts are Log or Linear
         'prtl_type': 'ions',
         'x_val': 'x',
@@ -106,10 +107,13 @@ class phasePlot(iseultPlot):
 
     def draw(self):
         self.IntRegionLines = []
-
+        phase_cm = copy.copy(
+            new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']])
+        phase_cm.set_under(
+                self.param_dict['face_color'])
         self.image = self.axes.imshow(
             [[np.nan, np.nan], [np.nan, np.nan]],
-            cmap=new_cmaps.cmaps[self.parent.MainParamDict['ColorMap']],
+            cmap=phase_cm,
             norm=self.norm(), origin='lower', aspect='auto',
             interpolation=self.param_dict['interpolation'])
         if self.param_dict['aspect_one']:
@@ -214,6 +218,8 @@ class phasePlot(iseultPlot):
 
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
+            if True: # replace with if masked:
+                hist2d[hist2d == 0] = self.clim[0] * 0.8
 
             # set the colors
             self.image.set_data(hist2d)
