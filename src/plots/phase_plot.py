@@ -218,7 +218,7 @@ class phasePlot(iseultPlot):
 
             hist2d *= float(hist2d.max())**(-1)
             self.clim = [hist2d[hist2d != 0].min(), hist2d.max()]
-            if True: # replace with if masked:
+            if True:  # replace with if masked:
                 hist2d[hist2d == 0] = self.clim[0] * 0.8
 
             # set the colors

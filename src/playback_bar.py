@@ -104,6 +104,10 @@ class playbackBar(Tk.Frame):
             self, text='Clear Cache',
             command=self.on_refresh).pack(
                 side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        ttk.Button(
+            self, text='Home',
+            command=self.oengus.home).pack(
+                side=Tk.LEFT, fill=Tk.BOTH, expand=0)
         # attach the parameter to the Playbackbar
         self.param.attach(self)
 

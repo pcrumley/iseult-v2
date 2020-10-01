@@ -84,8 +84,8 @@ class MainApp(Tk.Tk):
 
         self.toolbar = myCustomToolbar(self.oengus.canvas, self)
         self.toolbar.update()
-        self.oengus.canvas._tkcanvas.pack(
-            side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
+        # self.oengus.canvas._tkcanvas.pack(
+        #    side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
         self.oengus.canvas.get_tk_widget().pack(
             side=Tk.TOP, fill=Tk.BOTH, expand=1)
         self.oengus.canvas.mpl_connect('button_press_event', self.onclick)

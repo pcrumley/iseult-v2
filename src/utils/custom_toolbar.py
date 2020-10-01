@@ -1,5 +1,4 @@
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
-# eventually i need to make a custom toolbar that overides the zoom function
 
 
 class myCustomToolbar(NavigationToolbar2Tk):

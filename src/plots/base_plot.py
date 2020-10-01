@@ -260,6 +260,7 @@ class iseultPlot:
     def load_axes_pos(self):
         if self._zoom_x_min is not None:
             self.axes.set_xlim(left=self._zoom_x_min)
+
         if self._zoom_x_max is not None:
             self.axes.set_xlim(right=self._zoom_x_max)
 
