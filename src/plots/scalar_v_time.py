@@ -74,7 +74,7 @@ class scalar_vs_timePlot(iseultPlot):
     def clear_lines(self):
         if hasattr(self, 'time_line'):
             self.time_line.remove()
-        #if hasattr(self, 'legend'):
+        # if hasattr(self, 'legend'):
         #    self.legend.remove()
         for line_artist in self.plot_list:
             line_artist[0].remove()
@@ -84,7 +84,11 @@ class scalar_vs_timePlot(iseultPlot):
         self.plot_list = []
         # make sure the line attributes are there...
         kws = ['ls', 'marker', 'color', 'markersize']
-        validators = [validate_ls, validate_marker, validate_color, validate_marker_size]
+        validators = [
+            validate_ls,
+            validate_marker,
+            validate_color,
+            validate_marker_size]
         cycles = [
             self.ls_cycle,
             self.marker_cycle,
@@ -138,7 +142,6 @@ class scalar_vs_timePlot(iseultPlot):
             legend_labels,
             framealpha=.05,
             fontsize=self.parent.MainParamDict['legendLabelSize'])
-
 
         self.legend.set_visible(self.param_dict['show_legend'])
         self.legend.get_frame().set_facecolor('k')
@@ -214,8 +217,9 @@ class scalar_vs_timePlot(iseultPlot):
             dist = ymin_max[1]-ymin_max[0]
             ymin_max[0] -= 0.04*dist
             ymin_max[1] += 0.04*dist
-            if self.param_dict['yLog']:
-                ymin_max = [10**elm for elm in ymin_max]
+
+        if self.param_dict['yLog']:
+            ymin_max = [None if elm is None else 10**elm for elm in ymin_max]
 
         if self.param_dict['set_x_min']:
             xmin_max[0] = self.param_dict['x_min']
