@@ -1,7 +1,8 @@
 import tkinter as Tk
 from tkinter import ttk
 from main_settings_window import SettingsFrame
-
+import numpy as np
+import time
 
 class playbackBar(Tk.Frame):
 
@@ -19,6 +20,7 @@ class playbackBar(Tk.Frame):
 
         self._cur_sim = 0  # A way to hold the current simulation
 
+        self._play_debouncer = -np.inf
         self.play_pressed = False
         self.settings_window = None
 
@@ -170,19 +172,22 @@ class playbackBar(Tk.Frame):
             self.param.value + self.oengus.MainParamDict['SkipSize'])
 
     def play_handler(self, e=None):
-        if not self.play_pressed:
-            # Set the value of play pressed to true, change the button name to
-            # pause, turn off clear_fig, and start the play loop.
-            self.play_pressed = True
-            self.playB.config(text='Pause')
+        tic = time.time()
+        if tic - self._play_debouncer > .05:
+            self._play_debouncer = tic
+            if not self.play_pressed:
+                # Set the value of play pressed to true, change the button name to
+                # pause, turn off clear_fig, and start the play loop.
+                self.play_pressed = True
+                self.playB.config(text='Pause')
 
-            self.after(
-                int(self.oengus.MainParamDict['WaitTime']*1E3), self.blink)
-        else:
-            # pause the play loop, turn clear fig back on,
-            # and set the button name back to play
-            self.play_pressed = False
-            self.playB.config(text='Play')
+                self.after(
+                    int(self.oengus.MainParamDict['WaitTime']*1E3), self.blink)
+            else:
+                # pause the play loop, turn clear fig back on,
+                # and set the button name back to play
+                self.play_pressed = False
+                self.playB.config(text='Play')
 
     def blink(self):
         if self.play_pressed:
