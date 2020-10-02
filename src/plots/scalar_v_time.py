@@ -196,8 +196,18 @@ class scalar_vs_timePlot(iseultPlot):
             plot[0].set_data(tmp_dict['times'], tmp_dict['data'])
             xmin_max[0] = min(xmin_max[0], np.min(tmp_dict['times']))
             xmin_max[1] = max(xmin_max[1], np.max(tmp_dict['times']))
-            ymin_max[0] = min(ymin_max[0], np.min(tmp_dict['data']))
-            ymin_max[1] = max(ymin_max[1], np.max(tmp_dict['data']))
+            if self.param_dict['yLog'] and np.any(tmp_dict['data'] > 0):
+                
+                ymin_max[0] = min(
+                    ymin_max[0],
+                    np.min(tmp_dict['data'][tmp_dict['data'] > 0]))
+
+                ymin_max[1] = max(
+                    ymin_max[1],
+                    np.max(tmp_dict['data'][tmp_dict['data'] > 0]))
+            else:
+                ymin_max[0] = min(ymin_max[0], np.min(tmp_dict['data']))
+                ymin_max[1] = max(ymin_max[1], np.max(tmp_dict['data']))
 
         if np.isinf(xmin_max[0]):
             xmin_max = [None, None]
@@ -218,8 +228,8 @@ class scalar_vs_timePlot(iseultPlot):
             ymin_max[0] -= 0.04*dist
             ymin_max[1] += 0.04*dist
 
-        if self.param_dict['yLog']:
-            ymin_max = [None if elm is None else 10**elm for elm in ymin_max]
+            if self.param_dict['yLog']:
+                ymin_max = [10**elm for elm in ymin_max]
 
         if self.param_dict['set_x_min']:
             xmin_max[0] = self.param_dict['x_min']
@@ -229,6 +239,7 @@ class scalar_vs_timePlot(iseultPlot):
             ymin_max[0] = self.param_dict['y_min']
         if self.param_dict['set_y_max']:
             ymin_max[1] = self.param_dict['y_max']
+
 
         self.axes.set_xlim(xmin_max)
         self.axes.set_ylim(ymin_max)
