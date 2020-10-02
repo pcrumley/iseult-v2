@@ -97,11 +97,11 @@ class playbackBar(Tk.Frame):
             command=self.open_settings)
         self.settingsB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
 
-        # a reload button that reloads the files and then refreshes the plot
-        # ttk.Button(
-        #    self, text='Reload',
-        #    command=self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # a refresh button that refreshing the current timestep
+        # a reload button that looks the files and then refreshes the plot
+        ttk.Button(
+            self, text='Reload',
+            command=self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        # a button that clears the cache
         ttk.Button(
             self, text='Clear Cache',
             command=self.on_refresh).pack(
@@ -144,6 +144,11 @@ class playbackBar(Tk.Frame):
             self.cur_sim = names.index(self.cur_sim_name.get())
             self.oengus.cur_sim = self.cur_sim
 
+    def on_reload(self):
+        self.oengus.sims[self.cur_sim].refresh_directory()
+        self.param.set_max(
+            len(self.oengus.sims[self.cur_sim]))
+
     def open_settings(self):
         if self.settings_window is None:
             self.settings_window = SettingsFrame(self.oengus)
@@ -154,6 +159,8 @@ class playbackBar(Tk.Frame):
     def on_refresh(self, *args):
         for sim in self.oengus.sims:
             sim.clear_caches()
+        self.param.set_max(
+            len(self.oengus.sims[self.cur_sim]))
         self.oengus.draw_output()
 
     def loop_changed(self, *args):

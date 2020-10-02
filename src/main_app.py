@@ -67,6 +67,7 @@ class MainApp(Tk.Tk):
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
         self.bind_all("S", self.open_settings)
+
         self.oengus = Oengus(
             interactive=True, tkApp=self,
             preset_view=cmd_args.p)
@@ -106,7 +107,7 @@ class MainApp(Tk.Tk):
         self.bind('<Return>', self.txt_enter)
         self.bind('<Left>', self.playbackbar.skip_left)
         self.bind('<Right>', self.playbackbar.skip_right)
-        # self.bind('r', self.playbackbar.OnReload)
+        self.bind_all('r', self.playbackbar.on_reload())
         self.bind('<space>', self.playbackbar.play_handler)
         self.update()
 
