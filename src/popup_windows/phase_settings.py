@@ -119,6 +119,24 @@ class phaseSettings(Tk.Toplevel):
         self.update_attr_menus()
         # the Check boxes for the dimension
 
+        self.yBins = Tk.StringVar()
+        self.yBins.set(str(self.params['y_bins']))
+        ttk.Label(
+            frm, text='# of ybins').grid(
+                row=9, column=0, sticky=Tk.W)
+        ttk.Entry(
+            frm, textvariable=self.yBins, width=7).grid(
+                row=9, column=1)
+
+        self.xBins = Tk.StringVar()
+        self.xBins.set(str(self.params['x_bins']))
+        ttk.Label(
+            frm, text='# of xbins').grid(
+                row=10, column=0, sticky=Tk.W)
+        ttk.Entry(
+            frm, textvariable=self.xBins, width=7).grid(
+                row = 10, column = 1)
+
         # Control whether or not Cbar is shown
         self.CbarVar = Tk.IntVar()
         self.CbarVar.set(self.params['show_cbar'])
@@ -330,24 +348,31 @@ class phaseSettings(Tk.Toplevel):
             self.parent.oengus.canvas.draw()
 
     def TxtEnter(self, e):
-        self.FieldsCallback()
-        self.GammaCallback()
+        self.fields_callback()
+        self.bins_callback()
+    def bins_callback(self):
+        to_reload = False
+        intVarList = [self.xBins, self.yBins]
+        intParamList = ['x_bins', 'y_bins']
+        for j in range(len(intVarList)):
+            try:
+            #make sure the user types in a float
+                user_num = int(intVarList[j].get())
+                if user_num - int(self.params[intParamList[j]]) != 0:
 
-    def GammaCallback(self):
-        try:
-            # make sure the user types in a float
-            user_num = float(self.powGamma.get())
-            if abs(user_num - self.params['cpow_num']) > 1E-4:
-                self.params['cpow_num'] = user_num
-                if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
-                    self.subplot.remove()
-                    self.subplot.draw()
-                    self.parent.oengus.canvas.draw()
-        except ValueError:
-            # if they type in random stuff, just set it ot the param value
-            self.powGamma.set(str(self.params['cpow_num']))
+                    self.params[intParamList[j]] = user_num
+                    to_reload += True
 
-    def FieldsCallback(self):
+            except ValueError:
+            #    print hi
+                #if they type in random stuff, just set it ot the param value
+                intVarList[j].set(str(self.parent.GetPlotParam(intVarList[j])))
+
+        if to_reload:
+            self.subplot.refresh()
+            self.parent.oengus.canvas.draw()
+
+    def fields_callback(self):
         tkvarLimList = [self.Zmin, self.Zmax]
         plot_param_List = ['v_min', 'v_max']
         tkvarSetList = [self.setZminVar, self.setZmaxVar]
@@ -407,7 +432,6 @@ class phaseSettings(Tk.Toplevel):
 
             if not (self.yval_var.get() in avail_attrs):
                 self.yval_var.set(avail_attrs[0])
-
 
 
     def OnClosing(self):
