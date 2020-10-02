@@ -146,8 +146,7 @@ class playbackBar(Tk.Frame):
 
     def on_reload(self):
         self.oengus.sims[self.cur_sim].refresh_directory()
-        self.param.set_max(
-            len(self.oengus.sims[self.cur_sim]))
+        self.update_slider()
 
     def open_settings(self):
         if self.settings_window is None:
@@ -159,8 +158,7 @@ class playbackBar(Tk.Frame):
     def on_refresh(self, *args):
         for sim in self.oengus.sims:
             sim.clear_caches()
-        self.param.set_max(
-            len(self.oengus.sims[self.cur_sim]))
+        self.update_slider()
         self.oengus.draw_output()
 
     def loop_changed(self, *args):
