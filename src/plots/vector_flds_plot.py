@@ -142,21 +142,21 @@ class vectorFldsPlot(iseultPlot):
                 self.axC.set_visible(False)
 
             self.axes.set_xlabel(
-                r'$x$',
+                r'$x\ [c/\omega_{pe}]$',
                 labelpad=self.parent.MainParamDict['xLabelPad'],
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
             if self.parent.MainParamDict['2DSlicePlane'] == 0:
                 self.axes.set_ylabel(
-                    r'$y$',
+                    r'$y\ [c/\omega_{pe}]$',
                     labelpad=self.parent.MainParamDict['yLabelPad'],
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])
 
             if self.parent.MainParamDict['2DSlicePlane'] == 1:
                 self.axes.set_ylabel(
-                    r'$z$',
+                    r'$z\ [c/\omega_{pe}]$',
                     labelpad=self.parent.MainParamDict['yLabelPad'],
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])

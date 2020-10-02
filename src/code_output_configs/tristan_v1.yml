@@ -94,13 +94,13 @@ h5_files_list:
     - xsl
 axes:
   x:
-    label: $x$
+    label: $x\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 2)) * istep / c_omp
   y:
-    label: $y$
+    label: $y\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 1)) * istep / c_omp
   z:
-    label: $z$
+    label: $z\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 0)) * istep / c_omp
 param:
   c_omp:

@@ -53,7 +53,7 @@ h5_files_list:
 
 axes:
   x:
-    label: $x$
+    label: $x $
     expr: arange(take(shape(bx), 2)) * out:istep / pls:c_omp
   y:
     label: $y$
@@ -113,13 +113,13 @@ prtls:
         label: $\gamma_e\beta_{e,z}$
         expr: w_1
       x:
-        label: $x [c/\omega_{pe}]$
+        label: $x\ [c/\omega_{pe}]$
         expr: x_1 / pls:c_omp
       y:
-        label: $y [c/\omega_{pe}]$
+        label: $y\ [c/\omega_{pe}]$
         expr: y_1 / pls:c_omp
       z:
-        label: $z [c/\omega_{pe}]$
+        label: $z\ [c/\omega_{pe}]$
         expr: z_1 / pls:c_omp
   ions:
     hist_cbar_label: $f_i (p)$
@@ -181,7 +181,7 @@ scalars:
     expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:ch1) * alg:c * alg:c * prt:m1
     label: '$KE_e$'
   Total KE_i:
-    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:ch2) * alg:c * alg:c * prt:m2 
+    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:ch2) * alg:c * alg:c * prt:m2
     label: '$KE_i'
   B_tot_Sq:
     expr: sum(bx*bx + by*by + bz*bz) * pow(out:istep, 2) * 0.5
