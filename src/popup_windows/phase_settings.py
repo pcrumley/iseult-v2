@@ -214,7 +214,9 @@ class phaseSettings(Tk.Toplevel):
                     self.ShockVar.set(False)
 
             self.subplot.shock_line.set_visible(self.ShockVar.get())
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def CbarHandler(self, *args):
@@ -239,7 +241,9 @@ class phaseSettings(Tk.Toplevel):
                     tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
                 self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
                 self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
+                self.subplot.save_axes_pos()
                 self.subplot.refresh()
+                self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
@@ -317,7 +321,9 @@ class phaseSettings(Tk.Toplevel):
             self.update_attr_menus()
             self.parent.oengus.calc_sims_shown()
             self.parent.playbackbar.update_sim_list()
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def aspectHandler(self, *args):
@@ -336,7 +342,9 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_min'] = self.setZminVar.get()
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def setZmaxChanged(self, *args):
@@ -344,12 +352,15 @@ class phaseSettings(Tk.Toplevel):
             pass
         else:
             self.params['set_v_max'] = self.setZmaxVar.get()
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def TxtEnter(self, e):
         self.fields_callback()
         self.bins_callback()
+
     def bins_callback(self):
         to_reload = False
         intVarList = [self.xBins, self.yBins]
@@ -364,12 +375,13 @@ class phaseSettings(Tk.Toplevel):
                     to_reload += True
 
             except ValueError:
-            #    print hi
-                #if they type in random stuff, just set it ot the param value
+                # if they type in random stuff, just set it ot the param value
                 intVarList[j].set(str(self.parent.GetPlotParam(intVarList[j])))
 
         if to_reload:
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def fields_callback(self):
@@ -389,7 +401,9 @@ class phaseSettings(Tk.Toplevel):
                 # if they type in random stuff, just set it ot the param value
                 tkvarLimList[j].set(str(self.params[plot_param_List[j]]))
         if to_reload:
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def update_prtl_menu(self):

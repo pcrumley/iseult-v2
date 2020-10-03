@@ -4,6 +4,7 @@ from main_settings_window import SettingsFrame
 import numpy as np
 import time
 
+
 class playbackBar(Tk.Frame):
 
     """
