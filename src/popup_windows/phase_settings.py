@@ -252,7 +252,9 @@ class phaseSettings(Tk.Toplevel):
         else:
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
+                self.subplot.save_axes_pos()
                 self.subplot.remove()
+                self.subplot.load_axes_pos()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 

@@ -267,7 +267,10 @@ class VectorFieldsSettings(Tk.Toplevel):
                     self.ShockVar.set(False)
 
             self.subplot.shock_line.set_visible(self.ShockVar.get())
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
+
             self.parent.oengus.canvas.draw()
 
     def CbarHandler(self, *args):
@@ -299,7 +302,9 @@ class VectorFieldsSettings(Tk.Toplevel):
             self.params['sim_num'] = sim_names.index(self.SimVar.get())
             self.parent.oengus.calc_sims_shown()
             self.parent.playbackbar.update_sim_list()
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def StretchHandler(self, *args):
@@ -409,11 +414,12 @@ class VectorFieldsSettings(Tk.Toplevel):
             if abs(user_num - self.params['cpow_num']) > 1E-4:
                 self.params['cpow_num'] = user_num
                 if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
+                    self.subplot.save_axes_pos()
                     self.subplot.remove()
                     self.subplot.build_axes()
                     self.subplot.axis_info()
-
                     self.subplot.draw()
+                    self.subplot.load_axes_pos()
                     self.parent.oengus.canvas.draw()
         except ValueError:
             # if they type in random stuff, just set it ot the param value

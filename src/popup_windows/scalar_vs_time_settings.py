@@ -150,7 +150,7 @@ class ScalarVsTimeSettings(Tk.Toplevel):
             param_name = opt['param_name']
             var = opt['bool_var']
             var.set(self.params[param_name])
-            var.trace('w', self.bool_handler)
+            var.trace('w', partial(self.bool_handler, param_name))
             cb = ttk.Checkbutton(
                 master, text=label,
                 variable=var)
@@ -200,7 +200,9 @@ class ScalarVsTimeSettings(Tk.Toplevel):
 
         self.gen_plot_args(i)
         self.add_line_options(i)
+        self.subplot.save_axes_pos()
         self.subplot.draw()
+        self.subplot.load_axes_pos()
         self.parent.oengus.canvas.draw()
 
     def buttonbox(self, master):
@@ -387,8 +389,9 @@ class ScalarVsTimeSettings(Tk.Toplevel):
                     self.line_var_helpers[i]['quant_op'])
                 self.parent.oengus.calc_sims_shown()
                 self.parent.playbackbar.update_sim_list()
-
+                self.subplot.save_axes_pos()
                 self.subplot.refresh()
+                self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
     def update_quantity_menu(self, tk_var, options, option_menu):
@@ -436,8 +439,9 @@ class ScalarVsTimeSettings(Tk.Toplevel):
             except ValueError:
                 helper['markersize']['var'].set(
                     plot_args['markersize'])
-
+        self.subplot.save_axes_pos()
         self.subplot.draw()
+        self.subplot.load_axes_pos()
         self.parent.oengus.canvas.draw()
 
     def text_callback(self):
@@ -460,17 +464,21 @@ class ScalarVsTimeSettings(Tk.Toplevel):
                 tk_var.set(str(self.params[p_name]))
 
         if to_reload:
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def lim_handler(self, *args):
         for elm in self.lims_helper:
             param_name, var = elm['param_name'], elm['to_set_var']
             self.params[param_name] = var.get()
+        self.subplot.save_axes_pos()
         self.subplot.refresh()
+        self.subplot.load_axes_pos()
         self.parent.oengus.canvas.draw()
 
-    def bool_handler(self, *args):
+    def bool_handler(self, bool_name, *args):
         for elm in self.bool_opts:
             param_name, var = elm['param_name'], elm['bool_var']
             self.params[param_name] = var.get()
@@ -480,5 +488,11 @@ class ScalarVsTimeSettings(Tk.Toplevel):
             self.subplot.axes.set_yscale('linear')
         self.subplot.legend.set_visible(self.params['show_legend'])
         self.subplot.time_line.set_visible(self.params['show_cur_time'])
-        self.subplot.refresh()
+        if bool_name == 'yLog':
+            self.subplot.refresh()
+        else:
+            self.subplot.save_axes_pos()
+            self.subplot.refresh()
+            self.subplot.load_axes_pos()
+
         self.parent.oengus.canvas.draw()

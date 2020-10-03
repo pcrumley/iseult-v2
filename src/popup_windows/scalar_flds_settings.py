@@ -230,7 +230,9 @@ class ScalarFieldsSettings(Tk.Toplevel):
                     self.ShockVar.set(False)
 
             self.subplot.shock_line.set_visible(self.ShockVar.get())
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
+            self.subplot.load_axes_pos()
             self.parent.oengus.canvas.draw()
 
     def CbarHandler(self, *args):
@@ -248,10 +250,12 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['UseDivCmap'] = self.DivVar.get()
             if self.params['twoD']:
+                self.subplot.save_axes_pos()
                 self.subplot.remove()
                 self.subplot.build_axes()
                 self.subplot.axis_info()
                 self.subplot.draw()
+                self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
     def SimChanged(self, *args):
@@ -272,10 +276,12 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['stretch_colors'] = self.StretchVar.get()
             if self.params['twoD']:
+                self.subplot.save_axes_pos()
                 self.subplot.remove()
                 self.subplot.build_axes()
                 self.subplot.axis_info()
                 self.subplot.draw()
+                self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
     def cnormChanged(self, *args):
@@ -284,11 +290,12 @@ class ScalarFieldsSettings(Tk.Toplevel):
         else:
             self.params['cnorm_type'] = self.cnormvar.get()
             if self.params['twoD']:
+                self.subplot.save_axes_pos()
                 self.subplot.remove()
                 self.subplot.build_axes()
                 self.subplot.axis_info()
-
                 self.subplot.draw()
+                self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
     def quantityChanged(self, *args):
@@ -366,10 +373,13 @@ class ScalarFieldsSettings(Tk.Toplevel):
             if abs(user_num - self.params['cpow_num']) > 1E-4:
                 self.params['cpow_num'] = user_num
                 if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
+                    self.subplot.save_axes_pos()
                     self.subplot.remove()
                     self.subplot.build_axes()
                     self.subplot.axis_info()
                     self.subplot.draw()
+                    self.subplot.load_axes_pos()
+
                     self.parent.oengus.canvas.draw()
         except ValueError:
             # if they type in random stuff, just set it ot the param value

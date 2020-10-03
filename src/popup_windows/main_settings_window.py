@@ -285,7 +285,9 @@ class SettingsFrame(Tk.Toplevel):
             # update shock lines
             for i in range(self.oengus.MainParamDict['NumOfRows']):
                 for j in range(self.oengus.MainParamDict['NumOfCols']):
+                    self.oengus.SubPlotList[i][j].save_axes_pos()
                     self.oengus.SubPlotList[i][j].refresh()
+                    self.oengus.SubPlotList[i][j].load_axes_pos()
             self.oengus.canvas.draw()
 
     def RadioLinked(self, *args):
@@ -298,7 +300,9 @@ class SettingsFrame(Tk.Toplevel):
             for i in range(self.oengus.MainParamDict['NumOfRows']):
                 for j in range(self.oengus.MainParamDict['NumOfCols']):
                     self.oengus.SubPlotList[i][j].link_handler()
+                    self.oengus.SubPlotList[i][j].save_axes_pos()
                     self.oengus.SubPlotList[i][j].refresh()
+                    self.oengus.SubPlotList[i][j].load_axes_pos()
             self.oengus.canvas.draw()
 
     def AspectVarChanged(self, *args):
