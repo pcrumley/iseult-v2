@@ -17,7 +17,7 @@ from spectra_plot import SpectralPlot
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', interactive=True, tkApp=None):
+    def __init__(self, preset_view='Default', interactive=True, mainApp=None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.sims = [picSim(name='sim0')]
@@ -38,9 +38,10 @@ class Oengus():
         # Create the figure
         self.figure = plt.figure(edgecolor='none', facecolor='w')
         if self.interactive:
-            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
-            self.tkApp = tkApp
+            from matplotlib.backends.backend_qt4agg import FigureCanvas
+            self.canvas = FigureCanvas(self.figure)
+            self.canvas.draw()
+            self.mainApp = mainApp
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
@@ -319,7 +320,7 @@ class Oengus():
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].go_home()
         if self.interactive:
-            self.tkApp.toolbar.update()
+            self.mainApp.toolbar.update()
         self.canvas.draw()
 
     def link_axes(self, ax, ax_type=None, subplot=None):
@@ -354,7 +355,7 @@ class Oengus():
                 self.SubPlotList[i][j].refresh()
                 self.SubPlotList[i][j].load_axes_pos()
         if self.interactive:
-            self.tkApp.toolbar.update()
+            self.mainApp.toolbar.update()
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
@@ -412,8 +413,6 @@ class Oengus():
                 for sim_num in self.sims_shown:
                     self.sims[sim_num].set_time(cur_t, units=None)
             self.draw_output()
-            # if self.interactive:
-            #    self.canvas.get_tk_widget().update_idletasks()
 
             s, (width, height) = self.canvas.print_to_buffer()
             im = Image.frombytes('RGBA', (width, height), s)

@@ -3,11 +3,12 @@ import os
 import sys
 import yaml
 from functools import partial
+import tkinter as Tk
 from pic_sim import picSim
 from oengus import Oengus
 import numpy as np
 from mpl_param import Param
-
+from custom_toolbar import myCustomToolbar
 from movie_dialog import MovieDialog
 from open_sim_dialog import OpenSimDialog
 from save_config import SaveDialog
@@ -16,25 +17,20 @@ from vector_flds_settings import VectorFieldsSettings
 from scalar_vs_time_settings import ScalarVsTimeSettings
 from phase_settings import phaseSettings
 from playback_bar import playbackBar
-from matplotlib.backends.qt_compat import QtCore, QtWidgets
-from PyQt5.QtGui import QKeySequence
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as myCustomToolbar
-from PyQt5.QtCore import Qt
+
 
 def destroy(e):
     sys.exit()
 
 
-class MainApp(QtWidgets.QMainWindow):
+class MainApp(Tk.Tk):
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, name, cmd_args):
 
-        super().__init__()
-        self._main = QtWidgets.QWidget()
-        self.setCentralWidget(self._main)
-        self.setFocusPolicy(Qt.StrongFocus)
-        layout = QtWidgets.QVBoxLayout(self._main)
-        self.setWindowTitle(name)
+        Tk.Tk.__init__(self)
+        # self.update_idletasks()
+        menubar = Tk.Menu(self)
+        self.wm_title(name)
 
         self.cmd_args = cmd_args
 
@@ -48,53 +44,6 @@ class MainApp(QtWidgets.QMainWindow):
 
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
 
-        self.oengus = Oengus(
-            interactive=True, mainApp=self,
-            preset_view=cmd_args.p)
-        # open a sim
-        if len(self.cmd_args.O[0]) == 0:
-            self.oengus.sims[0].outdir = os.curdir
-        else:
-            for i, outdir in enumerate(self.cmd_args.O):
-                if i == len(self.oengus.sims):
-                    self.oengus.add_sim(f'sim{i}')
-                self.oengus.sims[i].outdir = outdir
-        self.oengus.create_graphs()
-        """
-        self.setGeometry(self.oengus.MainParamDict['WindowSize'])
-        self.minsize(780, 280)
-        """
-        layout.addWidget(self.oengus.canvas)
-        self.toolbar = myCustomToolbar(self.oengus.canvas, self)
-        self.addToolBar(QtCore.Qt.BottomToolBarArea,
-                        self.toolbar)
-        # self.toolbar.update()
-        # self.oengus.canvas._tkcanvas.pack(
-        #    side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
-
-        self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
-
-        # Make the object hold the timestep info
-
-        self.time_step = Param(1, minimum=1, maximum=1000)
-        self.playbackbar = playbackBar(self.oengus, self.time_step)
-        layout.addWidget(self.playbackbar)
-        self.time_step.attach(self)
-        self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
-        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
-        self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
-        self.popups_dict = {}
-        self.create_shortcuts()
-        #self.config(menu=menubar)
-        #self.protocol("WM_DELETE_WINDOW", sys.exit)
-
-        # self.update()
-
-    def build_menu(self):
-        pass
-        """
-        menubar = Tk.Menu(self)
-        self.wm_title()
         fileMenu = Tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="File", underline=0, menu=fileMenu)
 
@@ -113,27 +62,58 @@ class MainApp(QtWidgets.QMainWindow):
 
         menubar.add_cascade(
             label='Preset Views', underline=0, menu=self.preset_menu)
-        """
 
-    def create_shortcuts(self):
-        #self.quit = QtWidgets.QShortcut(QKeySequence('q'), self)
-        #self.quit.activated.connect(self.on_quit)
-        self.settings_acc = QtWidgets.QShortcut(QKeySequence('s'), self)
-        self.settings_acc.activated.connect(self.open_settings)
-
-
-        """
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
         self.bind_all("S", self.open_settings)
+
+        self.oengus = Oengus(
+            interactive=True, tkApp=self,
+            preset_view=cmd_args.p)
+        # open a sim
+        if len(self.cmd_args.O[0]) == 0:
+            self.oengus.sims[0].outdir = os.curdir
+        else:
+            for i, outdir in enumerate(self.cmd_args.O):
+                if i == len(self.oengus.sims):
+                    self.oengus.add_sim(f'sim{i}')
+                self.oengus.sims[i].outdir = outdir
+        self.oengus.create_graphs()
+        self.geometry(self.oengus.MainParamDict['WindowSize'])
+        self.minsize(780, 280)
+
+        self.toolbar = myCustomToolbar(self.oengus.canvas, self)
+        self.toolbar.update()
+        # self.oengus.canvas._tkcanvas.pack(
+        #    side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
+
+        self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
+
+        # Make the object hold the timestep info
+        self.time_step = Param(1, minimum=1, maximum=1000)
+        self.playbackbar = playbackBar(self.oengus, self.time_step)
+        self.time_step.attach(self)
+        self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
+        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
+
+        self.playbackbar.pack(side=Tk.BOTTOM, fill=Tk.X)
+        self.toolbar.pack(side=Tk.BOTTOM, fill=Tk.X)
+        self.oengus.canvas.get_tk_widget().pack(
+            side=Tk.TOP, fill=Tk.BOTH, expand=1)
+
+        self.popups_dict = {}
+
+        self.config(menu=menubar)
+        self.protocol("WM_DELETE_WINDOW", sys.exit)
         self.bind('<Return>', self.txt_enter)
         self.bind('<Left>', self.playbackbar.skip_left)
         self.bind('<Right>', self.playbackbar.skip_right)
         self.bind_all('r', self.playbackbar.on_reload())
         self.bind('<space>', self.playbackbar.play_handler)
-        """
+        self.update()
+
     def views_update(self):
-        """
         tmpdir = os.listdir(os.path.join(self.IseultDir, '.iseult_configs'))
         tmpdir = [elm for elm in tmpdir]
         tmpdir.sort()
@@ -160,7 +140,7 @@ class MainApp(QtWidgets.QMainWindow):
                 command=partial(
                     self.load_config,
                     name))
-        """
+
     def onclick(self, event):
         '''After being clicked, we should use the x and y of the cursor to
         determine what subplot was clicked'''
@@ -228,9 +208,9 @@ class MainApp(QtWidgets.QMainWindow):
         # self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.oengus.canvas.draw()
         # refresh the geometry
-        """
+
         self.geometry(self.oengus.MainParamDict['WindowSize'])
-        """
+
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
             self.oengus.plot_types_dict[new_plot_type](self.oengus, pos, {})
@@ -260,17 +240,9 @@ class MainApp(QtWidgets.QMainWindow):
                 sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
 
-    def on_quit(self):
-        print('hi')
+        self.oengus.canvas.get_tk_widget().update_idletasks()
+
 
 def runMe(cmd_args):
-    # Check whether there is already a running QApplication (e.g., if running
-    # from an IDE).
-    qapp = QtWidgets.QApplication.instance()
-    if not qapp:
-        qapp = QtWidgets.QApplication(sys.argv)
     app = MainApp('Iseult', cmd_args)
-    app.show()
-    app.activateWindow()
-    app.raise_()
-    qapp.exec_()
+    app.mainloop()

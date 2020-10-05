@@ -1,47 +1,53 @@
-"""
-===============
-Embedding in Tk
-===============
-"""
-
-import tkinter
-
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
-# Implement the default Matplotlib key bindings.
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
+import sys
+import time
 
 import numpy as np
 
-
-root = tkinter.Tk()
-root.wm_title("Embedding in Tk")
-
-fig = Figure(figsize=(5, 4), dpi=100)
-t = np.arange(0, 3, .01)
-fig.add_subplot().plot(t, 2 * np.sin(2 * np.pi * t))
-
-canvas = FigureCanvasTkAgg(fig, master=root)  # A tk.DrawingArea.
-canvas.draw()
-
-# pack_toolbar=False will make it easier to use a layout manager later on.
-toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
-toolbar.update()
+from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5agg import (
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+else:
+    from matplotlib.backends.backend_qt4agg import (
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
 
 
-canvas.mpl_connect(
-    "key_press_event", lambda event: print(f"you pressed {event.key}"))
-canvas.mpl_connect("key_press_event", key_press_handler)
+class ApplicationWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self._main = QtWidgets.QWidget()
+        self.setCentralWidget(self._main)
+        layout = QtWidgets.QVBoxLayout(self._main)
 
-button = tkinter.Button(master=root, text="Quit", command=root.quit)
+        static_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        layout.addWidget(static_canvas)
+        self.addToolBar(NavigationToolbar(static_canvas, self))
 
-# Packing order is important. Widgets are processed sequentially and if there
-# is no space left, because the window is too small, they are not displayed.
-# The canvas is rather flexible in its size, so we pack it last which makes
-# sure the UI controls are displayed as long as possible.
-button.pack(side=tkinter.BOTTOM)
-toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        dynamic_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        layout.addWidget(dynamic_canvas)
+        self.addToolBar(QtCore.Qt.BottomToolBarArea,
+                        NavigationToolbar(dynamic_canvas, self))
 
-tkinter.mainloop()
+        self._static_ax = static_canvas.figure.subplots()
+        t = np.linspace(0, 10, 501)
+        self._static_ax.plot(t, np.tan(t), ".")
+
+        self._dynamic_ax = dynamic_canvas.figure.subplots()
+        self._timer = dynamic_canvas.new_timer(
+            100, [(self._update_canvas, (), {})])
+        self._timer.start()
+
+    def _update_canvas(self):
+        self._dynamic_ax.clear()
+        t = np.linspace(0, 10, 101)
+        # Shift the sinusoid as a function of time.
+        self._dynamic_ax.plot(t, np.sin(t + time.time()))
+        self._dynamic_ax.figure.canvas.draw()
+
+
+if __name__ == "__main__":
+    qapp = QtWidgets.QApplication(sys.argv)
+    app = ApplicationWindow()
+    app.show()
+    qapp.exec_()
