@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout,
-                             QLabel, QLineEdit, QPushButton,
-                             QComboBox, QCheckBox, QTabWidget)
+from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
+                             QLabel, QLineEdit, QPushButton, QVBoxLayout,
+                             QComboBox, QCheckBox, QTabWidget, QSpinBox,
+                             QRadioButton)
 from PyQt5.QtCore import Qt, QTimer
 from new_cmaps import cmap_to_hex
 import new_cmaps
-
+from functools import partial
 
 class SettingsFrame(QWidget):
     def __init__(self, oengus):
@@ -23,20 +24,6 @@ class SettingsFrame(QWidget):
         layout.addWidget(tabwidget, 0, 0)
 
 
-    def RadioLinked(self, *args):
-        # If the shared axes are changed, we have to call the link
-        # handler on every subplot
-        if self.LinkedVar.get() == self.oengus.MainParamDict['LinkSpatial']:
-            pass
-        else:
-            self.oengus.MainParamDict['LinkSpatial'] = self.LinkedVar.get()
-            for i in range(self.oengus.MainParamDict['NumOfRows']):
-                for j in range(self.oengus.MainParamDict['NumOfCols']):
-                    self.oengus.SubPlotList[i][j].link_handler()
-                    self.oengus.SubPlotList[i][j].save_axes_pos()
-                    self.oengus.SubPlotList[i][j].refresh()
-                    self.oengus.SubPlotList[i][j].load_axes_pos()
-            self.oengus.canvas.draw()
 
     def AspectVarChanged(self, *args):
         if self.AspectVar.get() == self.main_params['ImageAspect']:
@@ -91,98 +78,6 @@ class SettingsFrame(QWidget):
         #    self.main_params['xLimsRelative'] = self.xRelVar.get()
         #    self.parent.RenewCanvas()
 
-    def CmapChanged(self, *args):
-        # Note here that Tkinter passes an event object to onselect()
-        if self.cmapvar.get() == self.main_params['ColorMap']:
-            pass
-        else:
-            self.main_params['ColorMap'] = self.cmapvar.get()
-            cmaps_with_green = self.oengus.MainParamDict['cmaps_with_green']
-            if self.main_params['ColorMap'] in cmaps_with_green:
-
-                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
-                    0.55, 'plasma')
-                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
-                    0.8, 'plasma')
-
-                self.oengus.MainParamDict['ion_fit_color'] = 'r'
-                self.oengus.MainParamDict['electron_fit_color'] = 'yellow'
-
-            else:
-                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
-                    0.45, 'viridis')
-                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
-                    0.75, 'viridis')
-
-                self.oengus.MainParamDict['ion_fit_color'] = 'mediumturquoise'
-                self.oengus.MainParamDict['electron_fit_color'] = 'lime'
-
-            self.oengus.figure.clf()
-            self.oengus.create_graphs()
-            self.oengus.canvas.draw()
-
-    def DivCmapChanged(self, *args):
-        # Note here that Tkinter passes an event object to onselect()
-        if self.div_cmapvar.get() == self.main_params['DivColorMap']:
-            pass
-        else:
-            self.main_params['DivColorMap'] = self.div_cmapvar.get()
-            self.oengus.figure.clf()
-            self.oengus.create_graphs()
-            self.oengus.canvas.draw()
-
-    def SkipSizeChanged(self, *args):
-        # Note here that Tkinter passes an event object to SkipSizeChange()
-        try:
-            if self.skipSize.get() == '':
-                pass
-            else:
-                self.main_params['SkipSize'] = int(self.skipSize.get())
-        except ValueError:
-            self.skipSize.set(self.main_params['SkipSize'])
-
-    def RowNumChanged(self, *args):
-        try:
-            if self.rowNum.get() == '':
-                pass
-            if int(self.rowNum.get()) < 1:
-                self.rowNum.set(1)
-            if int(self.rowNum.get()) > self.main_params['MaxRows']:
-                self.rowNum.set(self.main_params['MaxRows'])
-            if int(self.rowNum.get()) != self.main_params['NumOfRows']:
-                self.main_params['NumOfRows'] = int(self.rowNum.get())
-                self.oengus.figure.clf()
-                self.oengus.create_graphs()
-                self.oengus.canvas.draw()
-        except ValueError:
-            self.rowNum.set(self.main_params['NumOfRows'])
-
-    def ColumnNumChanged(self, *args):
-        try:
-            if self.columnNum.get() == '':
-                pass
-            if int(self.columnNum.get()) < 1:
-                self.columnNum.set(1)
-            if int(self.columnNum.get()) > self.main_params['MaxCols']:
-                self.columnNum.set(self.main_params['MaxCols'])
-            if int(self.columnNum.get()) != self.main_params['NumOfCols']:
-                self.main_params['NumOfCols'] = int(self.columnNum.get())
-                self.oengus.figure.clf()
-                self.oengus.create_graphs()
-                self.oengus.canvas.draw()
-        except ValueError:
-            self.columnNum.set(self.main_params['NumOfCols'])
-
-    def WaitTimeChanged(self, *args):
-        # Note here that Tkinter passes an event object to onselect()
-        try:
-            if self.waitTime.get() == '':
-                pass
-            else:
-                self.main_params['WaitTime'] = float(self.waitTime.get())
-        except ValueError:
-            self.waitTime.set(self.main_params['WaitTime'])
-
     def CheckIfLimsChanged(self):
         to_reload = False
         tmplist = [self.xleft, self.xright, self.yleft, self.yright]
@@ -223,19 +118,6 @@ class SettingsFrame(QWidget):
             self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
         return to_reload
 
-    def LimChanged(self, *args):
-        if self.LimVar.get() == self.main_params['SetxLim']:
-            pass
-        else:
-            self.main_params['SetxLim'] = self.LimVar.get()
-            self.oengus.draw_output()
-
-    def yLimChanged(self, *args):
-        if self.yLimVar.get() == self.main_params['SetyLim']:
-            pass
-        else:
-            self.main_params['SetyLim'] = self.yLimVar.get()
-            self.oengus.draw_output()
 
     def SettingsCallback(self, e):
         to_reload = self.CheckIfLimsChanged()
@@ -253,90 +135,245 @@ class SettingsTab(QWidget):
         self.build_ui()
 
     def build_ui(self):
-        layout = QGridLayout()
-        self.setLayout(layout)
-        label = QLabel("Settings Tab")
-        layout.addWidget(label, 0, 0)
+        main_layout = QGridLayout()
+        main_layout.setAlignment(Qt.AlignTop)
+        self.setLayout(main_layout)
+
+
+
+        ###
+        #
+        # Upper left rows
+        #
+        # | tstep     | 10   |
+        # | wait_time | 0.01 |
+        # | cmap |  ComboBox |
+        # | DivCmap | Combo  |
+        # | col       | Spin |
+        # | row       | Spin |
+        #
+        ###
+
+        # Row 1
+        upper_left = QVBoxLayout()
+        upp_left_min_width = 150
+        upp_left_max_width = 200
+
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Skip Size:'))
+        self.tstep = QLineEdit(self)
+        self.tstep.setMaximumWidth(upp_left_max_width)
+        self.tstep.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.tstep.setMinimumWidth(upp_left_min_width)
+        self.tstep.setText(str(self.main_params['SkipSize']))
+        self.tstep.returnPressed.connect(self.skip_size_changed)
+        self.tstep.clearFocus()
+        row.addWidget(self.tstep)
+        upper_left.addLayout(row)
+
+        # Row 2
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Playback Wait Time:'))
+        self.wait_time = QLineEdit(self)
+        self.wait_time.setMaximumWidth(upp_left_max_width)
+        self.wait_time.setMinimumWidth(upp_left_min_width)
+        self.wait_time.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.wait_time.setText(str(self.main_params['WaitTime']))
+        self.wait_time.returnPressed.connect(self.wait_time_changed)
+        row.addWidget(self.wait_time)
+        upper_left.addLayout(row)
+
+        # Row 3
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Color map:'))
+        self.cmap_combo = QComboBox(self)
+        for cmap in new_cmaps.sequential:
+            self.cmap_combo.addItem(cmap)
+        self.cmap_combo.setCurrentText(self.main_params['ColorMap'])
+        self.cmap_combo.currentIndexChanged.connect(self.cmap_changed)
+        self.cmap_combo.setMaximumWidth(upp_left_max_width)
+        self.cmap_combo.setMinimumWidth(upp_left_min_width)
+        row.addWidget(self.cmap_combo)
+        upper_left.addLayout(row)
+
+        # Row 4
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Diverging cmap:'))
+        self.div_cmap_combo = QComboBox(self)
+        for cmap in new_cmaps.diverging:
+            self.div_cmap_combo.addItem(cmap)
+        self.div_cmap_combo.setCurrentText(self.main_params['DivColorMap'])
+        self.div_cmap_combo.currentIndexChanged.connect(self.div_cmap_changed)
+        self.div_cmap_combo.setMaximumWidth(upp_left_max_width)
+        self.div_cmap_combo.setMinimumWidth(upp_left_min_width)
+        row.addWidget(self.div_cmap_combo)
+        upper_left.addLayout(row)
+
+        # Row 5
+        row = QHBoxLayout()
+        row.addWidget(QLabel('# of Columns:'))
+        self.col_sb = QSpinBox(self)
+        self.col_sb.setRange(1, self.main_params['MaxCols'])
+        self.col_sb.setValue(self.main_params['NumOfCols'])
+
+        self.col_sb.valueChanged.connect(self.col_changed)
+        self.col_sb.setMaximumWidth(upp_left_max_width)
+        self.col_sb.setMinimumWidth(upp_left_min_width)
+        row.addWidget(self.col_sb)
+        upper_left.addLayout(row)
+
+        # Row 6
+        row = QHBoxLayout()
+        row.addWidget(QLabel('# of rows:'))
+        self.row_sb = QSpinBox(self)
+        self.row_sb.setRange(1, self.main_params['MaxRows'])
+        self.row_sb.setValue(self.main_params['NumOfRows'])
+
+        self.row_sb.valueChanged.connect(self.row_changed)
+        self.row_sb.setMaximumWidth(upp_left_max_width)
+        self.row_sb.setMinimumWidth(upp_left_min_width)
+        row.addWidget(self.row_sb)
+        upper_left.addLayout(row)
+
+        main_layout.addLayout(upper_left, 0, 0)
+
+        ###
+        #
+        # Upper Right radio
+        #  Link Axes
+        # | | None
+        # | | All spatial
+        # | | All fields
+        # | cmap |  ComboBox |
+        # | DivCmap | Combo  |
+        # | col       | Spin |
+        # | row       | Spin |
+        #
+        ###
+        upper_right = QVBoxLayout()
+        upper_right.setAlignment(Qt.AlignTop)
+        upper_right.addWidget(QLabel('Share Spatial Axes:'))
+        radiobutton = QRadioButton("None")
+        if self.main_params['LinkSpatial'] == 0:
+            radiobutton.setChecked(True)
+        radiobutton.shared_axes = 0
+        radiobutton.toggled.connect(self.radio_clicked)
+        upper_right.addWidget(radiobutton)
+
+        radiobutton = QRadioButton("All Spatial")
+        if self.main_params['LinkSpatial'] == 1:
+            radiobutton.setChecked(True)
+
+        radiobutton.shared_axes = 1
+        radiobutton.toggled.connect(self.radio_clicked)
+        upper_right.addWidget(radiobutton)
+
+        radiobutton = QRadioButton("All Fields")
+        if self.main_params['LinkSpatial'] == 2:
+            radiobutton.setChecked(True)
+        radiobutton.shared_axes = 2
+        radiobutton.toggled.connect(self.radio_clicked)
+        upper_right.addWidget(radiobutton)
+        main_layout.addLayout(upper_right, 0, 1)
+
 
         """
-        # Make an entry to change the skip size
-        self.skipSize = Tk.StringVar(self)
-        self.skipSize.set(self.main_params['SkipSize'])  # default value
-        self.skipSize.trace('w', self.SkipSizeChanged)
-        ttk.Label(
-            frm, text="Skip Size:").grid(row=0)
-        ttk.Entry(
-            frm, textvariable=self.skipSize,
-            width=6).grid(
-                row=0, column=1,
-                sticky=Tk.W + Tk.E)
-        # Make an button to change the wait time
-        self.waitTime = Tk.StringVar(self)
-        self.waitTime.set(self.main_params['WaitTime'])  # default value
-        self.waitTime.trace('w', self.WaitTimeChanged)
+        self.row_sb = QSpinBox(self)
+        self.row_sb.setRange(1, self.main_params['MaxRows'])
+        self.row_sb.setValue(self.main_params['NumOfRows'])
 
-        ttk.Label(
-            frm, text="Playback Wait Time:").grid(row=1)
-        ttk.Entry(
-            frm, textvariable=self.waitTime,
-            width=6).grid(
-                row=1, column=1,
-                sticky=Tk.W + Tk.E)
+        self.row_sb.valueChanged.connect(self.row_changed)
+        self.row_sb.setMaximumWidth(upp_left_max_width)
+        self.row_sb.setMinimumWidth(upp_left_min_width)
+        row.addWidget(self.row_sb)
+        mid.addLayout(row)
+                self.LimVar = Tk.IntVar()
+                self.LimVar.set(self.main_params['SetxLim'])
+                self.LimVar.trace('w', self.LimChanged)
 
-        # Have a list of the color maps
-        self.cmapvar = Tk.StringVar(self)
-        self.cmapvar.set(self.main_params['ColorMap'])  # default value
-        self.cmapvar.trace('w', self.CmapChanged)
+                self.xleft = Tk.StringVar()
+                self.xleft.set(str(self.main_params['xLeft']))
+                self.xright = Tk.StringVar()
+                self.xright.set(str(self.main_params['xRight']))
 
-        ttk.Label(
-            frm, text="Color map:").grid(
-                row=2)
-        ttk.OptionMenu(
-            frm, self.cmapvar,
-            self.main_params['ColorMap'],
-            *tuple(new_cmaps.sequential)).grid(
-                row=2, column=1,
-                sticky=Tk.W + Tk.E)
+                ttk.Label(
+                    frm, text='min').grid(
+                        row=7, column=1,
+                        sticky=Tk.N)
+                ttk.Label(
+                    frm, text='max').grid(
+                        row=7, column=2,
+                        sticky=Tk.N)
+                ttk.Checkbutton(
+                    frm, text='Set xlim',
+                    variable=self.LimVar).grid(
+                        row=8, sticky=Tk.N)
+                ttk.Entry(
+                    frm, textvariable=self.xleft,
+                    width=8).grid(
+                        row=8, column=1,
+                        sticky=Tk.N)
+                ttk.Entry(
+                    frm, textvariable=self.xright,
+                    width=8).grid(
+                        row=8, column=2,
+                        sticky=Tk.N)
+        """
+        ###
+        #
+        # add layout for limits
+        #
+        #                 Min     Max
+        # |x| set xlim |       |       |
+        # |x| set ylim |       |       |
+        #
+        ###
+        mid = QGridLayout()
 
-        # Have a list of the color maps
-        self.divcmapList = new_cmaps.cmaps.keys()
-        self.div_cmapvar = Tk.StringVar(self)
-        self.div_cmapvar.set(self.main_params['DivColorMap'])  # default value
-        self.div_cmapvar.trace('w', self.DivCmapChanged)
+        mid.addWidget(QLabel("Min"), 0, 1)
+        mid.addWidget(QLabel("Max"), 0, 2)
+        self.xlims_cb = QCheckBox("Set xlims")
+        self.xlims_cb.setChecked(self.main_params['SetxLim'])
+        self.xlims_cb.stateChanged.connect(self.xlims_changed)
+        mid.addWidget(self.xlims_cb, 1, 0)
 
-        ttk.Label(
-            frm, text="Diverging Cmap:").grid(
-            row=3)
-        ttk.OptionMenu(
-            frm, self.div_cmapvar,
-            self.main_params['DivColorMap'],
-            *tuple(new_cmaps.diverging)).grid(
-                row=3, column=1,
-                sticky=Tk.W + Tk.E)
+        self.xleft = QLineEdit(self)
+        self.xleft.setMaximumWidth(upp_left_max_width - 80)
+        self.xleft.setMinimumWidth(upp_left_min_width - 80)
+        self.xleft.setText(str(self.main_params['xLeft']))
+        self.xleft.returnPressed.connect(self.check_if_limval_changed)
+        mid.addWidget(self.xleft, 1, 1)
 
-        # Make an entry to change the number of columns
-        self.columnNum = Tk.StringVar(self)
-        self.columnNum.set(self.main_params['NumOfCols'])  # default value
-        self.columnNum.trace('w', self.ColumnNumChanged)
-        ttk.Label(frm, text="# of columns:").grid(row=4)
-        Spinbox(
-            frm, from_=1, to=self.main_params['MaxCols'],
-            textvariable=self.columnNum, width=6).grid(
-                row=4, column=1,
-                sticky=Tk.W + Tk.E)
+        self.xright = QLineEdit(self)
+        self.xright.setMaximumWidth(upp_left_max_width - 80)
+        self.xright.setMinimumWidth(upp_left_min_width - 80)
+        self.xright.setText(str(self.main_params['xRight']))
+        self.xright.returnPressed.connect(self.check_if_limval_changed)
+        mid.addWidget(self.xright, 1, 2)
 
-        # Make an entry to change the number of columns
-        self.rowNum = Tk.StringVar(self)
-        self.rowNum.set(self.main_params['NumOfRows'])  # default value
-        self.rowNum.trace('w', self.RowNumChanged)
-        ttk.Label(
-            frm, text="# of rows:").grid(row=5)
-        Spinbox(
-            frm, from_=1, to=self.main_params['MaxRows'],
-            textvariable=self.rowNum, width=6).grid(
-                row=5, column=1,
-                sticky=Tk.W + Tk.E)
 
+        self.ylims_cb = QCheckBox("Set ylims")
+        self.ylims_cb.setChecked(self.main_params['SetyLim'])
+        self.ylims_cb.stateChanged.connect(self.ylims_changed)
+        mid.addWidget(self.ylims_cb, 2, 0)
+
+        self.ybottom = QLineEdit(self)
+        self.ybottom.setMaximumWidth(upp_left_max_width - 80)
+        self.ybottom.setMinimumWidth(upp_left_min_width - 80)
+        self.ybottom.setText(str(self.main_params['yBottom']))
+        self.ybottom.returnPressed.connect(self.check_if_limval_changed)
+        mid.addWidget(self.ybottom, 2, 1)
+
+        self.ytop = QLineEdit(self)
+        self.ytop.setMaximumWidth(upp_left_max_width - 80)
+        self.ytop.setMinimumWidth(upp_left_min_width - 80)
+        self.ytop.setText(str(self.main_params['yTop']))
+        self.ytop.returnPressed.connect(self.check_if_limval_changed)
+        mid.addWidget(self.ytop, 2, 2)
+        main_layout.addLayout(mid, 1, 0, 2, 0)
+
+        # bottom checkpanel
+        """
         self.PrtlStrideVar = Tk.StringVar()
         self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
         ttk.Entry(
@@ -354,37 +391,6 @@ class SettingsTab(QWidget):
         self.TitleVar.set(self.main_params['ShowTitle'])
         self.TitleVar.trace('w', self.TitleChanged)
 
-        self.LimVar = Tk.IntVar()
-        self.LimVar.set(self.main_params['SetxLim'])
-        self.LimVar.trace('w', self.LimChanged)
-
-        self.xleft = Tk.StringVar()
-        self.xleft.set(str(self.main_params['xLeft']))
-        self.xright = Tk.StringVar()
-        self.xright.set(str(self.main_params['xRight']))
-
-        ttk.Label(
-            frm, text='min').grid(
-                row=7, column=1,
-                sticky=Tk.N)
-        ttk.Label(
-            frm, text='max').grid(
-                row=7, column=2,
-                sticky=Tk.N)
-        ttk.Checkbutton(
-            frm, text='Set xlim',
-            variable=self.LimVar).grid(
-                row=8, sticky=Tk.N)
-        ttk.Entry(
-            frm, textvariable=self.xleft,
-            width=8).grid(
-                row=8, column=1,
-                sticky=Tk.N)
-        ttk.Entry(
-            frm, textvariable=self.xright,
-            width=8).grid(
-                row=8, column=2,
-                sticky=Tk.N)
 
         self.yLimVar = Tk.IntVar()
         self.yLimVar.set(self.main_params['SetyLim'])
@@ -461,6 +467,114 @@ class SettingsTab(QWidget):
                 row=16, sticky=Tk.W)
         """
 
+    def skip_size_changed(self):
+        # Note here that Tkinter passes an event object to SkipSizeChange()
+        try:
+            self.main_params['SkipSize'] = int(self.tstep.text())
+        except ValueError:
+            self.skipSize.setText(self.main_params['SkipSize'])
+
+    def wait_time_changed(self, *args):
+        # Note here that Tkinter passes an event object to onselect()
+        try:
+            self.main_params['WaitTime'] = float(self.wait_time.text())
+        except ValueError:
+            self.wait_time.setText(self.main_params['WaitTime'])
+
+    def cmap_changed(self):
+        if self.cmap_combo.currentText() == self.main_params['ColorMap']:
+            pass
+        else:
+            self.main_params['ColorMap'] = self.cmap_combo.currentText()
+            cmaps_with_green = self.oengus.MainParamDict['cmaps_with_green']
+            if self.main_params['ColorMap'] in cmaps_with_green:
+
+                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
+                    0.55, 'plasma')
+                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
+                    0.8, 'plasma')
+
+                self.oengus.MainParamDict['ion_fit_color'] = 'r'
+                self.oengus.MainParamDict['electron_fit_color'] = 'yellow'
+
+            else:
+                self.oengus.MainParamDict['ion_color'] = cmap_to_hex(
+                    0.45, 'viridis')
+                self.oengus.MainParamDict['electron_color'] = cmap_to_hex(
+                    0.75, 'viridis')
+
+                self.oengus.MainParamDict['ion_fit_color'] = 'mediumturquoise'
+                self.oengus.MainParamDict['electron_fit_color'] = 'lime'
+
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
+
+    def div_cmap_changed(self, *args):
+        # Note here that Tkinter passes an event object to onselect()
+        if self.div_cmap_combo.currentText() == self.main_params['DivColorMap']:
+            pass
+        else:
+            self.main_params['DivColorMap'] = self.div_cmap_combo.currentText()
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
+
+    def col_changed(self):
+        self.main_params['NumOfCols'] = int(self.col_sb.value())
+        self.oengus.figure.clf()
+        self.oengus.create_graphs()
+        self.oengus.canvas.draw()
+
+    def row_changed(self):
+        self.main_params['NumOfRows'] = int(self.row_sb.value())
+        self.oengus.figure.clf()
+        self.oengus.create_graphs()
+        self.oengus.canvas.draw()
+
+    def radio_clicked(self):
+        # If the shared axes are changed, we have to call the link
+        # handler on every subplot
+        radioButton = self.sender()
+        if radioButton.isChecked():
+            self.oengus.MainParamDict['LinkSpatial'] = radioButton.shared_axes
+            for i in range(self.oengus.MainParamDict['NumOfRows']):
+                for j in range(self.oengus.MainParamDict['NumOfCols']):
+                    self.oengus.SubPlotList[i][j].link_handler()
+                    # self.oengus.SubPlotList[i][j].save_axes_pos()
+                    self.oengus.SubPlotList[i][j].refresh()
+                    # self.oengus.SubPlotList[i][j].load_axes_pos()
+            self.oengus.canvas.draw()
+
+    def xlims_changed(self):
+        self.main_params['SetxLim'] = self.xlims_cb.isChecked()
+        self.oengus.draw_output()
+
+    def ylims_changed(self):
+        self.main_params['SetyLim'] = self.ylims_cb.isChecked()
+        self.oengus.draw_output()
+
+    def check_if_limval_changed(self):
+        to_reload = False
+        tmplist = [self.xleft, self.xright, self.ybottom, self.ytop]
+        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop']
+        setKeys = ['SetxLim', 'SetyLim']
+        for j in range(len(tmplist)):
+            setlims = self.main_params[setKeys[j//2]]
+            tmpkey = limkeys[j]
+
+            try:
+                # make sure the user types in a a number and
+                # that it has changed.
+                user_num = float(tmplist[j].text())
+                if abs(user_num - self.main_params[tmpkey]) > 1E-4:
+                    self.main_params[tmpkey] = user_num
+                    to_reload += setlims
+
+            except ValueError:
+                # if they type in random stuff, just set it ot the param value
+                tmplist[j].setText(str(self.main_params[tmpkey]))
+        return to_reload
 
 class SimTab(QWidget):
     def __init__(self, oengus):

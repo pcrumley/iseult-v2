@@ -129,24 +129,8 @@ class playbackBar(QWidget):
         # self.measuresB = ttk.Button(
         #    self, text='FFT', command=self.open_measures)
         # self.measuresB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-        # a reload button that looks the files and then refreshes the plot
-        ttk.Button(
-            self, text='Reload',
-            command=self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-        # a button that clears the cache
-        ttk.Button(
-            self, text='Clear Cache',
-            command=self.on_refresh).pack(
-                side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        ttk.Button(
-            self, text='Home',
-            command=self.oengus.home).pack(
-                side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # attach the parameter to the Playbackbar
-        self.param.attach(self)
         """
+
     def update_slider(self):
         self.param.set_max(len(self.oengus.sims[self._cur_sim]))
         self.sld.setRange(self.param.minimum, self.param.maximum)
