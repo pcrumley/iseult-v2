@@ -149,14 +149,17 @@ class playbackBar(QWidget):
         self.sim_combo.clear()
         for i in self.oengus.sims_shown:
             self.sim_combo.addItem(self.oengus.sims[i].name)
+        index = self.sim_combo.findText(self.oengus.sims[self.cur_sim].name)
+        self.sim_combo.setCurrentIndex(index)
 
     def simChanged(self):
         if self.sim_combo.currentText() == self.oengus.sims[self.cur_sim].name:
             pass
-        else:
-            names = [sim.name for sim in self.oengus.sims]
-            self.cur_sim = names.index(self.sim_combo.currentText())
+        elif self.sim_combo.currentText() in self.oengus.sim_names:
+            self.cur_sim = self.oengus.sim_names.index(self.sim_combo.currentText())
             self.oengus.cur_sim = self.cur_sim
+        else:
+            self.update_sim_list()
 
     def on_reload(self):
         self.oengus.sims[self.cur_sim].refresh_directory()

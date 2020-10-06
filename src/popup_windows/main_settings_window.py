@@ -7,6 +7,7 @@ from new_cmaps import cmap_to_hex
 import new_cmaps
 from functools import partial
 
+
 class SettingsFrame(QWidget):
     def __init__(self, oengus):
         super().__init__()
@@ -23,33 +24,10 @@ class SettingsFrame(QWidget):
         tabwidget.addTab(SimTab(self.oengus), "Sim Settings")
         layout.addWidget(tabwidget, 0, 0)
 
-
-
-    def AspectVarChanged(self, *args):
-        if self.AspectVar.get() == self.main_params['ImageAspect']:
-            pass
-
-        else:
-            self.main_params['ImageAspect'] = self.AspectVar.get()
-            self.oengus.figure.clf()
-            self.oengus.create_graphs()
-            self.oengus.canvas.draw()
-
     def AverageChanged(self, *args):
         if self.main_params['Average1D'] != self.Average1DVar.get():
             self.main_params['Average1D'] = self.Average1DVar.get()
             self.oengus.draw_output()
-
-
-
-    def TitleChanged(self, *args):
-        if self.TitleVar.get() == self.main_params['ShowTitle']:
-            pass
-        else:
-            self.main_params['ShowTitle'] = self.TitleVar.get()
-            if not self.TitleVar.get():
-                self.oengus.figure.suptitle('')
-            self.oengus.canvas.draw()
 
     def xRelChanged(self, *args):
         pass
@@ -62,7 +40,6 @@ class SettingsFrame(QWidget):
 
     def CheckIfStrideChanged(self):
         to_reload = False
-
         try:
             # make sure the user types in a int
             if int(self.PrtlStrideVar.get()) <= 0:
@@ -259,7 +236,6 @@ class SettingsTab(QWidget):
         self.xright.returnPressed.connect(self.check_if_limval_changed)
         mid.addWidget(self.xright, 1, 2)
 
-
         self.ylims_cb = QCheckBox("Set ylims")
         self.ylims_cb.setChecked(self.main_params['SetyLim'])
         self.ylims_cb.stateChanged.connect(self.ylims_changed)
@@ -278,7 +254,7 @@ class SettingsTab(QWidget):
         self.ytop.setText(str(self.main_params['yTop']))
         self.ytop.returnPressed.connect(self.check_if_limval_changed)
         mid.addWidget(self.ytop, 2, 2)
-        main_layout.addLayout(mid, 1, 0, 3, 2)
+        main_layout.addLayout(mid, 1, 0, 3, 1)
 
         ##
         #
@@ -287,6 +263,7 @@ class SettingsTab(QWidget):
         # |x| show title |x| aspect = 1 |x| horizontal Cbars
         #
         ##
+
         cbs = [
             ('show title', 'ShowTitle'),
             ('aspect = 1', 'ImageAspect'),
@@ -297,8 +274,7 @@ class SettingsTab(QWidget):
             cb.param_name = tup[1]
             cb.stateChanged.connect(self.cb_handler)
             row.addWidget(cb)
-        main_layout.addLayout(row, 3, 0, 3,1)
-
+        main_layout.addLayout(row, 4, 0, 3, 1)
 
     def skip_size_changed(self):
         # Note here that Tkinter passes an event object to SkipSizeChange()
@@ -442,55 +418,84 @@ class SettingsTab(QWidget):
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
+
 class SimTab(QWidget):
     def __init__(self, oengus):
         super().__init__()
         self.oengus = oengus
         self.main_params = self.oengus.MainParamDict
+        self.sim_selected = self.oengus.sims[0]
         self.build_ui()
 
     def build_ui(self):
         layout = QGridLayout()
         self.setLayout(layout)
-        label = QLabel("Sim Tab")
 
-        layout.addWidget(label, 0, 0)
 
-        """
-        The function that builds out individual simulations settings window.
-        For now we will just have it set the shock finder.
+        ####
+        #
+        # Build up the sim settings tab
+        #
+        #  Choose Sim: | ComboBox |
+        #  Choose shock finder: | ComboBox |
+        #
+        ####
 
-        # OptionMenu to choose simulation
-        self.cur_sim_name_var = Tk.StringVar(self)
-        self.cur_sim_name_var.set(self.oengus.sim_names[0])
-        # self.cur_sim_var.trace('w', self.SimChanged)
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Choose sim'))
+        self.sim_combo = QComboBox(self)
+        self.update_sim_list()
+        self.sim_combo.currentIndexChanged.connect(self.sim_selection_changed)
+        row.addWidget(self.sim_combo)
+        layout.addLayout(row, 0, 2)
 
-        ttk.Label(frm, text="Simulation:").grid(row=0, column=0)
-        ttk.OptionMenu(
-            frm, self.cur_sim_name_var,
-            self.oengus.sim_names[0],
-            *tuple(self.oengus.sim_names)).grid(
-                row=0, column=1, sticky=Tk.W + Tk.E)
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Choose Shock Finder'))
+        self.shock_combo = QComboBox(self)
+        self.update_shock_opts()
+        self.shock_combo.currentIndexChanged.connect(self.shock_finder_changed)
+        row.addWidget(self.shock_combo)
+        layout.addLayout(row, 1, 2)
 
-        ttk.Label(frm, text="Shock Finder:").grid(row=2, column=0)
-        self.cur_sim = self.oengus.sims[
-            self.oengus.sim_names.index(self.cur_sim_name_var.get())]
+    def update_sim_list(self):
+        self.sim_combo.clear()
+        for name in self.oengus.sim_names:
+            self.sim_combo.addItem(name)
+        index = self.sim_combo.findText(self.sim_selected.name)
+        if index >= 0:
+            self.sim_combo.setCurrentIndex(index)
 
-        self.shock_finder_var = Tk.StringVar(self)
-        self.shock_finder_var.set(self.cur_sim.shock_finder_name)
-        self.shock_finder_var.trace('w', self.shock_finder_changed)
+    def sim_selection_changed(self):
+        if self.sim_combo.currentText() != self.sim_selected.name:
 
-        ttk.OptionMenu(
-            frm, self.shock_finder_var,
-            self.shock_finder_var.get(),
-            *tuple(self.cur_sim.get_shock_finder_opts())).grid(
-                row=2, column=1, sticky=Tk.W + Tk.E)
-        """
+            try:
+                ind = self.oengus.sim_names.index(self.sim_combo.currentText())
+            except ValueError:
+                ind = 0
+
+            self.sim_selected = self.oengus.sims[ind]
+            index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
+            if index >= 0:
+                self.shock_combo.setCurrentIndex(index)
+            else:
+                self.shock_combo.setCurrentIndex(0)
+
+
+    def update_shock_opts(self):
+
+        self.shock_combo.clear()
+
+        for method_name in self.sim_selected.get_shock_finder_opts():
+            self.shock_combo.addItem(method_name)
+        index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
+        if index >= 0:
+            self.shock_combo.setCurrentIndex(index)
 
     def shock_finder_changed(self, *args):
-        if self.cur_sim.shock_finder_name != self.shock_finder_var.get():
-            self.cur_sim.shock_finder = self.shock_finder_var.get()
-            self.shock_finder_var.set(self.cur_sim.shock_finder_name)
+        #print(self.sim_selected.shock_finder_name, self.sim_selected.shock_finder, self.shock_combo.currentText())
+        if self.sim_selected.shock_finder_name != self.shock_combo.currentText():
+            self.sim_selected.shock_finder = self.shock_combo.currentText()
+            # self.shock_finder_var.set(self.sim_selected.shock_finder_name)
             # update shock lines
             for i in range(self.oengus.MainParamDict['NumOfRows']):
                 for j in range(self.oengus.MainParamDict['NumOfCols']):
