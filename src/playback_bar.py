@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QSlider, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton,
                              QComboBox, QCheckBox)
 from PyQt5.QtCore import Qt, QTimer
-# from main_settings_window import SettingsFrame
+from main_settings_window import SettingsFrame
 import numpy as np
 import time
 
@@ -181,9 +181,12 @@ class playbackBar(QWidget):
     def open_settings(self):
         if self.settings_window is None:
             self.settings_window = SettingsFrame(self.oengus)
+            self.settings_window.show()
         else:
-            self.settings_window.destroy()
-            self.settings_window = SettingsFrame(self.oengus)
+            #self.settings_window.destroy()
+            self.settings_window.hide()
+            self.settings_window.show()
+            #self.settings_window = SettingsFrame(self.oengus)
 
     def on_refresh(self, *args):
         for sim in self.oengus.sims:
@@ -192,7 +195,6 @@ class playbackBar(QWidget):
         self.oengus.draw_output()
 
     def loop_changed(self):
-
         self.oengus.MainParamDict['LoopPlayback'] = self.loop_chk.isChecked()
         self.param.loop = self.oengus.MainParamDict['LoopPlayback']
 

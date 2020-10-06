@@ -88,7 +88,8 @@ class MainApp(QtWidgets.QMainWindow):
         #self.config(menu=menubar)
         #self.protocol("WM_DELETE_WINDOW", sys.exit)
 
-        # self.update()
+        # Overload the close function
+        self.closeEvent = self.on_quit
 
     def build_menu(self):
         pass
@@ -260,8 +261,10 @@ class MainApp(QtWidgets.QMainWindow):
                 sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
 
-    def on_quit(self):
-        print('hi')
+    def on_quit(self, *event):
+        if self.playbackbar.settings_window is not None:
+            self.playbackbar.settings_window.close()
+
 
 def runMe(cmd_args):
     # Check whether there is already a running QApplication (e.g., if running
