@@ -40,25 +40,7 @@ class SettingsFrame(QWidget):
             self.main_params['Average1D'] = self.Average1DVar.get()
             self.oengus.draw_output()
 
-    def OrientationChanged(self, *args):
-        if self.CbarOrientation.get() == self.main_params['HorizontalCbars']:
-            pass
 
-        else:
-            if self.CbarOrientation.get():
-                self.oengus.axes_extent = self.main_params['HAxesExtent']
-                self.oengus.cbar_extent = self.main_params['HCbarExtent']
-                self.oengus.SubPlotParams = self.main_params['HSubPlotParams']
-
-            else:
-                self.oengus.axes_extent = self.main_params['VAxesExtent']
-                self.oengus.cbar_extent = self.main_params['VCbarExtent']
-                self.oengus.SubPlotParams = self.main_params['VSubPlotParams']
-            self.main_params['HorizontalCbars'] = self.CbarOrientation.get()
-            self.oengus.figure.subplots_adjust(**self.oengus.SubPlotParams)
-            self.oengus.figure.clf()
-            self.oengus.create_graphs()
-            self.oengus.canvas.draw()
 
     def TitleChanged(self, *args):
         if self.TitleVar.get() == self.main_params['ShowTitle']:
@@ -77,28 +59,6 @@ class SettingsFrame(QWidget):
         # else:
         #    self.main_params['xLimsRelative'] = self.xRelVar.get()
         #    self.parent.RenewCanvas()
-
-    def CheckIfLimsChanged(self):
-        to_reload = False
-        tmplist = [self.xleft, self.xright, self.yleft, self.yright]
-        limkeys = ['xLeft', 'xRight', 'yBottom', 'yTop']
-        setKeys = ['SetxLim', 'SetyLim']
-        for j in range(len(tmplist)):
-            setlims = self.main_params[setKeys[j//2]]
-            tmpkey = limkeys[j]
-
-            try:
-                # make sure the user types in a a number and
-                # that it has changed.
-                user_num = float(tmplist[j].get())
-                if abs(user_num - self.main_params[tmpkey]) > 1E-4:
-                    self.main_params[tmpkey] = user_num
-                    to_reload += setlims
-
-            except ValueError:
-                # if they type in random stuff, just set it ot the param value
-                tmplist[j].set(str(self.main_params[tmpkey]))
-        return to_reload
 
     def CheckIfStrideChanged(self):
         to_reload = False
@@ -119,14 +79,6 @@ class SettingsFrame(QWidget):
         return to_reload
 
 
-    def SettingsCallback(self, e):
-        to_reload = self.CheckIfLimsChanged()
-        to_reload += self.CheckIfStrideChanged()
-        if to_reload:
-            self.oengus.draw_output()
-
-
-
 class SettingsTab(QWidget):
     def __init__(self, oengus):
         super().__init__()
@@ -138,8 +90,6 @@ class SettingsTab(QWidget):
         main_layout = QGridLayout()
         main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(main_layout)
-
-
 
         ###
         #
@@ -250,6 +200,7 @@ class SettingsTab(QWidget):
         # | row       | Spin |
         #
         ###
+
         upper_right = QVBoxLayout()
         upper_right.setAlignment(Qt.AlignTop)
         upper_right.addWidget(QLabel('Share Spatial Axes:'))
@@ -276,49 +227,6 @@ class SettingsTab(QWidget):
         upper_right.addWidget(radiobutton)
         main_layout.addLayout(upper_right, 0, 1)
 
-
-        """
-        self.row_sb = QSpinBox(self)
-        self.row_sb.setRange(1, self.main_params['MaxRows'])
-        self.row_sb.setValue(self.main_params['NumOfRows'])
-
-        self.row_sb.valueChanged.connect(self.row_changed)
-        self.row_sb.setMaximumWidth(upp_left_max_width)
-        self.row_sb.setMinimumWidth(upp_left_min_width)
-        row.addWidget(self.row_sb)
-        mid.addLayout(row)
-                self.LimVar = Tk.IntVar()
-                self.LimVar.set(self.main_params['SetxLim'])
-                self.LimVar.trace('w', self.LimChanged)
-
-                self.xleft = Tk.StringVar()
-                self.xleft.set(str(self.main_params['xLeft']))
-                self.xright = Tk.StringVar()
-                self.xright.set(str(self.main_params['xRight']))
-
-                ttk.Label(
-                    frm, text='min').grid(
-                        row=7, column=1,
-                        sticky=Tk.N)
-                ttk.Label(
-                    frm, text='max').grid(
-                        row=7, column=2,
-                        sticky=Tk.N)
-                ttk.Checkbutton(
-                    frm, text='Set xlim',
-                    variable=self.LimVar).grid(
-                        row=8, sticky=Tk.N)
-                ttk.Entry(
-                    frm, textvariable=self.xleft,
-                    width=8).grid(
-                        row=8, column=1,
-                        sticky=Tk.N)
-                ttk.Entry(
-                    frm, textvariable=self.xright,
-                    width=8).grid(
-                        row=8, column=2,
-                        sticky=Tk.N)
-        """
         ###
         #
         # add layout for limits
@@ -328,8 +236,8 @@ class SettingsTab(QWidget):
         # |x| set ylim |       |       |
         #
         ###
-        mid = QGridLayout()
 
+        mid = QGridLayout()
         mid.addWidget(QLabel("Min"), 0, 1)
         mid.addWidget(QLabel("Max"), 0, 2)
         self.xlims_cb = QCheckBox("Set xlims")
@@ -370,102 +278,27 @@ class SettingsTab(QWidget):
         self.ytop.setText(str(self.main_params['yTop']))
         self.ytop.returnPressed.connect(self.check_if_limval_changed)
         mid.addWidget(self.ytop, 2, 2)
-        main_layout.addLayout(mid, 1, 0, 2, 0)
+        main_layout.addLayout(mid, 1, 0, 3, 2)
 
+        ##
+        #
         # bottom checkpanel
-        """
-        self.PrtlStrideVar = Tk.StringVar()
-        self.PrtlStrideVar.set(str(self.main_params['PrtlStride']))
-        ttk.Entry(
-            frm,
-            textvariable=self.PrtlStrideVar,
-            width=6).grid(
-                row=6, column=1,
-                sticky=Tk.W + Tk.E)
-        ttk.Label(
-            frm, text='Particle stride').grid(
-                row=6, column=0)
+        #
+        # |x| show title |x| aspect = 1 |x| horizontal Cbars
+        #
+        ##
+        cbs = [
+            ('show title', 'ShowTitle'),
+            ('aspect = 1', 'ImageAspect'),
+            ('Horizontal cbars', 'HorizontalCbars')]
+        row = QHBoxLayout()
+        for i, tup in enumerate(cbs):
+            cb = QCheckBox(tup[0])
+            cb.param_name = tup[1]
+            cb.stateChanged.connect(self.cb_handler)
+            row.addWidget(cb)
+        main_layout.addLayout(row, 3, 0, 3,1)
 
-        # Control whether or not Title is shown
-        self.TitleVar = Tk.IntVar()
-        self.TitleVar.set(self.main_params['ShowTitle'])
-        self.TitleVar.trace('w', self.TitleChanged)
-
-
-        self.yLimVar = Tk.IntVar()
-        self.yLimVar.set(self.main_params['SetyLim'])
-        self.yLimVar.trace('w', self.yLimChanged)
-
-        self.yleft = Tk.StringVar()
-        self.yleft.set(str(self.main_params['yBottom']))
-        self.yright = Tk.StringVar()
-        self.yright.set(str(self.main_params['yTop']))
-
-        ttk.Checkbutton(
-            frm, text='Set ylim',
-            variable=self.yLimVar).grid(
-                row=9, sticky=Tk.N)
-        ttk.Entry(
-            frm, textvariable=self.yleft,
-            width=8).grid(
-                row=9, column=1,
-                sticky=Tk.N)
-        ttk.Entry(
-            frm, textvariable=self.yright,
-            width=8).grid(
-                row=9, column=2,
-                sticky=Tk.N)
-
-        ttk.Checkbutton(
-            frm, text="Show Title",
-            variable=self.TitleVar).grid(
-                row=15, sticky=Tk.W)
-        self.AspectVar = Tk.IntVar()
-        self.AspectVar.set(self.main_params['ImageAspect'])
-        self.AspectVar.trace('w', self.AspectVarChanged)
-
-        # Control whether or not axes are shared with a radio box:
-        self.toLinkList = ['None', 'All spatial', 'All Fields Plots']
-        self.LinkedVar = Tk.IntVar()
-        self.LinkedVar.set(self.oengus.MainParamDict['LinkSpatial'])
-
-        ttk.Label(
-            frm, text='Share spatial axes:').grid(
-                row=0, column=2, sticky=Tk.W)
-
-        for i in range(len(self.toLinkList)):
-            ttk.Radiobutton(
-                frm,
-                text=self.toLinkList[i],
-                variable=self.LinkedVar,
-                command=self.RadioLinked,
-                value=i).grid(
-                    row=1+i, column=2, sticky=Tk.N)
-
-        ttk.Checkbutton(
-            frm, text="Aspect = 1",
-            variable=self.AspectVar).grid(
-                row=15, column=1,
-                sticky=Tk.W)
-
-        self.Average1DVar = Tk.IntVar()
-        self.Average1DVar.set(self.main_params['Average1D'])
-        self.Average1DVar.trace('w', self.AverageChanged)
-        ttk.Checkbutton(
-            frm, text='1D Average',
-            variable=self.Average1DVar).grid(
-                row=16, column=2,
-                sticky=Tk.W)
-
-        self.CbarOrientation = Tk.IntVar()
-        self.CbarOrientation.set(self.main_params['HorizontalCbars'])
-        self.CbarOrientation.trace('w', self.OrientationChanged)
-
-        ttk.Checkbutton(
-            frm, text="Horizontal Cbars",
-            variable=self.CbarOrientation).grid(
-                row=16, sticky=Tk.W)
-        """
 
     def skip_size_changed(self):
         # Note here that Tkinter passes an event object to SkipSizeChange()
@@ -575,6 +408,39 @@ class SettingsTab(QWidget):
                 # if they type in random stuff, just set it ot the param value
                 tmplist[j].setText(str(self.main_params[tmpkey]))
         return to_reload
+
+    def cb_handler(self):
+        cb = self.sender()
+        if cb.param_name == 'ImageAspect':
+            self.main_params['ImageAspect'] = cb.isChecked()
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
+
+        if cb.param_name == 'ShowTitle':
+            self.main_params['ShowTitle'] = cb.isChecked()
+            if not self.main_params['ShowTitle']:
+                self.oengus.figure.suptitle('')
+            else:
+                self.oengus.make_title()
+
+            self.oengus.canvas.draw()
+
+        if cb.param_name == 'HorizontalCbars':
+            if cb.isChecked():
+                self.oengus.axes_extent = self.main_params['HAxesExtent']
+                self.oengus.cbar_extent = self.main_params['HCbarExtent']
+                self.oengus.SubPlotParams = self.main_params['HSubPlotParams']
+
+            else:
+                self.oengus.axes_extent = self.main_params['VAxesExtent']
+                self.oengus.cbar_extent = self.main_params['VCbarExtent']
+                self.oengus.SubPlotParams = self.main_params['VSubPlotParams']
+            self.main_params['HorizontalCbars'] = cb.isChecked()
+            self.oengus.figure.subplots_adjust(**self.oengus.SubPlotParams)
+            self.oengus.figure.clf()
+            self.oengus.create_graphs()
+            self.oengus.canvas.draw()
 
 class SimTab(QWidget):
     def __init__(self, oengus):

@@ -302,6 +302,9 @@ class Oengus():
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()  # self.sim, -1)
 
+        self.make_title()
+
+    def make_title(self):
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
             outname = os.path.abspath(sim.outdir)
@@ -314,7 +317,6 @@ class Oengus():
                 self.figure.suptitle(
                     f'{outname} is empty',
                     size=self.MainParamDict['TitleFontSize'])
-
     def home(self):
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
