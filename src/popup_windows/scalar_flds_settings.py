@@ -1,71 +1,52 @@
-import tkinter as Tk
-from tkinter import ttk
+from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
+                             QLabel, QLineEdit, QPushButton, QVBoxLayout,
+                             QComboBox, QCheckBox, QTabWidget, QSpinBox,
+                             QRadioButton)
+from PyQt5.QtCore import Qt, QTimer
 import new_cmaps
+from base_plot_settings import iseultPlotSettings
 
 
-class ScalarFieldsSettings(Tk.Toplevel):
-
-    interpolation_methods = [
-        'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
-        'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
-        'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
+class ScalarFieldsSettings(iseultPlotSettings):
 
     def __init__(self, parent, loc):
-        self.parent = parent
-        Tk.Toplevel.__init__(self)
-        self.loc = loc
-        self.wm_title(f'Scalar Flds Plot {self.loc} Settings')
-        self.parent = parent
-        frm = ttk.Frame(self)
-        frm.pack(fill=Tk.BOTH, expand=True)
-        self.protocol('WM_DELETE_WINDOW', self.OnClosing)
-        self.bind('<Return>', self.TxtEnter)
-        self.subplot = self.parent.oengus.SubPlotList[self.loc[0]][self.loc[1]]
-        self.params = self.subplot.param_dict
-        # Create the OptionMenu to chooses the Chart Type:
-        self.InterpolVar = Tk.StringVar(self)
-        self.InterpolVar.set(self.params['interpolation'])  # default value
-        self.InterpolVar.trace('w', self.InterpolChanged)
+        super().__init__(parent, loc)
+        self.ignoreChange = False
 
-        ttk.Label(frm, text="Interpolation Method:").grid(row=0, column=2)
-        InterplChooser = ttk.OptionMenu(
-            frm, self.InterpolVar,
-            self.params['interpolation'],
-            *tuple(self.interpolation_methods))
-        InterplChooser.grid(
-            row=0, column=3,
-            sticky=Tk.W + Tk.E)
+        self.build_ui()
 
-        # Create the OptionMenu to chooses the Chart Type:
-        self.ctypevar = Tk.StringVar(self)
-        self.ctypevar.set(self.subplot.chart_type)  # default value
-        self.ctypevar.trace('w', self.ctypeChanged)
+    def build_ui(self):
+        self.setWindowTitle(f'Scalar Flds Plot {self.loc} Settings')
 
-        ttk.Label(
-            frm, text="Choose Chart Type:").grid(
-                row=0, column=0)
-        ctypeChooser = ttk.OptionMenu(
-            frm, self.ctypevar,
-            self.subplot.chart_type,
-            *tuple(self.parent.oengus.plot_types_dict.keys()))
-        ctypeChooser.grid(
-            row=0, column=1,
-            sticky=Tk.W + Tk.E)
-        # OptionMenu to choose simulation
-        self.SimVar = Tk.StringVar(self)
-        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])
-        self.SimVar.trace('w', self.SimChanged)
+        layout = QGridLayout()
+        ###
+        #
+        #  Do everything in 1 qridlayout        #
+        #
+        ##
 
-        ttk.Label(
-            frm, text="simulation:").grid(
-                row=1, column=0)
-        SimChooser = ttk.OptionMenu(
-            frm, self.SimVar,
-            self.parent.oengus.sim_names[self.params['sim_num']],
-            *tuple(self.parent.oengus.sim_names))
-        SimChooser.grid(
-            row=1, column=1,
-            sticky=Tk.W + Tk.E)
+        layout.addWidget(QLabel('Choose Chart Type:'), 0, 0)
+        layout.addWidget(self.chart_type_QComboBox(), 0, 1)
+
+        layout.addWidget(QLabel('Interpolation Method:'), 0, 2)
+        layout.addWidget(self.interpl_QComboBox(), 0, 3)
+
+        layout.addWidget(QLabel('Simulation:'), 1, 0)
+        self.sim_combo = QComboBox(self)
+        for sim_name in self.oengus.sim_names:
+            self.sim_combo.addItem(sim_name)
+        self.sim_combo.setCurrentIndex(self.params['sim_num'])
+        self.sim_combo.currentIndexChanged.connect(self.sim_changed)
+        layout.addWidget(self.sim_combo, 2, 0)
+
+        layout.addWidget(QLabel('Choose Quantity:'), 3, 0)
+
+        self.fld_combo = QComboBox(self)
+        self.fld_combo.currentIndexChanged.connect(self.fld_type_changed)
+        self.update_fld_combo()
+        layout.addWidget(self.fld_combo, 4, 0)
+
+        """
         # Create a var to track whether or not to plot in 2-D
         self.TwoDVar = Tk.IntVar(self)
         self.TwoDVar.set(self.params['twoD'])
@@ -216,33 +197,8 @@ class ScalarFieldsSettings(Tk.Toplevel):
             frm, textvariable=self.Zmax,
             width=7).grid(
                 row=4, column=3)
-
-    def ShockVarHandler(self, *args):
-        if self.params['show_shock'] == self.ShockVar.get():
-            pass
-        else:
-            self.params['show_shock'] = self.ShockVar.get()
-            if self.params['show_shock']:
-                sim = self.parent.oengus.sims[self.params['sim_num']]
-                shock_loc = sim.get_shock_loc()
-                if shock_loc['shock_loc'] < 0 or shock_loc['axis'] != 'x':
-                    print('Not Implemented Yet')
-                    self.ShockVar.set(False)
-
-            self.subplot.shock_line.set_visible(self.ShockVar.get())
-            self.subplot.save_axes_pos()
-            self.subplot.refresh()
-            self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
-
-    def CbarHandler(self, *args):
-        if self.params['show_cbar'] == self.CbarVar.get():
-            pass
-        else:
-            self.params['show_cbar'] = self.CbarVar.get()
-            if self.params['twoD']:
-                self.subplot.axC.set_visible(self.CbarVar.get())
-                self.parent.oengus.canvas.draw()
+        """
+        self.setLayout(layout)
 
     def DivHandler(self, *args):
         if self.params['UseDivCmap'] == self.DivVar.get():
@@ -258,17 +214,30 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
-    def SimChanged(self, *args):
-        cur_sim_name = self.parent.oengus.sim_names[self.params['sim_num']]
-        if self.SimVar.get() == cur_sim_name:
+    def sim_changed(self):
+        cur_sim_name = self.oengus.sim_names[self.params['sim_num']]
+        if self.sim_combo.currentText() == cur_sim_name:
             pass
         else:
-            self.params['sim_num'] = self.parent.oengus.sim_names.index(
-                self.SimVar.get())
-            self.parent.oengus.calc_sims_shown()
-            self.parent.playbackbar.update_sim_list()
+            self.params['sim_num'] = self.oengus.sim_names.index(
+                self.sim_combo.currentText())
+            self.update_fld_combo()
+
+            self.parent.update_all_sim_lists()
+            self.subplot.save_axes_pos()
             self.subplot.refresh()
-            self.parent.oengus.canvas.draw()
+            self.subplot.load_axes_pos()
+            self.oengus.canvas.draw()
+
+    def update_fld_combo(self):
+        cur_sim = self.oengus.sims[self.params['sim_num']]
+        avail_flds = cur_sim.get_available_quantities()['scalar_flds']
+        self.ignoreChange = True
+        self.fld_combo.clear()
+        for fld in avail_flds.keys():
+            self.fld_combo.addItem(fld)
+        self.fld_combo.setCurrentText(self.params['flds_type'])
+        self.ignoreChange = False
 
     def StretchHandler(self, *args):
         if self.params['stretch_colors'] == self.StretchVar.get():
@@ -298,11 +267,9 @@ class ScalarFieldsSettings(Tk.Toplevel):
                 self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
-    def quantityChanged(self, *args):
-        if self.params['flds_type'] == self.quantity.get():
-            pass
-        else:
-            self.params['flds_type'] = self.quantity.get()
+    def fld_type_changed(self):
+        if not self.ignoreChange:
+            self.params['flds_type'] = self.fld_combo.currentText()
             self.subplot.remove()
             self.subplot.build_axes()
             self.subplot.axis_info()
@@ -328,22 +295,6 @@ class ScalarFieldsSettings(Tk.Toplevel):
             self.subplot.build_axes()
             self.subplot.axis_info()
             self.subplot.draw()
-            self.parent.oengus.canvas.draw()
-
-    def ctypeChanged(self, *args):
-        if self.ctypevar.get() == self.subplot.chart_type:
-            pass
-        else:
-            self.parent.changePlotType(self.loc, self.ctypevar.get())
-            self.destroy()
-
-    def InterpolChanged(self, *args):
-        if self.InterpolVar.get() == self.params['interpolation']:
-            pass
-        else:
-            if self.params['twoD']:
-                self.subplot.image.set_interpolation(self.InterpolVar.get())
-            self.params['interpolation'] = self.InterpolVar.get()
             self.parent.oengus.canvas.draw()
 
     def setZminChanged(self, *args):

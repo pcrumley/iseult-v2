@@ -194,6 +194,7 @@ class MainApp(QtWidgets.QMainWindow):
                     self.popups_dict[f'{i,j}'].destroy()
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self, (i, j))
+                self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'VectorFlds':
                 self.popups_dict[f'{i,j}'] = VectorFieldsSettings(self, (i, j))
             elif self.oengus.SubPlotList[i][j].chart_type == 'PhasePlot':
