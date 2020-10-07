@@ -19,6 +19,7 @@ class ScalarFieldsSettings(iseultPlotSettings):
         self.setWindowTitle(f'Scalar Flds Plot {self.loc} Settings')
 
         layout = QGridLayout()
+
         ###
         #
         #  Do everything in 1 qridlayout        #
