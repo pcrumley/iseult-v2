@@ -28,6 +28,8 @@ class phasePlot(iseultPlot):
         'y_bins': 200,
         'v_min': -2.0,
         'v_max': 0,
+        'symmetric_y': False,
+        'symmetric_x': False,
         'aspect_one': False,
         'set_v_min': False,
         'set_v_max': False,
@@ -127,7 +129,6 @@ class phasePlot(iseultPlot):
         sim = self.parent.sims[self.param_dict['sim_num']]
 
         shock_loc = sim.get_shock_loc()
-
 
         # at some point we may need to support
         # shocks along different axes but for now
@@ -244,6 +245,16 @@ class phasePlot(iseultPlot):
 
             if self.param_dict['set_y_max']:
                 ymax = self.param_dict['y_max']
+
+            if self.param_dict['symmetric_x']:
+                tmp = max(abs(xmin), abs(xmax))
+                xmin = -tmp
+                xmax = tmp
+
+            if self.param_dict['symmetric_y']:
+                tmp = max(abs(ymin), abs(ymax))
+                ymin = -tmp
+                ymax = tmp
 
             self.axes.set_ylim(ymin, ymax)
             self.axes.set_xlim(xmin, xmax)

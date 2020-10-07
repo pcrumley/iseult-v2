@@ -36,6 +36,7 @@ class MainApp(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout(self._main)
         self.setWindowTitle(name)
 
+
         self.cmd_args = cmd_args
 
         # A variable that keeps track of the first graph
@@ -197,6 +198,7 @@ class MainApp(QtWidgets.QMainWindow):
                 self.popups_dict[f'{i,j}'] = VectorFieldsSettings(self, (i, j))
             elif self.oengus.SubPlotList[i][j].chart_type == 'PhasePlot':
                 self.popups_dict[f'{i,j}'] = phaseSettings(self, (i, j))
+                self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'ScalarVsTime':
                 self.popups_dict[f'{i,j}'] = ScalarVsTimeSettings(self, (i, j))
 
@@ -232,12 +234,20 @@ class MainApp(QtWidgets.QMainWindow):
         """
         self.geometry(self.oengus.MainParamDict['WindowSize'])
         """
+
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
             self.oengus.plot_types_dict[new_plot_type](self.oengus, pos, {})
         self.oengus.figure.clf()
         self.oengus.create_graphs()
         self.oengus.canvas.draw()
+
+    def update_all_sim_lists(self):
+        # Calc the current sims shown
+        self.oengus.calc_sims_shown()
+
+        # update playbackbar combo
+        self.playbackbar.update_sim_list()
 
     def txt_enter(self, e):
         self.playbackbar.text_callback()

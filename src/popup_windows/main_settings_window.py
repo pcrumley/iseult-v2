@@ -18,11 +18,12 @@ class SettingsFrame(QWidget):
 
     def build_ui(self):
         layout = QGridLayout()
-        self.setLayout(layout)
+
         tabwidget = QTabWidget()
         tabwidget.addTab(SettingsTab(self.oengus), "General Settings")
         tabwidget.addTab(SimTab(self.oengus), "Sim Settings")
         layout.addWidget(tabwidget, 0, 0)
+        self.setLayout(layout)
 
     def AverageChanged(self, *args):
         if self.main_params['Average1D'] != self.Average1DVar.get():

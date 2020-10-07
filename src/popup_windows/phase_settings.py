@@ -1,290 +1,159 @@
-import tkinter as Tk
-from tkinter import ttk
+from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
+                             QLabel, QLineEdit, QPushButton, QVBoxLayout,
+                             QComboBox, QCheckBox, QTabWidget, QSpinBox,
+                             QRadioButton)
+from PyQt5.QtCore import Qt, QTimer
 import new_cmaps
+from base_plot_settings import iseultPlotSettings
 
 
-class phaseSettings(Tk.Toplevel):
+class phaseSettings(iseultPlotSettings):
     interpolation_methods = [
         'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
         'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
         'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def __init__(self, parent, loc):
-        self.parent = parent
-        Tk.Toplevel.__init__(self)
-        self.loc = loc
-        self.wm_title(f'Phase Plot {self.loc} Settings')
-        self.parent = parent
-        frm = ttk.Frame(self)
-        frm.pack(fill=Tk.BOTH, expand=True)
-        self.protocol('WM_DELETE_WINDOW', self.OnClosing)
-        self.bind('<Return>', self.TxtEnter)
-        self.subplot = self.parent.oengus.SubPlotList[self.loc[0]][self.loc[1]]
-        self.params = self.subplot.param_dict
+        super().__init__(parent, loc)
+        self.ignoreChange = False
 
-        # Create the OptionMenu to chooses the image interpolation:
-        self.InterpolVar = Tk.StringVar(self)
-        self.InterpolVar.set(self.params['interpolation'])  # default value
-        self.InterpolVar.trace('w', self.InterpolChanged)
-        ttk.Label(frm, text="Interpolation Method:").grid(
-            row=0, column=2)
-        ttk.OptionMenu(
-            frm, self.InterpolVar,
-            self.params['interpolation'],
-            *tuple(self.interpolation_methods)).grid(
-                row=0, column=3,
-                sticky=Tk.W + Tk.E)
+        self.build_ui()
 
-        # OptionMenu to choose simulation
-        self.SimVar = Tk.StringVar(self)
-        self.SimVar.set(self.parent.oengus.sim_names[self.params['sim_num']])
-        self.SimVar.trace('w', self.SimChanged)
+    def build_ui(self):
+        self.setWindowTitle(f'Phase Plot {self.loc} Settings')
+        layout = QGridLayout()
+        ###
+        #
+        #  Do everything in 1 qridlayout        #
+        #
+        ##
 
-        ttk.Label(frm, text="simulation:").grid(row=1, column=0)
-        ttk.OptionMenu(
-            frm, self.SimVar,
-            self.parent.oengus.sim_names[self.params['sim_num']],
-            *tuple(self.parent.oengus.sim_names)).grid(
-            row=1, column=1, sticky=Tk.W + Tk.E)
+        layout.addWidget(QLabel('Choose Chart Type:'), 0, 0)
+        layout.addWidget(self.chart_type_QComboBox(), 0, 1)
 
-        # Create the OptionMenu to chooses the Chart Type:
-        self.ctypevar = Tk.StringVar(self)
-        self.ctypevar.set(self.subplot.chart_type)  # default value
-        self.ctypevar.trace('w', self.ctypeChanged)
+        layout.addWidget(QLabel('Interpolation Method:'), 0, 2)
+        layout.addWidget(self.interpl_QComboBox(), 0, 3)
 
-        ttk.Label(frm, text="Choose Chart Type:").grid(row=0, column=0)
-        ttk.OptionMenu(
-            frm, self.ctypevar,
-            self.subplot.chart_type,
-            *tuple(self.parent.oengus.plot_types_dict.keys())).grid(
-                row=0, column=1,
-                sticky=Tk.W + Tk.E)
+        layout.addWidget(QLabel('Simulation:'), 1, 0)
+        self.sim_combo = QComboBox(self)
+        for sim_name in self.oengus.sim_names:
+            self.sim_combo.addItem(sim_name)
+        self.sim_combo.setCurrentIndex(self.params['sim_num'])
+        self.sim_combo.currentIndexChanged.connect(self.sim_changed)
+        layout.addWidget(self.sim_combo, 2, 0)
 
-        # the Radiobox Control to choose the Field Type
-        self.prtl_var = Tk.StringVar(self)
-        self.prtl_var.set(self.params['prtl_type'])
-        self.prtl_var.trace('w', self.ptype_changed)
+        ###
+        #
+        # Particle quantities
+        #
+        ###
 
-        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
-        avail_prtls = cur_sim.get_available_quantities()['prtls']
+        layout.addWidget(QLabel('Choose Particle:'), 3, 0)
 
-        ttk.Label(frm, text="Choose Particle:").grid(
-            row=2, sticky=Tk.W)
-        self.prtl_menu = ttk.OptionMenu(
-            frm, self.prtl_var,
-            self.params['prtl_type'],
-            *tuple(avail_prtls.keys()))
-        self.prtl_menu.grid(
-            row=3, column=0,
-            sticky=Tk.W + Tk.E)
+        self.prtl_combo = QComboBox(self)
+        self.prtl_combo.currentIndexChanged.connect(self.prtl_type_changed)
+        layout.addWidget(self.prtl_combo, 4, 0)
 
-        # choose the prtl quantity on the x-axis
-        ttk.Label(
-            frm, text='x_val:').grid(
-                row=4, column=0, sticky=Tk.W)
-        self.xval_var = Tk.StringVar(self)
-        self.xval_var.set(self.params['x_val'])
-        self.xval_var.trace('w', self.x_valChanged)
-        if self.params['prtl_type'] in avail_prtls.keys():
-            avail_attrs = avail_prtls[self.params['prtl_type']]['attrs'].keys()
-        else:
-            avail_attrs = []
-        self.xval_menu = ttk.OptionMenu(
-            frm, self.xval_var,
-            self.params['x_val'],
-            *tuple())
+        layout.addWidget(QLabel('x_val:'), 5, 0)
+        self.xval_combo = QComboBox(self)
+        self.xval_combo.param_arg = 'x_val'
+        self.xval_combo.currentIndexChanged.connect(self.prtl_attr_handler)
+        layout.addWidget(self.xval_combo, 6, 0)
 
-        self.xval_menu.grid(
-                row=5, column=0,
-                sticky=Tk.W + Tk.E)
+        layout.addWidget(QLabel('y_val:'), 5, 1)
+        self.yval_combo = QComboBox(self)
+        self.yval_combo.param_arg = 'y_val'
+        self.yval_combo.currentIndexChanged.connect(self.prtl_attr_handler)
+        layout.addWidget(self.yval_combo, 6, 1)
 
-        ttk.Label(
-            frm, text='y_val:').grid(
-                row=4, column=1,
-                sticky=Tk.W)
+        self.update_prtl_combo()
+        self.update_attr_combos()
 
-        self.yval_var = Tk.StringVar(self)
-        self.yval_var.set(self.params['y_val'])
-        self.yval_var.trace('w', self.y_valChanged)
+        ###
+        #
+        # Check buttons
+        #
+        ###
 
-        self.yval_menu = ttk.OptionMenu(
-            frm, self.yval_var,
-            self.params['y_val'],
-            *tuple())
+        layout.addWidget(self.show_cbar_cb(), 7, 0)
+        layout.addWidget(self.show_shock_cb(), 7, 1)
+        layout.addWidget(self.ax_symmetric_cb('x'), 8, 0)
+        layout.addWidget(self.ax_symmetric_cb('y'), 8, 1)
+        cb = QCheckBox('Aspect = 1')
+        cb.setChecked(self.params['aspect_one'])
+        cb.stateChanged.connect(self.aspect_handler)
+        layout.addWidget(cb, 9, 0)
 
-        self.yval_menu.grid(
-            row=5, column=1,
-            sticky=Tk.W + Tk.E)
+        ###
+        #
+        # # of bins
+        #
+        ###
 
-        self.update_attr_menus()
-        # the Check boxes for the dimension
+        # ybins
+        layout.addWidget(QLabel('# of ybins'), 10, 0)
+        self.edit_ybins = QLineEdit(self)
+        self.edit_ybins.param_arg = 'y_bins'
+        self.edit_ybins.setText(
+            str(self.params[self.edit_ybins.param_arg]))
+        self.edit_ybins.returnPressed.connect(self.bins_changed)
+        layout.addWidget(self.edit_ybins, 10, 1)
 
-        self.yBins = Tk.StringVar()
-        self.yBins.set(str(self.params['y_bins']))
-        ttk.Label(
-            frm, text='# of ybins').grid(
-                row=9, column=0, sticky=Tk.W)
-        ttk.Entry(
-            frm, textvariable=self.yBins, width=7).grid(
-                row=9, column=1)
+        # xbins
+        layout.addWidget(QLabel('# of xbins'), 11, 0)
+        self.edit_xbins = QLineEdit(self)
+        self.edit_xbins.param_arg = 'x_bins'
+        self.edit_xbins.setText(
+            str(self.params[self.edit_xbins.param_arg]))
+        self.edit_xbins.returnPressed.connect(self.bins_changed)
+        layout.addWidget(self.edit_xbins, 11, 1)
 
-        self.xBins = Tk.StringVar()
-        self.xBins.set(str(self.params['x_bins']))
-        ttk.Label(
-            frm, text='# of xbins').grid(
-                row=10, column=0, sticky=Tk.W)
-        ttk.Entry(
-            frm, textvariable=self.xBins, width=7).grid(
-                row = 10, column = 1)
+        self.v_min_cb = QCheckBox('Set log f min')
+        self.v_min_cb.param_key = 'set_v_min'
+        self.v_min_cb.setChecked(self.params['set_v_min'])
+        self.v_min_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.v_min_cb, 3, 2)
 
-        # Control whether or not Cbar is shown
-        self.CbarVar = Tk.IntVar()
-        self.CbarVar.set(self.params['show_cbar'])
-        ttk.Checkbutton(
-            frm, text="Show Color bar",
-            variable=self.CbarVar,
-            command=self.CbarHandler).grid(
-                row=6, sticky=Tk.W)
+        self.edit_vmin = QLineEdit(self)
+        self.edit_vmin.param_arg = 'v_min'
+        self.edit_vmin.setText(
+            str(self.params['v_min']))
+        self.edit_vmin.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_vmin, 3, 3)
 
-        # show shock
-        self.ShockVar = Tk.IntVar()
-        self.ShockVar.set(self.params['show_shock'])
-        ttk.Checkbutton(
-            frm, text="Show Shock",
-            variable=self.ShockVar,
-            command=self.ShockVarHandler).grid(
-                row=6, column=1,
-                sticky=Tk.W)
+        self.v_max_cb = QCheckBox('Set log f max')
+        self.v_max_cb.param_key = 'set_v_max'
+        self.v_max_cb.setChecked(self.params['set_v_max'])
+        self.v_max_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.v_max_cb, 4, 2)
 
-        # Set aspect to one
-        self.aspect_var = Tk.IntVar()
-        self.aspect_var.set(self.params['aspect_one'])
-        ttk.Checkbutton(
-            frm, text="Apsect == 1",
-            variable=self.aspect_var,
-            command=self.aspectHandler).grid(
-                row=7, column=0,
-                sticky=Tk.W)
+        self.edit_vmax = QLineEdit(self)
+        self.edit_vmax.param_arg = 'v_max'
+        self.edit_vmax.setText(
+            str(self.params['v_max']))
+        self.edit_vmax.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_vmax, 4, 3)
 
-        # Now the field lim
-        self.setZminVar = Tk.IntVar()
-        self.setZminVar.set(self.params['set_v_min'])
-        self.setZminVar.trace('w', self.setZminChanged)
+        self.setLayout(layout)
 
-        self.setZmaxVar = Tk.IntVar()
-        self.setZmaxVar.set(self.params['set_v_max'])
-        self.setZmaxVar.trace('w', self.setZmaxChanged)
-
-        self.Zmin = Tk.StringVar()
-        self.Zmin.set(str(self.params['v_min']))
-
-        self.Zmax = Tk.StringVar()
-        self.Zmax.set(str(self.params['v_max']))
-
-        ttk.Checkbutton(
-            frm, text='Set log f min',
-            variable=self.setZminVar).grid(
-                row=3, column=2, sticky=Tk.W)
-
-        ttk.Entry(
-            frm, textvariable=self.Zmin,
-            width=7).grid(
-                row=3, column=3)
-
-        ttk.Checkbutton(
-            frm, text='Set log f max',
-            variable=self.setZmaxVar).grid(
-                row=4, column=2, sticky=Tk.W)
-
-        ttk.Entry(
-            frm, textvariable=self.Zmax,
-            width=7).grid(
-                row=4, column=3)
-
-    def ShockVarHandler(self, *args):
-        if self.params['show_shock'] == self.ShockVar.get():
-            pass
-        else:
-            self.params['show_shock'] = self.ShockVar.get()
-            if self.params['show_shock']:
-                sim = self.parent.oengus.sims[self.params['sim_num']]
-                shock_loc = sim.get_shock_loc()
-                if shock_loc['shock_loc'] < 0 or shock_loc['axis'] != 'x':
-                    print('Not Implemented Yet')
-                    self.ShockVar.set(False)
-
-            self.subplot.shock_line.set_visible(self.ShockVar.get())
-            self.subplot.save_axes_pos()
-            self.subplot.refresh()
-            self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
-
-    def CbarHandler(self, *args):
-        if self.params['show_cbar'] == self.CbarVar.get():
-            pass
-        else:
-            self.params['show_cbar'] = self.CbarVar.get()
-            if self.params['twoD']:
-                self.subplot.axC.set_visible(self.CbarVar.get())
-                self.parent.oengus.canvas.draw()
-
-    def DivHandler(self, *args):
-        if self.params['UseDivCmap'] == self.DivVar.get():
-            pass
-        else:
-            self.params['UseDivCmap'] = self.DivVar.get()
-            if self.params['twoD']:
-                tmp_cmap = None
-                if self.params['UseDivCmap']:
-                    tmp_cmap = self.parent.oengus.MainParamDict['DivColorMap']
-                else:
-                    tmp_cmap = self.parent.oengus.MainParamDict['ColorMap']
-                self.subplot.image.set_cmap(new_cmaps.cmaps[tmp_cmap])
-                self.subplot.cbar.set_cmap(new_cmaps.cmaps[tmp_cmap])
-                self.subplot.save_axes_pos()
+    def prtl_type_changed(self, *args):
+        if not self.ignoreChange:
+            if self.params['prtl_type'] != self.prtl_combo.currentText():
+                self.params['prtl_type'] = self.prtl_combo.currentText()
+                self.update_attr_combos()
                 self.subplot.refresh()
-                self.subplot.load_axes_pos()
-                self.parent.oengus.canvas.draw()
+                self.subplot.update_labels_and_colors()
+                self.oengus.canvas.draw()
 
-    def StretchHandler(self, *args):
-        if self.params['stretch_colors'] == self.StretchVar.get():
-            pass
-        else:
-            self.params['stretch_colors'] = self.StretchVar.get()
-            if self.params['twoD']:
-                self.subplot.save_axes_pos()
-                self.subplot.remove()
-                self.subplot.load_axes_pos()
-                self.subplot.draw()
-                self.parent.oengus.canvas.draw()
-
-    def cnormChanged(self, *args):
-        if self.params['cnorm_type'] == self.cnormvar.get():
-            pass
-        else:
-            self.params['cnorm_type'] = self.cnormvar.get()
-            if self.params['twoD']:
-                self.subplot.remove()
-                self.subplot.draw()
-                self.parent.oengus.canvas.draw()
-
-    def ptype_changed(self, *args):
-        if self.params['prtl_type'] != self.prtl_var.get():
-            self.params['prtl_type'] = self.prtl_var.get()
-            self.update_attr_menus()
-            self.subplot.refresh()
-            self.subplot.update_labels_and_colors()
-            self.parent.oengus.canvas.draw()
-
-    def y_valChanged(self, *args):
-        if self.params['y_val'] == self.yval_var.get():
-            pass
-        else:
-            self.params['y_val'] = self.yval_var.get()
-            self.subplot.axis_info()
-            self.subplot.refresh()
-            self.subplot.update_labels_and_colors()
-            self.parent.oengus.canvas.draw()
+    def prtl_attr_handler(self):
+        if not self.ignoreChange:
+            sender = self.sender()
+            if self.params[sender.param_arg] != sender.currentText():
+                self.params[sender.param_arg] = sender.currentText()
+                self.subplot.axis_info()
+                self.subplot.refresh()
+                self.subplot.update_labels_and_colors()
+                self.oengus.canvas.draw()
 
     def x_valChanged(self, *args):
         if self.params['x_val'] == self.xval_var.get():
@@ -294,133 +163,99 @@ class phaseSettings(Tk.Toplevel):
             self.subplot.axis_info()
             self.subplot.refresh()
             self.subplot.update_labels_and_colors()
-            self.parent.oengus.canvas.draw()
+            self.oengus.canvas.draw()
 
-    def ctypeChanged(self, *args):
-        if self.ctypevar.get() == self.subplot.chart_type:
+    def sim_changed(self):
+        cur_sim_name = self.oengus.sim_names[self.params['sim_num']]
+        if self.sim_combo.currentText() == cur_sim_name:
             pass
         else:
-            self.parent.changePlotType(self.loc, self.ctypevar.get())
-            self.destroy()
+            self.params['sim_num'] = self.oengus.sim_names.index(
+                self.sim_combo.currentText())
+            self.update_prtl_combo()
+            self.update_attr_combos()
 
-    def InterpolChanged(self, *args):
-        if self.InterpolVar.get() == self.params['interpolation']:
-            pass
-        else:
-            if self.params['twoD']:
-                self.subplot.image.set_interpolation(self.InterpolVar.get())
-            self.params['interpolation'] = self.InterpolVar.get()
-            self.parent.oengus.canvas.draw()
-
-    def SimChanged(self, *args):
-        cur_sim_name = self.parent.oengus.sim_names[self.params['sim_num']]
-        if self.SimVar.get() == cur_sim_name:
-            pass
-        else:
-            self.params['sim_num'] = self.parent.oengus.sim_names.index(
-                self.SimVar.get())
-            self.update_prtl_menu()
-            self.update_attr_menus()
-            self.parent.oengus.calc_sims_shown()
-            self.parent.playbackbar.update_sim_list()
+            self.parent.update_all_sim_lists()
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
+            self.oengus.canvas.draw()
 
-    def aspectHandler(self, *args):
-        if self.aspect_var == self.params['aspect_one']:
-            pass
+    def aspect_handler(self):
+        sender = self.sender()
+        self.params['aspect_one'] = sender.isChecked()
+        if self.params['aspect_one']:
+            self.subplot.axes.set_aspect('equal')
         else:
-            self.params['aspect_one'] = self.aspect_var.get()
-            if self.params['aspect_one']:
-                self.subplot.axes.set_aspect('equal')
-            else:
-                self.subplot.axes.set_aspect('auto')
-            self.parent.oengus.canvas.draw()
+            self.subplot.axes.set_aspect('auto')
+        self.oengus.canvas.draw()
 
-    def setZminChanged(self, *args):
-        if self.setZminVar.get() == self.params['set_v_min']:
-            pass
-        else:
-            self.params['set_v_min'] = self.setZminVar.get()
-            self.subplot.save_axes_pos()
-            self.subplot.refresh()
-            self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
+    def v_cb_handler(self):
+        cb = self.sender()
+        self.params[cb.param_key] = cb.isChecked()
+        self.subplot.save_axes_pos()
+        self.subplot.refresh()
+        self.subplot.load_axes_pos()
+        self.oengus.canvas.draw()
 
-    def setZmaxChanged(self, *args):
-        if self.setZmaxVar.get() == self.params['set_v_max']:
-            pass
-        else:
-            self.params['set_v_max'] = self.setZmaxVar.get()
-            self.subplot.save_axes_pos()
-            self.subplot.refresh()
-            self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
-
-    def TxtEnter(self, e):
-        self.fields_callback()
-        self.bins_callback()
-
-    def bins_callback(self):
+    def bins_changed(self):
         to_reload = False
-        intVarList = [self.xBins, self.yBins]
-        intParamList = ['x_bins', 'y_bins']
-        for j in range(len(intVarList)):
-            try:
+        line_edit = self.sender()
+        try:
             #make sure the user types in a float
-                user_num = int(intVarList[j].get())
-                if user_num - int(self.params[intParamList[j]]) != 0:
+            user_num = int(line_edit.text())
+            if user_num - int(self.params[line_edit.param_arg]) != 0:
+                self.params[line_edit.param_arg] = user_num
+                to_reload += True
 
-                    self.params[intParamList[j]] = user_num
-                    to_reload += True
-
-            except ValueError:
-                # if they type in random stuff, just set it ot the param value
-                intVarList[j].set(str(self.parent.GetPlotParam(intVarList[j])))
+        except ValueError:
+            # if they type in random stuff, just set it ot the param value
+            line_edit.setText(str(self.params[line_edit.param_arg]))
 
         if to_reload:
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
+            self.oengus.canvas.draw()
 
-    def fields_callback(self):
-        tkvarLimList = [self.Zmin, self.Zmax]
+    def lims_changed(self):
+        edit_list = [self.edit_vmin, self.edit_vmax]
         plot_param_List = ['v_min', 'v_max']
-        tkvarSetList = [self.setZminVar, self.setZmaxVar]
+        cb_list = [self.v_min_cb, self.v_max_cb]
         to_reload = False
-        for j in range(len(tkvarLimList)):
+        for j in range(len(cb_list)):
             try:
                 # make sure the user types in a number
-                user_num = float(tkvarLimList[j].get())
+                user_num = float(edit_list[j].text())
                 if abs(user_num - self.params[plot_param_List[j]]) > 1E-4:
                     self.params[plot_param_List[j]] = user_num
-                    to_reload += True*tkvarSetList[j].get()
+                    to_reload += True * cb_list[j].isChecked()
 
             except ValueError:
                 # if they type in random stuff, just set it ot the param value
-                tkvarLimList[j].set(str(self.params[plot_param_List[j]]))
+                edit_list[j].setText(str(self.params[plot_param_List[j]]))
+
         if to_reload:
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()
-            self.parent.oengus.canvas.draw()
+            self.oengus.canvas.draw()
 
-    def update_prtl_menu(self):
-        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
+    def update_prtl_combo(self):
+        cur_sim = self.oengus.sims[self.params['sim_num']]
         avail_prtls = cur_sim.get_available_quantities()['prtls']
-        menu = self.prtl_menu['menu']
-        menu.delete(0, "end")
-        for prtl_type in avail_prtls.keys():
-            menu.add_command(
-                label=prtl_type,
-                command=lambda value=prtl_type: self.prtl_var.set(value))
+        self.ignoreChange = True
+        self.prtl_combo.clear()
+        for prtl in avail_prtls.keys():
+            self.prtl_combo.addItem(prtl)
+        self.prtl_combo.setCurrentText(self.params['prtl_type'])
+        self.ignoreChange = False
 
-    def update_attr_menus(self):
-        cur_sim = self.parent.oengus.sims[self.params['sim_num']]
+    def update_attr_combos(self):
+        cur_sim = self.oengus.sims[self.params['sim_num']]
         avail_prtls = cur_sim.get_available_quantities()['prtls']
+
+        self.ignoreChange = True
 
         if self.params['prtl_type'] in avail_prtls.keys():
             avail_attrs = list(
@@ -430,25 +265,21 @@ class phaseSettings(Tk.Toplevel):
 
         if len(avail_attrs) > 0:
 
-            menu = self.xval_menu['menu']
-            menu.delete(0, "end")
+            self.xval_combo.clear()
+            self.yval_combo.clear()
             for attr in avail_attrs:
-                menu.add_command(
-                    label=attr,
-                    command=lambda value=attr: self.xval_var.set(value))
+                self.xval_combo.addItem(attr)
+                self.yval_combo.addItem(attr)
 
-            if not (self.xval_var.get() in avail_attrs):
-                self.xval_var.set(avail_attrs[0])
-            menu = self.yval_menu['menu']
-            menu.delete(0, "end")
-            for attr in avail_attrs:
-                menu.add_command(
-                    label=attr,
-                    command=lambda value=attr: self.yval_var.set(value))
+            self.xval_combo.setCurrentText(self.params['x_val'])
+            self.yval_combo.setCurrentText(self.params['y_val'])
 
-            if not (self.yval_var.get() in avail_attrs):
-                self.yval_var.set(avail_attrs[0])
+            if not (self.xval_combo.currentText() in avail_attrs):
+                self.params['x_val'] = avail_attrs[0]
+                self.xval_combo.setCurrentText(avail_attrs[0])
 
+            if not (self.yval_combo.currentText() in avail_attrs):
+                self.params['y_val'] = avail_attrs[0]
+                self.yval_combo.setCurrentText(avail_attrs[0])
 
-    def OnClosing(self):
-        self.destroy()
+        self.ignoreChange = False
