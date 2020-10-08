@@ -15,10 +15,10 @@ class SettingsFrame(QWidget):
         # self.main_params = self.oengus.MainParamDict
         self.setWindowTitle('Settings')
         self.build_ui()
+        self.ignoreChange = False
 
     def build_ui(self):
         layout = QGridLayout()
-
         tabwidget = QTabWidget()
         tabwidget.addTab(SettingsTab(self.oengus), "General Settings")
         tabwidget.addTab(SimTab(self.oengus), "Sim Settings")
@@ -432,7 +432,6 @@ class SimTab(QWidget):
         layout = QGridLayout()
         self.setLayout(layout)
 
-
         ####
         #
         # Build up the sim settings tab
@@ -459,48 +458,53 @@ class SimTab(QWidget):
         layout.addLayout(row, 1, 2)
 
     def update_sim_list(self):
+        self.ignoreChange = True
         self.sim_combo.clear()
         for name in self.oengus.sim_names:
             self.sim_combo.addItem(name)
         index = self.sim_combo.findText(self.sim_selected.name)
         if index >= 0:
             self.sim_combo.setCurrentIndex(index)
+        self.ignoreChange = False
 
     def sim_selection_changed(self):
-        if self.sim_combo.currentText() != self.sim_selected.name:
+        if not self.ignoreChange:
+            if self.sim_combo.currentText() != self.sim_selected.name:
 
-            try:
-                ind = self.oengus.sim_names.index(self.sim_combo.currentText())
-            except ValueError:
-                ind = 0
+                try:
+                    ind = self.oengus.sim_names.index(self.sim_combo.currentText())
+                except ValueError:
+                    ind = 0
 
-            self.sim_selected = self.oengus.sims[ind]
-            index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
-            if index >= 0:
-                self.shock_combo.setCurrentIndex(index)
-            else:
-                self.shock_combo.setCurrentIndex(0)
-
+                self.sim_selected = self.oengus.sims[ind]
+                index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
+                if index >= 0:
+                    self.shock_combo.setCurrentIndex(index)
+                else:
+                    self.shock_combo.setCurrentIndex(0)
 
     def update_shock_opts(self):
-
+        self.ignoreChange = True
         self.shock_combo.clear()
 
         for method_name in self.sim_selected.get_shock_finder_opts():
             self.shock_combo.addItem(method_name)
         index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
+        self.ignoreChange = False
         if index >= 0:
             self.shock_combo.setCurrentIndex(index)
+        else:
+            self.shock_combo.setCurrentIndex(0)
 
     def shock_finder_changed(self, *args):
-        #print(self.sim_selected.shock_finder_name, self.sim_selected.shock_finder, self.shock_combo.currentText())
-        if self.sim_selected.shock_finder_name != self.shock_combo.currentText():
-            self.sim_selected.shock_finder = self.shock_combo.currentText()
-            # self.shock_finder_var.set(self.sim_selected.shock_finder_name)
-            # update shock lines
-            for i in range(self.oengus.MainParamDict['NumOfRows']):
-                for j in range(self.oengus.MainParamDict['NumOfCols']):
-                    self.oengus.SubPlotList[i][j].save_axes_pos()
-                    self.oengus.SubPlotList[i][j].refresh()
-                    self.oengus.SubPlotList[i][j].load_axes_pos()
-            self.oengus.canvas.draw()
+        if not self.ignoreChange:
+            if self.sim_selected.shock_finder_name != self.shock_combo.currentText():
+                self.sim_selected.shock_finder = self.shock_combo.currentText()
+                # self.shock_finder_var.set(self.sim_selected.shock_finder_name)
+                # update shock lines
+                for i in range(self.oengus.MainParamDict['NumOfRows']):
+                    for j in range(self.oengus.MainParamDict['NumOfCols']):
+                        self.oengus.SubPlotList[i][j].save_axes_pos()
+                        self.oengus.SubPlotList[i][j].refresh()
+                        self.oengus.SubPlotList[i][j].load_axes_pos()
+                self.oengus.canvas.draw()
