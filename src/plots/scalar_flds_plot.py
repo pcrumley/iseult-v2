@@ -30,6 +30,7 @@ class scalarFldsPlot(iseultPlot):
         'UseDivCmap': False,
         'div_midpoint': 0.0,
         'stretch_colors': False,
+        'symmetric_y': False,
         'cmap': 'None',  # If cmap is none, the plot inherits the parent's cmap
         'face_color': 'gainsboro'}
 
@@ -255,7 +256,7 @@ class scalarFldsPlot(iseultPlot):
             elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z plane
                 self.image.set_data(
                     self.scalar_fld['data'][:, self.ySlice, :])
-
+            self.an_2d.set_text(self.scalar_fld['label'])
             self.ymin = 0
             self.ymax = self.image.get_array().shape[0]/self.c_omp*self.istep
             self.xmin = 0
@@ -304,11 +305,17 @@ class scalarFldsPlot(iseultPlot):
             dist = min_max[1]-min_max[0]
             min_max[0] -= 0.04*dist
             min_max[1] += 0.04*dist
-            self.axes.set_ylim(min_max)
             if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom=self.param_dict['v_min'])
+                min_max[0] = self.param_dict['v_min']
             if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top=self.param_dict['v_max'])
+                min_max[0] = self.param_dict['v_max']
+            if self.param_dict['symmetric_y']:
+                tmp = max(abs(min_max[0]), abs(min_max[1]))
+                min_max[0] = -tmp
+                min_max[1] = tmp
+
+            self.axes.set_ylim(min_max)
+
         else:
             self.vmin = self.image.get_array().min()
             if self.param_dict['set_v_min']:

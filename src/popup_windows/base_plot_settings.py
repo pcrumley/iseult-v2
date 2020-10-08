@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QCheckBox
+from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QCheckBox, QLineEdit
 
 class iseultPlotSettings(QWidget):
     '''
@@ -101,3 +101,120 @@ class iseultPlotSettings(QWidget):
         self.subplot.refresh()
         self.subplot.load_axes_pos()
         self.oengus.canvas.draw()
+
+    def show_labels_2d_cb(self):
+        cb = QCheckBox('Show Labels 2D')
+        cb.setChecked(self.params['show_labels'])
+        cb.stateChanged.connect(self.twoD_label_handler)
+        return cb
+
+    def twoD_label_handler(self):
+        cb = self.sender()
+        self.params['show_labels'] = cb.isChecked()
+        if self.params['twoD']:
+            self.subplot.an_2d.set_visible(cb.isChecked())
+            self.parent.oengus.canvas.draw()
+
+    def is_2d_cb(self):
+        cb = QCheckBox('Show in 2D')
+        cb.setChecked(self.params['twoD'])
+        cb.stateChanged.connect(self.twoD_handler)
+        return cb
+
+    def twoD_handler(self):
+        cb = self.sender()
+        self.params['twoD'] = cb.isChecked()
+        self.subplot.remove()
+        self.subplot.build_axes()
+        self.subplot.axis_info()
+        self.subplot.draw()
+        self.parent.oengus.canvas.draw()
+
+    def div_cmap_cb(self):
+        cb = QCheckBox('Use Diverging cmap')
+        cb.setChecked(self.params['UseDivCmap'])
+        cb.stateChanged.connect(self.div_cmap_handler)
+        return cb
+
+    def div_cmap_handler(self):
+        cb = self.sender()
+        self.params['UseDivCmap'] = cb.isChecked()
+        if self.params['twoD']:
+            self.subplot.save_axes_pos()
+            self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
+            self.subplot.draw()
+            self.subplot.load_axes_pos()
+            self.parent.oengus.canvas.draw()
+
+    def asym_colorspace_cb(self):
+        cb = QCheckBox('Asymmetric Color Space')
+        cb.setChecked(self.params['stretch_colors'])
+        cb.stateChanged.connect(self.cspace_handler)
+        return cb
+
+    def cspace_handler(self):
+        cb = self.sender()
+        self.params['stretch_colors'] = cb.isChecked()
+        if self.params['twoD']:
+            self.subplot.save_axes_pos()
+            self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
+            self.subplot.draw()
+            self.subplot.load_axes_pos()
+            self.parent.oengus.canvas.draw()
+
+    ###
+    #
+    # cnorm
+    #
+    ###
+
+    def cnorm_QComboBox(self):
+        combo = QComboBox(self)
+        for norm in ['Pow', 'Linear']:
+            combo.addItem(norm)
+        combo.setCurrentText(self.params['cnorm_type'])
+        combo.currentIndexChanged.connect(self.cnorm_handler)
+        return combo
+
+    def cnorm_handler(self):
+        ''' Only use me in the definition of interpl_combo'''
+        combo = self.sender()
+        self.params['cnorm_type'] = combo.currentText()
+        if self.params['twoD']:
+            self.subplot.save_axes_pos()
+            self.subplot.remove()
+            self.subplot.build_axes()
+            self.subplot.axis_info()
+            self.subplot.draw()
+            self.subplot.load_axes_pos()
+            self.parent.oengus.canvas.draw()
+
+    def gamma_QLineEdit(self):
+        edit = QLineEdit(self)
+        edit.setText(
+            str(self.params['cpow_num']))
+        edit.returnPressed.connect(self.gamma_changed)
+        return edit
+
+    def gamma_changed(self):
+        edit = self.sender()
+        try:
+            user_num = float(edit.text())
+            if abs(user_num - self.params['cpow_num']) > 1E-4:
+                self.params['cpow_num'] = user_num
+                if self.params['twoD'] and self.params['cnorm_type'] == 'Pow':
+                    self.subplot.save_axes_pos()
+                    self.subplot.remove()
+                    self.subplot.build_axes()
+                    self.subplot.axis_info()
+                    self.subplot.draw()
+                    self.subplot.load_axes_pos()
+
+                    self.parent.oengus.canvas.draw()
+        except ValueError:
+            # if they type in random stuff, just set it ot the param value
+            edit.setText(str(self.params['cpow_num']))

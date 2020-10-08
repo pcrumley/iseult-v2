@@ -8,10 +8,6 @@ from base_plot_settings import iseultPlotSettings
 
 
 class phaseSettings(iseultPlotSettings):
-    interpolation_methods = [
-        'none', 'nearest', 'bilinear', 'bicubic', 'spline16',
-        'spline36', 'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
-        'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def __init__(self, parent, loc):
         super().__init__(parent, loc)

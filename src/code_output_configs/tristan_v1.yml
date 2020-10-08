@@ -200,7 +200,7 @@ scalar_flds:
     label: $n$
     expr: dens
   electron_density:
-    label: $  n_e$
+    label: $n_e$
     expr: dens - densi
   ion_density:
     label: $n_i$
