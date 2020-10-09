@@ -1,8 +1,6 @@
-from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
-                             QLabel, QLineEdit, QPushButton, QVBoxLayout,
-                             QComboBox, QCheckBox, QTabWidget, QSpinBox,
-                             QRadioButton)
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import (QWidget, QGridLayout,
+                             QLabel, QLineEdit,
+                             QComboBox, QCheckBox)
 import new_cmaps
 from base_plot_settings import iseultPlotSettings
 

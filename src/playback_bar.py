@@ -178,7 +178,8 @@ class playbackBar(QWidget):
             self.settings_window.show()
         else:
             #self.settings_window.destroy()
-            self.settings_window.hide()
+            self.settings_window.destroy()
+            self.settings_window = SettingsFrame(self.oengus)
             self.settings_window.show()
             #self.settings_window = SettingsFrame(self.oengus)
 

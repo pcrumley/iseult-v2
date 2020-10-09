@@ -80,16 +80,6 @@ class scalarFldsPlot(iseultPlot):
             print("Shock must be defined along x axis.")
             self.param_dict['show_shock'] = False
 
-        self.shock_line = self.axes.axvline(
-            shock_loc['shock_loc'], linewidth=1.5,
-            linestyle='--', color='w',
-            path_effects=[
-                PathEffects.Stroke(linewidth=2, foreground='k'),
-                PathEffects.Normal()])
-
-        self.shock_line.set_visible(
-            self.param_dict['show_shock'])
-
         if self.param_dict['cmap'] == 'None':
             if self.param_dict['UseDivCmap']:
                 self.cmap = self.parent.MainParamDict['DivColorMap']
@@ -195,6 +185,16 @@ class scalarFldsPlot(iseultPlot):
                 labelpad=self.parent.MainParamDict['yLabelPad'],
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
+
+        self.shock_line = self.axes.axvline(
+            shock_loc['shock_loc'], linewidth=1.5,
+            linestyle='--', color='w',
+            path_effects=[
+                PathEffects.Stroke(linewidth=2, foreground='k'),
+                PathEffects.Normal()])
+
+        self.shock_line.set_visible(
+            self.param_dict['show_shock'])
 
         self.refresh()
         self.link_handler()

@@ -86,7 +86,6 @@ class iseultPlot:
             return mcolors.LogNorm(vmin, vmax)
 
         else:
-
             return PowerNormWithNeg(
                 self.param_dict['cpow_num'],
                 vmin, vmax,
