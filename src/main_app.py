@@ -18,11 +18,8 @@ from phase_settings import phaseSettings
 from playback_bar import playbackBar
 from matplotlib.backends.qt_compat import QtCore, QtWidgets
 from PyQt5.QtGui import QKeySequence
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as myCustomToolbar
+from custom_toolbar import myCustomToolbar
 from PyQt5.QtCore import Qt
-
-def destroy(e):
-    sys.exit()
 
 
 class MainApp(QtWidgets.QMainWindow):
@@ -120,9 +117,18 @@ class MainApp(QtWidgets.QMainWindow):
     def create_shortcuts(self):
         #self.quit = QtWidgets.QShortcut(QKeySequence('q'), self)
         #self.quit.activated.connect(self.on_quit)
+
         self.settings_acc = QtWidgets.QShortcut(QKeySequence('s'), self)
         self.settings_acc.activated.connect(self.open_settings)
 
+        self.shortcut_play =  QtWidgets.QShortcut(QKeySequence('space'), self)
+        self.shortcut_play.activated.connect(self.playbackbar.play_handler)
+
+        self.shortcut_skip_right =  QtWidgets.QShortcut(QKeySequence('right'), self)
+        self.shortcut_skip_right.activated.connect(self.playbackbar.skip_right)
+
+        self.shortcut_skip_left =  QtWidgets.QShortcut(QKeySequence('left'), self)
+        self.shortcut_skip_left.activated.connect(self.playbackbar.skip_left)
 
         """
         self.bind_all("<Control-q>", self.quit)
