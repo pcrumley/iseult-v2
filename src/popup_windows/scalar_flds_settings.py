@@ -57,7 +57,7 @@ class ScalarFieldsSettings(iseultPlotSettings):
         layout.addWidget(self.show_labels_2d_cb(), 7, 1)
         layout.addWidget(self.is_2d_cb(), 3, 1)
         layout.addWidget(self.div_cmap_cb(), 8, 0)
-        layout.addWidget(self.asym_colorspace_cb(), 9, 0)
+        # layout.addWidget(self.asym_colorspace_cb(), 9, 0)
 
         ###
         #

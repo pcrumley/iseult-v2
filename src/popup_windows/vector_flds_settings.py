@@ -56,7 +56,7 @@ class VectorFieldsSettings(iseultPlotSettings):
         layout.addWidget(self.show_labels_2d_cb(), 9, 1)
         layout.addWidget(self.is_2d_cb(), 7, 1)
         layout.addWidget(self.div_cmap_cb(), 9, 0)
-        layout.addWidget(self.asym_colorspace_cb(), 10, 0)
+        # layout.addWidget(self.asym_colorspace_cb(), 10, 0)
 
         ###
         #
