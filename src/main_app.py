@@ -19,8 +19,8 @@ from playback_bar import playbackBar
 from matplotlib.backends.qt_compat import QtCore, QtWidgets
 from PyQt5.QtGui import QKeySequence
 from custom_toolbar import myCustomToolbar
-from PyQt5.QtCore import Qt
-
+from PyQt5.QtCore import Qt, QFileSystemWatcher
+from PyQt5.QtWidgets import QAction, qApp
 
 class MainApp(QtWidgets.QMainWindow):
     """ We simply derive a new class of Frame as the man frame of our app"""
@@ -83,6 +83,7 @@ class MainApp(QtWidgets.QMainWindow):
         self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
         self.popups_dict = {}
         self.create_shortcuts()
+        self.build_menu()
         #self.config(menu=menubar)
         #self.protocol("WM_DELETE_WINDOW", sys.exit)
 
@@ -90,7 +91,29 @@ class MainApp(QtWidgets.QMainWindow):
         self.closeEvent = self.on_quit
 
     def build_menu(self):
-        pass
+        exitAct = QAction(' &Quit', self)
+
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.triggered.connect(qApp.quit)
+
+        # self.statusBar()
+
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(exitAct)
+
+        bar = self.menuBar()
+        self.views_menu = bar.addMenu("Preset Views")
+        self.views_update()
+        self.view_dir_watcher = QFileSystemWatcher()
+        self.view_dir_watcher.addPath(
+            os.path.join(self.IseultDir, '.iseult_configs'))
+        self.view_dir_watcher.directoryChanged.connect(self.views_update)
+
+        # file.addAction("New")
+
+        # self.show()
         """
         menubar = Tk.Menu(self)
         self.wm_title()
@@ -115,19 +138,19 @@ class MainApp(QtWidgets.QMainWindow):
         """
 
     def create_shortcuts(self):
-        #self.quit = QtWidgets.QShortcut(QKeySequence('q'), self)
-        #self.quit.activated.connect(self.on_quit)
-
         self.settings_acc = QtWidgets.QShortcut(QKeySequence('s'), self)
         self.settings_acc.activated.connect(self.open_settings)
 
-        self.shortcut_play =  QtWidgets.QShortcut(QKeySequence('space'), self)
+        self.shortcut_play = QtWidgets.QShortcut(
+            QKeySequence('space'), self)
         self.shortcut_play.activated.connect(self.playbackbar.play_handler)
 
-        self.shortcut_skip_right =  QtWidgets.QShortcut(QKeySequence('right'), self)
+        self.shortcut_skip_right = QtWidgets.QShortcut(
+            QKeySequence('right'), self)
         self.shortcut_skip_right.activated.connect(self.playbackbar.skip_right)
 
-        self.shortcut_skip_left =  QtWidgets.QShortcut(QKeySequence('left'), self)
+        self.shortcut_skip_left = QtWidgets.QShortcut(
+            QKeySequence('left'), self)
         self.shortcut_skip_left.activated.connect(self.playbackbar.skip_left)
 
         """
@@ -141,7 +164,10 @@ class MainApp(QtWidgets.QMainWindow):
         self.bind('<space>', self.playbackbar.play_handler)
         """
     def views_update(self):
-        """
+        # Clear the menu of all actions
+        for act in self.views_menu.actions():
+            self.removeAction(act)
+        self.views_menu.clear()
         tmpdir = os.listdir(os.path.join(self.IseultDir, '.iseult_configs'))
         tmpdir = [elm for elm in tmpdir]
         tmpdir.sort()
@@ -155,20 +181,16 @@ class MainApp(QtWidgets.QMainWindow):
                     if 'ConfigName' in cfgDict['general'].keys():
                         tmpstr = cfgDict['general']['ConfigName']
                         cfiles.append((cfile, tmpstr))
-                        try:
-                            self.preset_menu.delete(tmpstr)
-
-                        except Tk.TclError:
-                            pass
 
         cfiles = sorted(cfiles, key=lambda x: x[1])
         for cfile, name in cfiles:
-            self.preset_menu.add_command(
-                label=name,
-                command=partial(
-                    self.load_config,
+            load_view_action = QAction(name, self)
+            load_view_action.triggered.connect(partial(
+                   self.load_config,
                     name))
-        """
+            self.views_menu.addAction(load_view_action)
+
+
     def onclick(self, event):
         '''After being clicked, we should use the x and y of the cursor to
         determine what subplot was clicked'''
@@ -232,7 +254,7 @@ class MainApp(QtWidgets.QMainWindow):
 
         # There are a few parameters that need to be loaded separately,
         # mainly in the playbackbar.
-        self.playbackbar.loop_var.set(
+        self.playbackbar.loop_chk.setChecked(
             self.oengus.MainParamDict['LoopPlayback'])
 
         self.oengus.create_graphs()
