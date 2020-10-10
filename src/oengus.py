@@ -3,7 +3,7 @@ import sys
 import yaml
 import subprocess
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 from PIL import Image
 from pic_sim import picSim
@@ -36,7 +36,7 @@ class Oengus():
 
         self.interactive = interactive
         # Create the figure
-        self.figure = plt.figure(edgecolor='none', facecolor='w')
+        self.figure = Figure(edgecolor='none', facecolor='w')
         if self.interactive:
             from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
             self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
@@ -205,7 +205,7 @@ class Oengus():
             with open(os.path.join(self.IseultDir, default_file)) as f:
                 self.cfgDict = yaml.safe_load(f)
         self.GenMainParamDict()
-        self.figure.dpi = self.MainParamDict['dpi']
+        # self.figure.dpi = self.MainParamDict['dpi']
         self.figure.figsize = self.MainParamDict['FigSize']
 
         if self.MainParamDict['HorizontalCbars']:
