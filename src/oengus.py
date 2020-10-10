@@ -36,7 +36,7 @@ class Oengus():
 
         self.interactive = interactive
         # Create the figure
-        self.figure = Figure(edgecolor='none', facecolor='w')
+        self.figure = Figure(edgecolor='none', facecolor='w', dpi=100)
         if self.interactive:
             from matplotlib.backends.backend_qt4agg import FigureCanvas
             self.canvas = FigureCanvas(self.figure)
@@ -206,7 +206,7 @@ class Oengus():
             with open(os.path.join(self.IseultDir, default_file)) as f:
                 self.cfgDict = yaml.safe_load(f)
         self.GenMainParamDict()
-        self.figure.dpi = self.MainParamDict['dpi']
+        # self.figure.dpi = self.MainParamDict['dpi']
         self.figure.figsize = self.MainParamDict['FigSize']
 
         if self.MainParamDict['HorizontalCbars']:
@@ -364,9 +364,13 @@ class Oengus():
             outname = os.path.abspath(sim.outdir)
             try:
                 f_end = sim.file_list[sim.get_time()]
-                self.figure.suptitle(f'{outname}/*.{f_end}')
+                self.figure.suptitle(
+                    f'{outname}/*.{f_end}',
+                    size=self.MainParamDict['TitleFontSize'])
             except IndexError:
-                self.figure.suptitle(f'{outname} is empty')
+                self.figure.suptitle(
+                    f'{outname} is empty',
+                    size=self.MainParamDict['TitleFontSize'])
 
         self.canvas.draw()
         if not self.interactive:
