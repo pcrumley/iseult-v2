@@ -3,7 +3,7 @@ import sys
 import yaml
 import subprocess
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 from PIL import Image
 from pic_sim import picSim
@@ -36,7 +36,7 @@ class Oengus():
 
         self.interactive = interactive
         # Create the figure
-        self.figure = plt.figure(edgecolor='none', facecolor='w')
+        self.figure = Figure(edgecolor='none', facecolor='w')
         if self.interactive:
             from matplotlib.backends.backend_qt4agg import FigureCanvas
             self.canvas = FigureCanvas(self.figure)

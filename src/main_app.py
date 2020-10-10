@@ -22,6 +22,7 @@ from custom_toolbar import myCustomToolbar
 from PyQt5.QtCore import Qt, QFileSystemWatcher
 from PyQt5.QtWidgets import QAction, qApp
 
+
 class MainApp(QtWidgets.QMainWindow):
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, name, cmd_args):
@@ -58,10 +59,9 @@ class MainApp(QtWidgets.QMainWindow):
                     self.oengus.add_sim(f'sim{i}')
                 self.oengus.sims[i].outdir = outdir
         self.oengus.create_graphs()
-        """
-        self.setGeometry(self.oengus.MainParamDict['WindowSize'])
-        self.minsize(780, 280)
-        """
+        self.resize(
+            *map(lambda x: int(x),
+            self.oengus.MainParamDict['WindowSize'].split('x')))
         layout.addWidget(self.oengus.canvas)
         self.toolbar = myCustomToolbar(self.oengus.canvas, self)
         self.addToolBar(QtCore.Qt.BottomToolBarArea,
@@ -91,19 +91,31 @@ class MainApp(QtWidgets.QMainWindow):
         self.closeEvent = self.on_quit
 
     def build_menu(self):
-        exitAct = QAction(' &Quit', self)
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        bar = self.menuBar()
+        # File Menu
+        fileMenu = bar.addMenu('&File')
 
+        savePresetAction = QAction('Save Current State', self)
+        savePresetAction.triggered.connect(self.open_save_dialog)
+        fileMenu.addAction(savePresetAction)
+
+        openSimAction = QAction('Open Simulation', self)
+        openSimAction.triggered.connect(self.open_sim_dialog)
+        fileMenu.addAction(openSimAction)
+
+        makeAMovieAction = QAction('Make a Movie', self)
+        makeAMovieAction.triggered.connect(self.open_movie_dialog)
+        fileMenu.addAction(makeAMovieAction)
+
+        exitAct = QAction(' &Quit', self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.triggered.connect(qApp.quit)
 
-        # self.statusBar()
-
-        menubar = self.menuBar()
-        menubar.setNativeMenuBar(False)
-        fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAct)
 
-        bar = self.menuBar()
+
         self.views_menu = bar.addMenu("Preset Views")
         self.views_update()
         self.view_dir_watcher = QFileSystemWatcher()
@@ -120,10 +132,7 @@ class MainApp(QtWidgets.QMainWindow):
         fileMenu = Tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="File", underline=0, menu=fileMenu)
 
-        fileMenu.add_command(
-            label='Save Current State', command=self.OpenSaveDialog)
-        fileMenu.add_command(
-            label='Open Simulation', command=self.open_sim_dialog)
+
         fileMenu.add_command(
            label='Make a Movie', command=self.open_movie_dialog)
         fileMenu.add_command(label="Exit", underline=1,
@@ -232,7 +241,7 @@ class MainApp(QtWidgets.QMainWindow):
             elif self.oengus.SubPlotList[i][j].chart_type == 'ScalarVsTime':
                 self.popups_dict[f'{i,j}'] = ScalarVsTimeSettings(self, (i, j))
 
-    def OpenSaveDialog(self):
+    def open_save_dialog(self):
         SaveDialog(self)
 
     def open_sim_dialog(self):
@@ -261,9 +270,10 @@ class MainApp(QtWidgets.QMainWindow):
         # self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.oengus.canvas.draw()
         # refresh the geometry
-        """
-        self.geometry(self.oengus.MainParamDict['WindowSize'])
-        """
+        self.resize(
+            *map(lambda x: int(x),
+            self.oengus.MainParamDict['WindowSize'].split('x')))
+
 
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
