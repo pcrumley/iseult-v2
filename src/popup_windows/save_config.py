@@ -3,6 +3,7 @@ import yaml
 from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QVBoxLayout, QLineEdit,
                              QLabel, QMessageBox)
 
+
 def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
     # When adding sections or items, add them in the reverse order of
     # how you want them to be displayed in the actual file.
@@ -103,7 +104,8 @@ class SaveDialog(QDialog):
         ''' Save the config file'''
         w_size = f'{self.parent.width()}x{self.parent.height()}'
         cfg_dir = os.path.join(self.parent.IseultDir, '.iseult_configs')
-        new_cfg_file = str(self.name_QLineEdit.text()).strip().replace(' ', '_') + '.yml'
+        new_cfg_file = str(
+            self.name_QLineEdit.text()).strip().replace(' ', '_') + '.yml'
         new_cfg_file = os.path.join(cfg_dir, new_cfg_file)
         save_iseult_cfg(
             self.parent.oengus, w_size,

@@ -1,145 +1,87 @@
-import tkinter as Tk
-from tkinter import ttk, messagebox
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QLineEdit,
+                             QLabel, QMessageBox, QGridLayout)
 import os
 
 
-class MovieDialog(Tk.Toplevel):
-
+class MovieDialog(QDialog):
     def __init__(self, parent, oengus, title=None):
-
-        Tk.Toplevel.__init__(self, parent)
-        self.transient(parent)
-
-        if title:
-            self.title(title)
-
+        super().__init__(parent)
         self.parent = parent
         self.oengus = oengus
-        self.result = None
+        if title:
+            self.setWindowTitle(title)
+        self.init_ui()
+        self.exec_()
 
+    def init_ui(self):
+
+        self.labels = [
+            "Name of Movie:",
+            "First Frame:",
+            "Last Frame (-1 for final frame):",
+            "Step Size:",
+            "Frames Per Second:",
+            "Movie Directory:"]
+        self.labels = [QLabel(label) for label in self.labels]
+        self.movie_opts_edits = [QLineEdit(self) for _ in self.labels]
+
+        # get movie directory:
         cur_sim = self.oengus.sims[self.oengus.cur_sim]
-        body = ttk.Frame(self)
-        self.initial_focus = self.body(
-            body, directory=os.path.abspath(
-                os.path.join(cur_sim.outdir, '../')
-            ))
-#        body.pack(fill=Tk.BOTH)#, expand=True)
-        body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
+        movie_dir=os.path.abspath(os.path.join(cur_sim.outdir, '../'))
 
-        self.buttonbox()
+        self.movie_opts_edits[-1].setText(movie_dir)
 
-        self.grab_set()
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.ok)
+        self.buttonBox.rejected.connect(self.reject)
 
-        if not self.initial_focus:
-            self.initial_focus = self
+        self.layout = QGridLayout()
+        for i, (label, line_edit) in enumerate(zip(self.labels,
+                                                   self.movie_opts_edits)):
+            self.layout.addWidget(label, i, 0)
+            self.layout.addWidget(line_edit, i, 1)
 
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.layout.addWidget(self.buttonBox, len(self.labels), 0, 1, 2)
 
-        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50,
-                                  parent.winfo_rooty() + 50))
+        self.setLayout(self.layout)
 
-        self.initial_focus.focus_set()
-
-        self.wait_window(self)
-
-    def body(self, master, directory='./'):
-        # create dialog body.  return widget that should have
-        # initial focus.  this method should be overridden
-        master.grid_columnconfigure(1, weight=1)
-        ttk.Label(master, text="Name of Movie:").grid(row=0)
-        self.e1 = ttk.Entry(master, width=17)
-        self.e1.grid(row=0, column=1, sticky=Tk.E + Tk.W)
-
-        ttk.Label(master, text="First Frame:").grid(row=1)
-        self.e2 = ttk.Entry(master, width=17)
-        self.e2.grid(row=1, column=1, sticky=Tk.E + Tk.W)
-
-        ttk.Label(master, text="Last Frame (-1 for final frame):").grid(row=2)
-        self.e3 = ttk.Entry(master, width=17)
-        self.e3.grid(row=2, column=1, sticky=Tk.E + Tk.W)
-
-        ttk.Label(master, text="Step Size:").grid(row=3)
-        self.e4 = ttk.Entry(master, width=17)
-        self.e4.grid(row=3, column=1, sticky=Tk.E + Tk.W)
-
-        ttk.Label(master, text="Frames Per Second:").grid(row=4)
-        self.e5 = ttk.Entry(master, width=17)
-        self.e5.grid(row=4, column=1, sticky=Tk.E + Tk.W)
-
-        ttk.Label(master, text="Movie Directory:").grid(row=5)
-        self.e6 = ttk.Entry(master, width=30)
-        self.e6.delete(0, Tk.END)
-        self.e6.insert(0, directory)
-        self.e6.grid(row=5, column=1, sticky=Tk.E + Tk.W)
-
-    def buttonbox(self):
-        # add standard button box. override if you don't want the
-        # standard buttons
-
-        box = ttk.Frame(self)
-
-        w = ttk.Button(
-            box, text="Save", width=10,
-            command=self.ok, default=Tk.ACTIVE)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-
-        self.bind("<Return>", self.ok)
-        self.bind("<Escape>", self.cancel)
-
-        box.pack()
-
-    #
     # standard button semantics
-
     def ok(self, event=None):
-
-        if not self.validate():
-            self.initial_focus.focus_set()  # put focus back
-            return
-
-        self.withdraw()
-        self.update_idletasks()
-
-        self.apply()
-
-        self.cancel()
-
-    def cancel(self, event=None):
-
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
-
-    #
-    # command hooks
+        if self.validate():
+            self.apply()
+            self.accept()
 
     def validate(self):
         ''' Check to make sure the Movie will work'''
         cur_sim = self.oengus.sims[self.oengus.cur_sim]
-        self.Name = str(self.e1.get())
+        self.Name = self.movie_opts_edits[0].text()
         try:
-            self.StartFrame = int(self.e2.get())
+            self.StartFrame = int(self.movie_opts_edits[1].text())
 
         except ValueError:
             self.StartFrame = ''
         try:
-            self.EndFrame = int(self.e3.get())
+            self.EndFrame = int(self.movie_opts_edits[2].text())
         except ValueError:
             self.EndFrame = ''
         try:
-            self.Step = int(self.e4.get())
+            self.Step = int(self.movie_opts_edits[3].text())
         except ValueError:
             self.Step = ''
         try:
-            self.FPS = int(self.e5.get())
+            self.FPS = int(self.movie_opts_edits[4].text())
         except ValueError:
             self.FPS = ''
-        self.outdir = str(self.e6.get().strip())
+        self.outdir = str(self.movie_opts_edits[5].text().strip())
 
         if self.Name != '':
-            self.Name = str(self.e1.get()).strip().replace(' ', '_') + '.mov'
+            self.Name = self.Name.strip().replace(' ', '_')
+            try:
+                if self.Name[-4:] != '.mov':
+                    self.Name = self.Name + '.mov'
+            except IndexError:
+                pass
 
         if self.StartFrame < 0:
             self.StartFrame += len(cur_sim) + 1
@@ -149,75 +91,97 @@ class MovieDialog(Tk.Toplevel):
 
         bad = False
         if self.Name == '':
-            messagebox.showwarning(
-                "Bad input",
-                "Field must contain a name, please try again"
-            )
-            bad = True
-        if not os.path.isdir(self.outdir):
-            messagebox.showwarning(
-                "Bad input",
-                f"{self.outdir} is not a directory"
-            )
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Bad input")
+            msg.setInformativeText(
+                "Field must contain a name, please try again")
+            msg.exec_()
             bad = True
 
-        filepath = os.path.join(self.outdir, self.Name)
-        try:
-            filehandle = open(filepath, 'w')
-            filehandle.close()
-            if os.path.exists(filepath):
-                os.remove(filepath)
-
-        except IOError:
-            messagebox.showwarning(
-                "Bad input",
-                f"You do not have write access to {self.outdir}"
-            )
+        if not bad and not os.path.isdir(self.outdir):
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Bad input")
+            msg.setInformativeText(f"{self.outdir} is not a directory")
+            msg.exec_()
             bad = True
 
         if not bad:
+            filepath = os.path.join(self.outdir, self.Name)
+            try:
+                filehandle = open(filepath, 'w')
+                filehandle.close()
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+
+            except IOError:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
+                    f"You do not have write access to {self.outdir}")
+                bad = True
+
+        if not bad:
             if self.StartFrame == '':
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "StartFrame must contain an int, please try again"
                 )
             elif self.EndFrame == '':
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "EndFrame must contain an int, please try again"
                 )
             elif self.StartFrame == 0:
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "Starting frame cannot be zero"
                 )
             elif self.EndFrame == 0:
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "Ending frame cannot be zero"
                 )
             elif self.Step == '':
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "Step must contain an int, please try again"
                 )
             elif self.Step <= 0:
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "Step must be an integer >0, please try again"
                 )
             elif self.FPS == '':
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "FPS must contain an int >0, please try again"
                 )
             elif self.FPS <= 0:
-                messagebox.showwarning(
-                    "Bad input",
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
                     "FPS must contain an int >0, please try again"
                 )
             else:
-                return 1
+                return True
 
     def apply(self):
         ''' Save the Movie'''
