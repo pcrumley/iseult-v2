@@ -92,7 +92,7 @@ class OpenSimDialog(QDialog):
         open_dir_dialog.setFileMode(QFileDialog.Directory)
         if open_dir_dialog.exec_():
             dirNames = open_dir_dialog.selectedFiles()
-            if len(dirNames) >0:
+            if len(dirNames) > 0:
                 self.dirs[i].setText(dirNames[0])
 
     # standard button semantics
