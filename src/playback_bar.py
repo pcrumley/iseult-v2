@@ -34,7 +34,7 @@ class playbackBar(QWidget):
         self.param.attach(self)
 
         # A hack to update the slider
-        self._cur_sim = 1
+        self._cur_sim = 0
 
     def initUI(self):
 

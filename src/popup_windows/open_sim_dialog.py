@@ -1,46 +1,33 @@
-import tkinter as Tk
-from tkinter import ttk, filedialog, messagebox
 from functools import partial
 import os
 import sys
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QLineEdit,
+                             QLabel, QMessageBox, QGridLayout)
 
 
-class OpenSimDialog(Tk.Toplevel):
+class OpenSimDialog(QDialog):
     def __init__(self, parent, title='Open Sim'):
-        Tk.Toplevel.__init__(self, parent)
-        self.transient(parent)
-        if title:
-            self.title(title)
+        super().__init__(parent)
         self.parent = parent
+        if title:
+            self.setWindowTitle(title)
 
-        self.body = ttk.Frame(self)
-        self.initial_focus = self.build_sim_table(self.body)
-#        body.pack(fill=Tk.BOTH)#, expand=True)
-        self.body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
+        self.init_ui()
+        self.exec_()
 
-        self.buttonbox()
-
-        self.grab_set()
-
-        if not self.initial_focus:
-            self.initial_focus = self
-
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-
-        self.initial_focus.focus_set()
-
-        self.wait_window(self)
-
+    def init_ui(self):
+        self.layout = QGridLayout(self)
+        self.build_sim_table(self.layout)
     #
     # construction hooks
 
-    def build_sim_table(self, master):
+    def build_sim_table(self, grid_layout):
         # create dialog body.  return widget that should have
         # initial focus.
-        ttk.Label(master, text="Sim #").grid(row=0, column=0)
+        grid_layout.addWidget(QLabel('Sim #'), 0, 0)
+        grid_layout.addWidget(QLabel('name'), 0, 0)
+        grid_layout.addWidget(QLabel('directory'), 0, 0)
+
         ttk.Label(master, text="name").grid(row=0, column=1)
         ttk.Label(master, text="directory").grid(row=0, column=2)
         self.labels = []
