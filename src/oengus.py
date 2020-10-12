@@ -283,10 +283,14 @@ class Oengus():
         self.MainParamDict['NumberOfSims'] += 1
 
     def pop_sim(self):
-        if len(self.sims) > 1:
-            self.sims.pop(-1)
+        # make sure the sim isn't shown.
+        max_shown = max(self.sims_shown)
+        if len(self.sims) > max_shown + 1:
+
             self.sim_names.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
+            return self.sims.pop(-1)
+        return None
 
     def create_graphs(self):
         # divy up the figure into a bunch of subplots using GridSpec.

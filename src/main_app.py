@@ -34,7 +34,6 @@ class MainApp(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout(self._main)
         self.setWindowTitle(name)
 
-
         self.cmd_args = cmd_args
 
         # A variable that keeps track of the first graph
@@ -272,8 +271,7 @@ class MainApp(QtWidgets.QMainWindow):
         # refresh the geometry
         self.resize(
             *map(lambda x: int(x),
-            self.oengus.MainParamDict['WindowSize'].split('x')))
-
+                self.oengus.MainParamDict['WindowSize'].split('x')))
 
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
