@@ -10,6 +10,17 @@ class OpenSimDialog(QDialog):
     def __init__(self, parent, title='Open Sim'):
         super().__init__(parent)
         self.parent = parent
+        # Things can get out of sync if subplot windows are open.
+        for i in range(self.parent.oengus.MainParamDict['NumOfRows']):
+            for j in range(self.parent.oengus.MainParamDict['NumOfCols']):
+                if f'{i,j}' in self.parent.popups_dict:
+                    if self.parent.popups_dict[f'{i,j}'] is not None:
+                        self.parent.popups_dict[f'{i,j}'].deleteLater()
+                        self.parent.popups_dict[f'{i,j}'] = None
+        # Same thing for the main settings window
+        if self.parent.playbackbar.settings_window is not None:
+            self.parent.playbackbar.settings_window.deleteLater()
+            self.parent.playbackbar.settings_window = None
         if title:
             self.setWindowTitle(title)
 

@@ -74,7 +74,7 @@ class MainApp(QtWidgets.QMainWindow):
         # Make the object hold the timestep info
 
         self.time_step = Param(1, minimum=1, maximum=1000)
-        self.playbackbar = playbackBar(self.oengus, self.time_step)
+        self.playbackbar = playbackBar(self, self.time_step)
         layout.addWidget(self.playbackbar)
         self.time_step.attach(self)
         self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
@@ -227,7 +227,7 @@ class MainApp(QtWidgets.QMainWindow):
             j = int(col_array.searchsorted(x_loc)//2)
             if f'{i,j}' in self.popups_dict:
                 if self.popups_dict[f'{i,j}'] is not None:
-                    self.popups_dict[f'{i,j}'].destroy()
+                    self.popups_dict[f'{i,j}'].deleteLater()
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self, (i, j))
                 self.popups_dict[f'{i,j}'].show()
@@ -249,14 +249,13 @@ class MainApp(QtWidgets.QMainWindow):
     def load_config(self, config_name):
         # First get rid of any & all pop up windows:
         if self.playbackbar.settings_window is not None:
-            self.playbackbar.settings_window.destroy()
-        # if self.measure_window is not None:
-        #    self.measure_window.destroy()
-        # Go through each sub-plot destroying any pop-up and
-        # restoring to default params
+            self.playbackbar.settings_window.deleteLater()
+            self.playbackbar.settings_window = None
+
         for key, val in self.popups_dict.items():
             if val is not None:
-                val.destroy()
+                val.deleteLater()
+                val = None
 
         self.oengus.load_view(config_name)
 
@@ -311,7 +310,7 @@ class MainApp(QtWidgets.QMainWindow):
 
     def on_quit(self, *event):
         if self.playbackbar.settings_window is not None:
-            self.playbackbar.settings_window.close()
+            self.playbackbar.settings_window.deleteLater()
 
 
 def runMe(cmd_args):

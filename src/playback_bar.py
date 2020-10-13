@@ -15,9 +15,10 @@ class playbackBar(QWidget):
     playbar, and a settings button.
     """
 
-    def __init__(self, oengus, tstep_param):
+    def __init__(self, main_app, tstep_param):
         super().__init__()
-        self.oengus = oengus
+        self.main_app = main_app
+        self.oengus = self.main_app.oengus
         # This param should be the time-step of the simulation
         self.param = tstep_param
 
@@ -160,10 +161,12 @@ class playbackBar(QWidget):
 
     def simChanged(self):
         if not self.ignoreChange:
-            if self.sim_combo.currentText() == self.oengus.sims[self.cur_sim].name:
+            cur_sim_name = self.oengus.sims[self.cur_sim].name
+            if self.sim_combo.currentText() == cur_sim_name:
                 pass
             elif self.sim_combo.currentText() in self.oengus.sim_names:
-                self.cur_sim = self.oengus.sim_names.index(self.sim_combo.currentText())
+                self.cur_sim = self.oengus.sim_names.index(
+                    self.sim_combo.currentText())
                 self.oengus.cur_sim = self.cur_sim
         #else:
         #    self.update_sim_list()
@@ -174,14 +177,12 @@ class playbackBar(QWidget):
 
     def open_settings(self):
         if self.settings_window is None:
-            self.settings_window = SettingsFrame(self.oengus)
+            self.settings_window = SettingsFrame(self.main_app)
             self.settings_window.show()
         else:
-            #self.settings_window.destroy()
             self.settings_window.destroy()
-            self.settings_window = SettingsFrame(self.oengus)
+            self.settings_window = SettingsFrame(self.main_app)
             self.settings_window.show()
-            #self.settings_window = SettingsFrame(self.oengus)
 
     def on_refresh(self, *args):
         for sim in self.oengus.sims:

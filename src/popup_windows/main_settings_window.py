@@ -9,9 +9,10 @@ from functools import partial
 
 
 class SettingsFrame(QWidget):
-    def __init__(self, oengus):
+    def __init__(self, main_app):
         super().__init__()
-        self.oengus = oengus
+        self.main_app = main_app
+        self.oengus = self.main_app.oengus
         # self.main_params = self.oengus.MainParamDict
         self.setWindowTitle('Settings')
         self.build_ui()
@@ -20,8 +21,8 @@ class SettingsFrame(QWidget):
     def build_ui(self):
         layout = QGridLayout()
         tabwidget = QTabWidget()
-        tabwidget.addTab(SettingsTab(self.oengus), "General Settings")
-        tabwidget.addTab(SimTab(self.oengus), "Sim Settings")
+        tabwidget.addTab(SettingsTab(self.main_app), "General Settings")
+        tabwidget.addTab(SimTab(self.main_app), "Sim Settings")
         layout.addWidget(tabwidget, 0, 0)
         self.setLayout(layout)
 
@@ -58,9 +59,10 @@ class SettingsFrame(QWidget):
 
 
 class SettingsTab(QWidget):
-    def __init__(self, oengus):
+    def __init__(self, main_app):
         super().__init__()
-        self.oengus = oengus
+        self.main_app = main_app
+        self.oengus = main_app.oengus
         self.main_params = self.oengus.MainParamDict
         self.build_ui()
 
@@ -332,15 +334,29 @@ class SettingsTab(QWidget):
 
     def col_changed(self):
         self.main_params['NumOfCols'] = int(self.col_sb.value())
+        self.clean_up_pop_ups()
         self.oengus.figure.clf()
         self.oengus.create_graphs()
         self.oengus.canvas.draw()
 
     def row_changed(self):
         self.main_params['NumOfRows'] = int(self.row_sb.value())
+        self.clean_up_pop_ups()
         self.oengus.figure.clf()
         self.oengus.create_graphs()
         self.oengus.canvas.draw()
+
+    def clean_up_pop_ups(self):
+        for i in range(self.main_params['MaxRows']):
+            for j in range(self.main_params['MaxCols']):
+                if i >= self.main_params['NumOfRows']:
+                    if f'{i,j}' in self.main_app.popups_dict:
+                        if self.main_app.popups_dict[f'{i,j}'] is not None:
+                            self.main_app.popups_dict[f'{i,j}'].deleteLater()
+                elif j >= self.main_params['NumOfCols']:
+                    if f'{i,j}' in self.main_app.popups_dict:
+                        if self.main_app.popups_dict[f'{i,j}'] is not None:
+                            self.main_app.popups_dict[f'{i,j}'].deleteLater()
 
     def radio_clicked(self):
         # If the shared axes are changed, we have to call the link
@@ -421,9 +437,10 @@ class SettingsTab(QWidget):
 
 
 class SimTab(QWidget):
-    def __init__(self, oengus):
+    def __init__(self, main_app):
         super().__init__()
-        self.oengus = oengus
+        self.main_app = main_app
+        self.oengus = main_app.oengus
         self.main_params = self.oengus.MainParamDict
         self.sim_selected = self.oengus.sims[0]
         self.build_ui()
