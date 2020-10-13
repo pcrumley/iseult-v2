@@ -78,6 +78,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
 
             elm['entry'] = QLineEdit(SettingsTabWidget)
             elm['entry'].setText(f'{lim_val}')
+            elm['entry'].returnPressed.connect(self.TxtEnter)
             settings_grid.addWidget(elm['entry'], 2+i, 3)
 
         self.bool_opts = [
@@ -104,25 +105,28 @@ class ScalarVsTimeSettings(iseultPlotSettings):
             settings_grid.addWidget(cb, 2+i, 0)
 
         SettingsTabWidget.setLayout(settings_grid)
+
         return SettingsTabWidget
 
     def lines_tab(self):
         LinesTabWidget = QWidget(self)
+        lines_layout = QVBoxLayout(LinesTabWidget)
+
         # Create the OptionMenu to chooses the Chart Type:
-        self.lines_grid = QGridLayout(LinesTabWidget)
+        self.lines_grid = QGridLayout()
         for i, label in enumerate(['Simulation', 'Quantity', 'Label',
                                    'Color', 'Line Style', 'Marker',
                                    'Marker Size']):
             self.lines_grid.addWidget(QLabel(label), 0, 1 + i)
         self.line_var_helpers = []
 
-
         for i in range(len(self.lines)):
             self.add_line_options(i)
+        lines_layout.addLayout(self.lines_grid)
+        lines_layout.addLayout(self.buttonbox())
+        LinesTabWidget.setLayout(lines_layout)
 
-        LinesTabWidget.setLayout(self.lines_grid)
-
-        #self.buttonbox(master)
+        # self.buttonbox(master)
         return LinesTabWidget
 
     def gen_plot_args(self, line_num):
@@ -150,31 +154,27 @@ class ScalarVsTimeSettings(iseultPlotSettings):
         self.subplot.load_axes_pos()
         self.parent.oengus.canvas.draw()
 
-    def buttonbox(self, master):
+    def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
-        box = ttk.Frame(master)
-        w = ttk.Button(
-            box, text='Add line', width=10,
-            command=self.add_line, default=Tk.ACTIVE)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(
-            box, text='Remove line', width=10,
-            command=self.remove)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        # w = ttk.Button(box, text="Refresh", width=10, command=self.remove)
-        # w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(
-            box, text="Ok", width=10,
-            command=self.ok)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
+        add_remove_btn_box = QHBoxLayout()
+        add_remove_btn_box.setSpacing(0)
+        # Add btn
+        add_btn = QPushButton()
+        add_btn.setText("Add Line")
+        add_btn.setMaximumWidth(100)
+        add_btn.setMinimumWidth(100)
+        add_btn.clicked.connect(self.add_line)
+        add_remove_btn_box.addWidget(add_btn)
 
-        # self.bind("<Return>", self.ok)
-        # self.bind("<Escape>", self.cancel)
-
-        box.pack()
+        # Remove Sim
+        rm_btn = QPushButton()
+        rm_btn.setText("Remove Line")
+        rm_btn.setMaximumWidth(100)
+        rm_btn.setMinimumWidth(100)
+        rm_btn.clicked.connect(self.remove)
+        add_remove_btn_box.addWidget(rm_btn)
+        return add_remove_btn_box
 
     # standard button semantics
     def add_line_options(self, line_num=0, event=None):
@@ -195,7 +195,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
         tmp_dict['sim_combo'].setCurrentText(cur_name)
 
         tmp_dict['sim_combo'].currentIndexChanged.connect(
-            partial(self.sim_handler, i))
+            partial(self.sim_changed, i))
         self.lines_grid.addWidget(tmp_dict['sim_combo'], i+1, 1)
 
         # the ComboBox to choose the scalar
@@ -204,26 +204,25 @@ class ScalarVsTimeSettings(iseultPlotSettings):
         scalars = cur_sim.get_available_quantities()['scalars']
 
         tmp_dict['quant_combo'] = QComboBox(self)
-        for quant in scalars:
-            tmp_dict['quant_combo'].addItem(quant)
 
-        tmp_dict['quant_combo'].setCurrentText(line['scalar'])
+        self.update_quantity_combo(list(scalars), tmp_dict['quant_combo'])
 
-        # self.update_quantity_menu(
-        #    tmp_dict['quantity'], list(scalars), tmp_dict['quant_op'])
-
-        # tmp_dict['quantity'].trace('w', partial(self.quantity_handler, i))
+        tmp_dict['quant_combo'].currentIndexChanged.connect(
+            partial(self.scalar_changed, i))
 
         self.lines_grid.addWidget(tmp_dict['quant_combo'], i+1, 2)
 
         for j, elm in enumerate(self.plot_opts):
             tmp_opt_dict = {}
             tmp_dict[elm] = tmp_opt_dict
-            # entry_width = 20 if elm == 'label' else 7
+            entry_width = 125 if elm == 'label' else 50
             tmp_opt_dict['entry'] = QLineEdit(self)
-            tmp_opt_dict['entry'].setText(f"{line['plot_args'][elm]}")
-            self.lines_grid.addWidget(tmp_opt_dict['entry'], i+1, 3+j)
+            tmp_opt_dict['entry'].setMinimumWidth(entry_width)
+            tmp_opt_dict['entry'].setMaximumWidth(entry_width)
 
+            tmp_opt_dict['entry'].setText(f"{line['plot_args'][elm]}")
+            tmp_opt_dict['entry'].returnPressed.connect(self.TxtEnter)
+            self.lines_grid.addWidget(tmp_opt_dict['entry'], i+1, 3+j)
 
         self.line_var_helpers.append(tmp_dict)
 
@@ -231,86 +230,59 @@ class ScalarVsTimeSettings(iseultPlotSettings):
         if len(self.lines) > 1:
             tmp_dict = self.line_var_helpers.pop()
             self.lines.pop()
-            # First destroy all the tk things
-            for key in ['show_cb', 'sim_op', 'quant_op']:
-                tmp_dict[key].destroy()
+            # Delete all the QT5 things
+            for key in ['show_cb', 'sim_combo', 'quant_combo']:
+                tmp_dict[key].deleteLater()
             for elm in self.plot_opts:
-                tmp_dict[elm]['entry'].destroy()
+                tmp_dict[elm]['entry'].deleteLater()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
 
-    def ok(self, event=None):
-        if not self.validate():
-            # put focus back
-            self.initial_focus.focus_set()
-            return
-        self.update_idletasks()
-        self.withdraw()
-        self.parent.oengus.canvas.draw()
-        self.cancel()
-
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
-
-    #
-    # command hooks
-    def validate(self):
-        ''' Check to make sure the directories are ok '''
-        # First change all the names.
-        bad = False
-        self.text_callback()
-        self.line_plot_options_callback()
-
-        # NEED TO PUT VALIDATION HERE
-        if not bad:
-            return True
-
-    def TxtEnter(self, e):
+    def TxtEnter(self):
         self.text_callback()
         self.line_plot_options_callback()
 
     def show_line_handler(self, i, *args):
         if i < len(self.subplot.param_dict['lines']):
             line_opts = self.subplot.param_dict['lines'][i]['plot_args']
-            show_tk_var = self.line_var_helpers[i]['show_var']
-            if line_opts['visible'] != show_tk_var.get():
-                line_opts['visible'] = show_tk_var.get()
+            cb = self.line_var_helpers[i]['show_cb']
+            if line_opts['visible'] != cb.isChecked():
+                line_opts['visible'] = cb.isChecked()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
-    def quantity_handler(self, i, *args):
-        if i < len(self.subplot.param_dict['lines']):
+    def scalar_changed(self, i, *args):
+        if i < len(self.subplot.param_dict['lines']) and not self.ignoreChange:
+            combo = self.line_var_helpers[i]['quant_combo']
             line = self.subplot.param_dict['lines'][i]
-            tk_var = self.line_var_helpers[i]['quantity']
             label_entry = self.line_var_helpers[i]['label']['entry']
-            if line['scalar'] != tk_var.get():
-                line['scalar'] = tk_var.get()
-                label_entry.delete(0, Tk.END)
+            if line['scalar'] != combo.currentText():
+                line['scalar'] = combo.currentText()
+
                 cur_sim = self.parent.oengus.sims[line['sim_num']]
                 scalars = cur_sim.get_available_quantities()['scalars']
-                new_label = scalars[tk_var.get()]['label']
+                new_label = scalars[line['scalar']]['label']
                 line['plot_args']['label'] = new_label
-                label_entry.insert(0, new_label)
+                label_entry.setText(new_label)
+
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
-    def sim_handler(self, i, *args):
+    def sim_changed(self, i, *args):
         if i < len(self.subplot.param_dict['lines']):
             line = self.subplot.param_dict['lines'][i]
-            tk_var = self.line_var_helpers[i]['sim_var']
+            sim_combo = self.line_var_helpers[i]['sim_combo']
             cur_name = self.parent.oengus.sim_names[line['sim_num']]
             cur_sim = self.parent.oengus.sims[line['sim_num']]
             scalars = cur_sim.get_available_quantities()['scalars']
-            if cur_name != tk_var.get():
+            if cur_name != sim_combo.currentText():
                 line['sim_num'] = self.parent.oengus.sim_names.index(
-                    tk_var.get())
+                    sim_combo.currentText())
                 # update available quantities
-                self.update_quantity_menu(
-                    self.line_var_helpers[i]['quantity'],
+                self.update_quantity_combo(
                     list(scalars),
-                    self.line_var_helpers[i]['quant_op'])
+                    self.line_var_helpers[i]['quant_combo'])
+                print(line['sim_num'])
                 self.parent.oengus.calc_sims_shown()
                 self.parent.playbackbar.update_sim_list()
                 self.subplot.save_axes_pos()
@@ -318,50 +290,50 @@ class ScalarVsTimeSettings(iseultPlotSettings):
                 self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
-    def update_quantity_menu(self, tk_var, options, option_menu):
-        menu = option_menu['menu']
-        menu.delete(0, "end")
+    def update_quantity_combo(self, options, combo):
+        self.ignoreChange = True
+        cur_scalar = combo.currentText()
+        combo.clear()
         for attr in options:
-            menu.add_command(
-                label=attr,
-                command=lambda value=attr: tk_var.set(value))
-        if not (tk_var.get() in options):
-            attr_var.set(options[0])
+            combo.addItem(attr)
+        if not (cur_scalar in options):
+            combo.setCurrentText(options[0])
+        self.ignoreChange = False
 
     def line_plot_options_callback(self):
         for line, helper in zip(self.lines, self.line_var_helpers):
             plot_args = line['plot_args']
 
             # Validate label (no val needed, raw string ok)
-            plot_args['label'] = helper['label']['var'].get()
+            plot_args['label'] = helper['label']['entry'].text()
 
             # line style must be ok
-            if validate_ls(helper['ls']['var'].get()):
-                plot_args['ls'] = helper['ls']['var'].get()
+            if validate_ls(helper['ls']['entry'].text()):
+                plot_args['ls'] = helper['ls']['entry'].text()
             else:
                 plot_args['ls'] = ':'
 
-            color = helper['color']['var'].get()
+            color = helper['color']['entry'].text()
             color = color.lower().replace(' ', '')
             if validate_color(color):
                 plot_args['color'] = color
             else:
-                helper['color']['var'].set(plot_args['color'])
+                helper['color']['entry'].setText(plot_args['color'])
 
-            if validate_marker(helper['marker']['var'].get()):
-                plot_args['marker'] = helper['marker']['var'].get()
+            if validate_marker(helper['marker']['entry'].text()):
+                plot_args['marker'] = helper['marker']['entry'].text()
             else:
-                helper['marker']['var'].set(plot_args['marker'])
+                helper['marker']['entry'].setText(plot_args['marker'])
 
             try:
-                ms = float(helper['markersize']['var'].get())
+                ms = float(helper['markersize']['entry'].text())
                 if ms >=0:
                     plot_args['markersize'] = ms
                 else:
-                    helper['markersize']['var'].set(
+                    helper['markersize']['entry'].setText(
                         plot_args['markersize'])
             except ValueError:
-                helper['markersize']['var'].set(
+                helper['markersize']['entry'].setText(
                     plot_args['markersize'])
         self.subplot.save_axes_pos()
         self.subplot.draw()
