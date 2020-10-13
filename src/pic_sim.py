@@ -162,7 +162,9 @@ class picSim(object):
             self.shock_finder = self._cfgDict['shock_methods']['shock_finder']
         except KeyError:
             pass
-        self.clear_caches()
+        self.refresh_directory()
+        self.parser.clear_caches()
+        self._data_dictionary = {}
 
     @property
     def file_list(self):
@@ -179,9 +181,10 @@ class picSim(object):
             self.time_array[i] = self.parser.getValue()
 
     def clear_caches(self):
-        self.refresh_directory()
-        self.parser.clear_caches()
-        self._data_dictionary = {}
+        self.cfg_file = self._cfg_file
+        # self.refresh_directory()
+        # self.parser.clear_caches()
+        # self._data_dictionary = {}
 
     def refresh_directory(self):
         self.file_list = self.get_f_numbers()

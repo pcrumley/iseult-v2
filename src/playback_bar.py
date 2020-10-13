@@ -98,7 +98,7 @@ class playbackBar(QWidget):
 
         clear_btn = QPushButton(self)
         clear_btn.setText("Clear Cache")
-        clear_btn.clicked.connect(self.on_refresh)
+        clear_btn.clicked.connect(self.clear_caches)
 
         ####
         #
@@ -123,7 +123,7 @@ class playbackBar(QWidget):
         hbox.addWidget(clear_btn)
 
         hbox.setContentsMargins(0, 0, 0, 0)
-        self.setFixedHeight(30);
+        self.setFixedHeight(30)
         self.setLayout(hbox)
 
         """
@@ -184,7 +184,7 @@ class playbackBar(QWidget):
             self.settings_window = SettingsFrame(self.main_app)
             self.settings_window.show()
 
-    def on_refresh(self, *args):
+    def clear_caches(self, *args):
         for sim in self.oengus.sims:
             sim.clear_caches()
         self.update_slider()

@@ -237,6 +237,9 @@ scalars:
   E_tot_Sq:
     expr: sum(ey*ey+ex*ex+ez*ez)
     label: $|E|^2$
+  B_zSq:
+    expr: sum(bz*bz)
+    label: $B_z^2$
   B_tot_Sq:
     expr: sum(bx*bx + by*by + bz*bz)
     label: $|B|^2$
