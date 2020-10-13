@@ -36,7 +36,9 @@ class Oengus():
 
         self.interactive = interactive
         # Create the figure
+
         self.figure = Figure(edgecolor='none', facecolor='w', dpi=100)
+
         if self.interactive:
             from matplotlib.backends.backend_qt4agg import FigureCanvas
             self.canvas = FigureCanvas(self.figure)
