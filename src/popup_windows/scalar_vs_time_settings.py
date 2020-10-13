@@ -1,184 +1,133 @@
-import tkinter as Tk
-from tkinter import ttk
+from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
+                             QLabel, QLineEdit, QPushButton, QVBoxLayout,
+                             QComboBox, QCheckBox, QTabWidget, QSpinBox,
+                             QRadioButton)
+from PyQt5.QtCore import Qt, QTimer
 import new_cmaps
 from functools import partial
 from validate_plot_opts import validate_color, validate_ls, \
     validate_marker, validate_marker_size
+from base_plot_settings import iseultPlotSettings
 
 
-class ScalarVsTimeSettings(Tk.Toplevel):
+class ScalarVsTimeSettings(iseultPlotSettings):
 
     def __init__(self, parent, loc):
-        self.parent = parent
-        Tk.Toplevel.__init__(self)
-        self.loc = loc
+        super().__init__(parent, loc)
+        self.ignoreChange = False
         self.plot_opts = ['label', 'color', 'ls', 'marker', 'markersize']
-        self.wm_title(f'Scalar vs Time Plot {self.loc} Settings')
-        self.subplot = self.parent.oengus.SubPlotList[self.loc[0]][self.loc[1]]
-        self.params = self.subplot.param_dict
         self.lines = self.params['lines']
 
-        nb = ttk.Notebook(self)
-        f1 = ttk.Frame(nb)
-        f2 = ttk.Frame(nb)
+        self.init_ui()
 
-        nb.add(f1, text='Plot Settings')
-        nb.add(f2, text='Line Settings')
+    def init_ui(self):
+        self.setWindowTitle(f'Scalar vs Time Plot {self.loc} Settings')
 
-        self.bind('<Return>', self.TxtEnter)
-        self.initial_focus = self.build_settings_panel(f1)
-        self.build_line_table(f2)
-#        body.pack(fill=Tk.BOTH)#, expand=True)
-        nb.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=True)
-
-        # self.buttonbox()
-
-        # self.grab_set()
-
-        if not self.initial_focus:
-            self.initial_focus = self
-
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-
-        self.initial_focus.focus_set()
-
-        # self.wait_window(self)
+        layout = QGridLayout()
+        tabwidget = QTabWidget()
+        tabwidget.addTab(self.settings_tab(), "Plot Settings")
+        tabwidget.addTab(self.lines_tab(), "Line Settings")
+        layout.addWidget(tabwidget, 0, 0)
+        self.setLayout(layout)
 
     #
     # construction hooks
-    def build_settings_panel(self, master):
+    def settings_tab(self):
+        SettingsTabWidget = QWidget(self)
         # Create the OptionMenu to chooses the Chart Type:
-        self.ctypevar = Tk.StringVar(self)
-        self.ctypevar.set(self.subplot.chart_type)  # default value
-        self.ctypevar.trace('w', self.ctypeChanged)
-
-        ttk.Label(
-            master, text="Choose Chart Type:").grid(
-                row=0, column=0)
-        ctypeChooser = ttk.OptionMenu(
-            master, self.ctypevar,
-            self.subplot.chart_type,
-            *tuple(self.parent.oengus.plot_types_dict.keys()))
-        ctypeChooser.grid(
-            row=0, column=1,
-            sticky=Tk.W + Tk.E)
+        settings_grid = QGridLayout(SettingsTabWidget)
+        settings_grid.addWidget(QLabel('Choose Chart Type:'), 0, 0)
+        settings_grid.addWidget(self.chart_type_QComboBox(), 0, 1)
 
         # Add the ability to fix the y or x limits
         self.lims_helper = [
             {
-                'label': 'set y min',
                 'param_name': 'set_y_min',
-                'to_set_var': Tk.IntVar(),
+                'to_set_cb': QCheckBox('set y min'),
                 'val_param': 'y_min',
-                'val_var': Tk.StringVar(),
                 'entry': None,
             },
             {
-                'label': 'set y max',
                 'param_name': 'set_y_max',
-                'to_set_var': Tk.IntVar(),
-                'val_param': 'y_min',
-                'val_var': Tk.StringVar(),
+                'to_set_cb': QCheckBox('set y max'),
+                'val_param': 'y_max',
                 'entry': None,
             },
             {
-                'label': 'set t min',
-                'param_name': 'set_x_max',
-                'to_set_var': Tk.IntVar(),
-                'val_param': 'y_min',
-                'val_var': Tk.StringVar(),
+                'param_name': 'set_x_min',
+                'to_set_cb': QCheckBox('set t min'),
+                'val_param': 'x_min',
                 'entry': None,
             },
             {
-                'label': 'set t max',
                 'param_name': 'set_x_max',
-                'to_set_var': Tk.IntVar(),
-                'val_param': 'y_min',
-                'val_var': Tk.StringVar(),
+                'to_set_cb':  QCheckBox('set t max'),
+                'val_param': 'x_max',
                 'entry': None,
             }
         ]
 
         for i, elm in enumerate(self.lims_helper):
-            label, param = elm['label'], elm['param_name']
-            var = elm['to_set_var']
-            var.set(self.params[param])
-            var.trace('w', self.lim_handler)
-            cb = ttk.Checkbutton(
-                master, text=label,
-                variable=var)
-            cb.grid(
-                row=2 + i,
-                column=2,
-                sticky=Tk.W)
+            param = elm['param_name']
+            cb = elm['to_set_cb']
+            cb.setChecked(self.params[param])
+            cb.stateChanged.connect(self.lim_handler)
+            settings_grid.addWidget(cb, 2+i, 2)
 
             lim_val = self.params[elm['val_param']]
-            tk_val = elm['val_var']
-            tk_val.set(f'{lim_val}')
-            elm['entry'] = ttk.Entry(
-                master,
-                textvariable=tk_val,
-                width=7)
-            elm['entry'].grid(
-                row=2 + i,
-                column=3,
-                sticky=Tk.W)
+
+            elm['entry'] = QLineEdit(SettingsTabWidget)
+            elm['entry'].setText(f'{lim_val}')
+            elm['entry'].returnPressed.connect(self.TxtEnter)
+            settings_grid.addWidget(elm['entry'], 2+i, 3)
 
         self.bool_opts = [
+
             {
-                'label': 'y-axis logscale',
                 'param_name': 'yLog',
-                'bool_var': Tk.IntVar()
+                'cb': QCheckBox('y-axis logscale')
             },
             {
-                'label': 'Show Legend',
                 'param_name': 'show_legend',
-                'bool_var': Tk.IntVar()
+                'cb': QCheckBox('Show Legend')
             },
             {
-                'label': 'Show Current Time',
                 'param_name': 'show_cur_time',
-                'bool_var': Tk.IntVar()
+                'cb': QCheckBox('Show Current Time')
             }
         ]
 
         for i, opt in enumerate(self.bool_opts):
-            label = opt['label']
             param_name = opt['param_name']
-            var = opt['bool_var']
-            var.set(self.params[param_name])
-            var.trace('w', partial(self.bool_handler, param_name))
-            cb = ttk.Checkbutton(
-                master, text=label,
-                variable=var)
-            cb.grid(
-                row=2 + i,
-                column=0,
-                sticky=Tk.W)
+            cb = opt['cb']
+            cb.setChecked(self.params[param_name])
+            cb.stateChanged.connect(partial(self.bool_handler, param_name))
+            settings_grid.addWidget(cb, 2+i, 0)
 
-    def build_line_table(self, master):
-        # create dialog body.  return widget that should have
-        # initial focus
-        self.line_box = ttk.Frame(master)
-        # ttk.Label(box, text="Show Line").grid(row=0, column=0)
-        ttk.Label(self.line_box, text="Simulation").grid(row=0, column=1)
-        ttk.Label(self.line_box, text="Quantity").grid(row=0, column=2)
-        ttk.Label(self.line_box, text="Label").grid(row=0, column=3)
-        ttk.Label(self.line_box, text="Color").grid(row=0, column=4)
-        ttk.Label(self.line_box, text="Line style").grid(row=0, column=5)
-        ttk.Label(self.line_box, text="Marker").grid(row=0, column=6)
-        ttk.Label(self.line_box, text="Marker Size").grid(row=0, column=7)
+        SettingsTabWidget.setLayout(settings_grid)
 
+        return SettingsTabWidget
+
+    def lines_tab(self):
+        LinesTabWidget = QWidget(self)
+        lines_layout = QVBoxLayout(LinesTabWidget)
+
+        # Create the OptionMenu to chooses the Chart Type:
+        self.lines_grid = QGridLayout()
+        for i, label in enumerate(['Simulation', 'Quantity', 'Label',
+                                   'Color', 'Line Style', 'Marker',
+                                   'Marker Size']):
+            self.lines_grid.addWidget(QLabel(label), 0, 1 + i)
         self.line_var_helpers = []
 
         for i in range(len(self.lines)):
             self.add_line_options(i)
+        lines_layout.addLayout(self.lines_grid)
+        lines_layout.addLayout(self.buttonbox())
+        LinesTabWidget.setLayout(lines_layout)
 
-        self.line_box.pack()
-        self.buttonbox(master)
+        # self.buttonbox(master)
+        return LinesTabWidget
 
     def gen_plot_args(self, line_num):
         line = self.lines[line_num]
@@ -205,94 +154,75 @@ class ScalarVsTimeSettings(Tk.Toplevel):
         self.subplot.load_axes_pos()
         self.parent.oengus.canvas.draw()
 
-    def buttonbox(self, master):
+    def buttonbox(self):
         # add standard button box. override if you don't want the
         # standard buttons
-        box = ttk.Frame(master)
-        w = ttk.Button(
-            box, text='Add line', width=10,
-            command=self.add_line, default=Tk.ACTIVE)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(
-            box, text='Remove line', width=10,
-            command=self.remove)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        # w = ttk.Button(box, text="Refresh", width=10, command=self.remove)
-        # w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(
-            box, text="Ok", width=10,
-            command=self.ok)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
+        add_remove_btn_box = QHBoxLayout()
+        add_remove_btn_box.setSpacing(0)
+        # Add btn
+        add_btn = QPushButton()
+        add_btn.setText("Add Line")
+        add_btn.setMaximumWidth(100)
+        add_btn.setMinimumWidth(100)
+        add_btn.clicked.connect(self.add_line)
+        add_remove_btn_box.addWidget(add_btn)
 
-        # self.bind("<Return>", self.ok)
-        # self.bind("<Escape>", self.cancel)
-
-        box.pack()
+        # Remove Sim
+        rm_btn = QPushButton()
+        rm_btn.setText("Remove Line")
+        rm_btn.setMaximumWidth(100)
+        rm_btn.setMinimumWidth(100)
+        rm_btn.clicked.connect(self.remove)
+        add_remove_btn_box.addWidget(rm_btn)
+        return add_remove_btn_box
 
     # standard button semantics
     def add_line_options(self, line_num=0, event=None):
         i = line_num
         line = self.lines[i]
         tmp_dict = {}
-        tmp_dict['show_var'] = Tk.IntVar()
-        tmp_dict['show_var'].set(line['plot_args']['visible'])
-        tmp_dict['show_var'].trace('w', partial(self.show_line_handler, i))
-        tmp_dict['show_cb'] = ttk.Checkbutton(
-            self.line_box, text='show line',
-            variable=tmp_dict['show_var'])
-        tmp_dict['show_cb'].grid(
-            row=i+1, column=0
-        )
-        tmp_dict['sim_var'] = Tk.StringVar(self)
-        tmp_dict['sim_var'].set(
-            self.parent.oengus.sim_names[line['sim_num']])
-        #
+        tmp_dict['show_cb'] = QCheckBox('show line')
+        tmp_dict['show_cb'].setChecked(line['plot_args']['visible'])
+        tmp_dict['show_cb'].stateChanged.connect(
+            partial(self.show_line_handler, i))
+        self.lines_grid.addWidget(tmp_dict['show_cb'], i+1, 0)
 
-        tmp_dict['sim_op'] = ttk.OptionMenu(
-            self.line_box, tmp_dict['sim_var'],
-            self.parent.oengus.sim_names[line['sim_num']],
-            *tuple(self.parent.oengus.sim_names))
-        tmp_dict['sim_op'].grid(
-            row=i + 1, column=1, sticky=Tk.W + Tk.E)
-        tmp_dict['sim_var'].trace('w',  partial(self.sim_handler, i))
-        # the Radiobox Control to choose the Field Type
-        tmp_dict['quantity'] = Tk.StringVar(self)
-        tmp_dict['quantity'].set(line['scalar'])
+        tmp_dict['sim_combo'] = QComboBox(self)
+        for name in self.parent.oengus.sim_names:
+            tmp_dict['sim_combo'].addItem(name)
+
+        cur_name = self.parent.oengus.sim_names[line['sim_num']]
+        tmp_dict['sim_combo'].setCurrentText(cur_name)
+
+        tmp_dict['sim_combo'].currentIndexChanged.connect(
+            partial(self.sim_changed, i))
+        self.lines_grid.addWidget(tmp_dict['sim_combo'], i+1, 1)
+
+        # the ComboBox to choose the scalar
 
         cur_sim = self.parent.oengus.sims[line['sim_num']]
         scalars = cur_sim.get_available_quantities()['scalars']
 
-        tmp_dict['quant_op'] = ttk.OptionMenu(
-            self.line_box, tmp_dict['quantity'],
-            line['scalar'],
-            *tuple())
+        tmp_dict['quant_combo'] = QComboBox(self)
 
-        self.update_quantity_menu(
-            tmp_dict['quantity'], list(scalars), tmp_dict['quant_op'])
+        self.update_quantity_combo(list(scalars), tmp_dict['quant_combo'])
 
-        tmp_dict['quantity'].trace('w', partial(self.quantity_handler, i))
+        tmp_dict['quant_combo'].currentIndexChanged.connect(
+            partial(self.scalar_changed, i))
 
-        tmp_dict['quant_op'].grid(
-            row=i+1, column=2,
-            sticky=Tk.W + Tk.E)
+        self.lines_grid.addWidget(tmp_dict['quant_combo'], i+1, 2)
 
         for j, elm in enumerate(self.plot_opts):
             tmp_opt_dict = {}
             tmp_dict[elm] = tmp_opt_dict
-            tmp_opt_dict['var'] = Tk.StringVar(self)
-            tmp_opt_dict['var'].set(line['plot_args'][elm])
-            entry_width = 20 if elm == 'label' else 7
-            tmp_opt_dict['entry'] = ttk.Entry(
-                self.line_box,
-                textvariable=tmp_opt_dict['var'],
-                width=entry_width)
+            entry_width = 125 if elm == 'label' else 50
+            tmp_opt_dict['entry'] = QLineEdit(self)
+            tmp_opt_dict['entry'].setMinimumWidth(entry_width)
+            tmp_opt_dict['entry'].setMaximumWidth(entry_width)
 
-            tmp_opt_dict['entry'].grid(
-                row=i + 1,
-                column=3 + j,
-                sticky=Tk.W)
+            tmp_opt_dict['entry'].setText(f"{line['plot_args'][elm]}")
+            tmp_opt_dict['entry'].returnPressed.connect(self.TxtEnter)
+            self.lines_grid.addWidget(tmp_opt_dict['entry'], i+1, 3+j)
 
         self.line_var_helpers.append(tmp_dict)
 
@@ -300,93 +230,59 @@ class ScalarVsTimeSettings(Tk.Toplevel):
         if len(self.lines) > 1:
             tmp_dict = self.line_var_helpers.pop()
             self.lines.pop()
-            # First destroy all the tk things
-            for key in ['show_cb', 'sim_op', 'quant_op']:
-                tmp_dict[key].destroy()
+            # Delete all the QT5 things
+            for key in ['show_cb', 'sim_combo', 'quant_combo']:
+                tmp_dict[key].deleteLater()
             for elm in self.plot_opts:
-                tmp_dict[elm]['entry'].destroy()
+                tmp_dict[elm]['entry'].deleteLater()
             self.subplot.draw()
             self.parent.oengus.canvas.draw()
 
-    def ok(self, event=None):
-        if not self.validate():
-            # put focus back
-            self.initial_focus.focus_set()
-            return
-        self.update_idletasks()
-        self.withdraw()
-        self.parent.oengus.canvas.draw()
-        self.cancel()
-
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
-
-    #
-    # command hooks
-    def validate(self):
-        ''' Check to make sure the directories are ok '''
-        # First change all the names.
-        bad = False
-        self.text_callback()
-        self.line_plot_options_callback()
-
-        # NEED TO PUT VALIDATION HERE
-        if not bad:
-            return True
-
-    def ctypeChanged(self, *args):
-        if self.ctypevar.get() == self.subplot.chart_type:
-            pass
-        else:
-            self.parent.changePlotType(self.loc, self.ctypevar.get())
-            self.destroy()
-
-    def TxtEnter(self, e):
+    def TxtEnter(self):
         self.text_callback()
         self.line_plot_options_callback()
 
     def show_line_handler(self, i, *args):
         if i < len(self.subplot.param_dict['lines']):
             line_opts = self.subplot.param_dict['lines'][i]['plot_args']
-            show_tk_var = self.line_var_helpers[i]['show_var']
-            if line_opts['visible'] != show_tk_var.get():
-                line_opts['visible'] = show_tk_var.get()
+            cb = self.line_var_helpers[i]['show_cb']
+            if line_opts['visible'] != cb.isChecked():
+                line_opts['visible'] = cb.isChecked()
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
-    def quantity_handler(self, i, *args):
-        if i < len(self.subplot.param_dict['lines']):
+    def scalar_changed(self, i, *args):
+        if i < len(self.subplot.param_dict['lines']) and not self.ignoreChange:
+            combo = self.line_var_helpers[i]['quant_combo']
             line = self.subplot.param_dict['lines'][i]
-            tk_var = self.line_var_helpers[i]['quantity']
             label_entry = self.line_var_helpers[i]['label']['entry']
-            if line['scalar'] != tk_var.get():
-                line['scalar'] = tk_var.get()
-                label_entry.delete(0, Tk.END)
+            if line['scalar'] != combo.currentText():
+                line['scalar'] = combo.currentText()
+
                 cur_sim = self.parent.oengus.sims[line['sim_num']]
                 scalars = cur_sim.get_available_quantities()['scalars']
-                new_label = scalars[tk_var.get()]['label']
+                new_label = scalars[line['scalar']]['label']
                 line['plot_args']['label'] = new_label
-                label_entry.insert(0, new_label)
+                label_entry.setText(new_label)
+
                 self.subplot.draw()
                 self.parent.oengus.canvas.draw()
 
-    def sim_handler(self, i, *args):
+    def sim_changed(self, i, *args):
         if i < len(self.subplot.param_dict['lines']):
             line = self.subplot.param_dict['lines'][i]
-            tk_var = self.line_var_helpers[i]['sim_var']
+            sim_combo = self.line_var_helpers[i]['sim_combo']
             cur_name = self.parent.oengus.sim_names[line['sim_num']]
             cur_sim = self.parent.oengus.sims[line['sim_num']]
             scalars = cur_sim.get_available_quantities()['scalars']
-            if cur_name != tk_var.get():
+            if cur_name != sim_combo.currentText():
                 line['sim_num'] = self.parent.oengus.sim_names.index(
-                    tk_var.get())
+                    sim_combo.currentText())
                 # update available quantities
-                self.update_quantity_menu(
-                    self.line_var_helpers[i]['quantity'],
+                self.update_quantity_combo(
                     list(scalars),
-                    self.line_var_helpers[i]['quant_op'])
+                    self.line_var_helpers[i]['quant_combo'])
+                print(line['sim_num'])
                 self.parent.oengus.calc_sims_shown()
                 self.parent.playbackbar.update_sim_list()
                 self.subplot.save_axes_pos()
@@ -394,50 +290,50 @@ class ScalarVsTimeSettings(Tk.Toplevel):
                 self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
-    def update_quantity_menu(self, tk_var, options, option_menu):
-        menu = option_menu['menu']
-        menu.delete(0, "end")
+    def update_quantity_combo(self, options, combo):
+        self.ignoreChange = True
+        cur_scalar = combo.currentText()
+        combo.clear()
         for attr in options:
-            menu.add_command(
-                label=attr,
-                command=lambda value=attr: tk_var.set(value))
-        if not (tk_var.get() in options):
-            attr_var.set(options[0])
+            combo.addItem(attr)
+        if not (cur_scalar in options):
+            combo.setCurrentText(options[0])
+        self.ignoreChange = False
 
     def line_plot_options_callback(self):
         for line, helper in zip(self.lines, self.line_var_helpers):
             plot_args = line['plot_args']
 
             # Validate label (no val needed, raw string ok)
-            plot_args['label'] = helper['label']['var'].get()
+            plot_args['label'] = helper['label']['entry'].text()
 
             # line style must be ok
-            if validate_ls(helper['ls']['var'].get()):
-                plot_args['ls'] = helper['ls']['var'].get()
+            if validate_ls(helper['ls']['entry'].text()):
+                plot_args['ls'] = helper['ls']['entry'].text()
             else:
                 plot_args['ls'] = ':'
 
-            color = helper['color']['var'].get()
+            color = helper['color']['entry'].text()
             color = color.lower().replace(' ', '')
             if validate_color(color):
                 plot_args['color'] = color
             else:
-                helper['color']['var'].set(plot_args['color'])
+                helper['color']['entry'].setText(plot_args['color'])
 
-            if validate_marker(helper['marker']['var'].get()):
-                plot_args['marker'] = helper['marker']['var'].get()
+            if validate_marker(helper['marker']['entry'].text()):
+                plot_args['marker'] = helper['marker']['entry'].text()
             else:
-                helper['marker']['var'].set(plot_args['marker'])
+                helper['marker']['entry'].setText(plot_args['marker'])
 
             try:
-                ms = float(helper['markersize']['var'].get())
+                ms = float(helper['markersize']['entry'].text())
                 if ms >=0:
                     plot_args['markersize'] = ms
                 else:
-                    helper['markersize']['var'].set(
+                    helper['markersize']['entry'].setText(
                         plot_args['markersize'])
             except ValueError:
-                helper['markersize']['var'].set(
+                helper['markersize']['entry'].setText(
                     plot_args['markersize'])
         self.subplot.save_axes_pos()
         self.subplot.draw()
@@ -448,20 +344,19 @@ class ScalarVsTimeSettings(Tk.Toplevel):
         to_reload = False
         for elm in self.lims_helper:
             p_name = elm['val_param']
-            tk_var = elm['val_var']
             entry = elm['entry']
-            set_var = elm['to_set_var']
+            set_cb = elm['to_set_cb']
             try:
                 # make sure the user types in a number
-                user_num = float(entry.get())
+                user_num = float(entry.text())
 
                 if abs(user_num - self.params[p_name]) > 1E-4:
                     self.params[p_name] = user_num
-                    to_reload += True*set_var.get()
+                    to_reload += set_cb.isChecked()
 
             except ValueError:
                 # if they type in random stuff, just set it ot the param value
-                tk_var.set(str(self.params[p_name]))
+                entry.setText(str(self.params[p_name]))
 
         if to_reload:
             self.subplot.save_axes_pos()
@@ -471,8 +366,8 @@ class ScalarVsTimeSettings(Tk.Toplevel):
 
     def lim_handler(self, *args):
         for elm in self.lims_helper:
-            param_name, var = elm['param_name'], elm['to_set_var']
-            self.params[param_name] = var.get()
+            param_name, cb = elm['param_name'], elm['to_set_cb']
+            self.params[param_name] = cb.isChecked()
         self.subplot.save_axes_pos()
         self.subplot.refresh()
         self.subplot.load_axes_pos()
@@ -480,8 +375,8 @@ class ScalarVsTimeSettings(Tk.Toplevel):
 
     def bool_handler(self, bool_name, *args):
         for elm in self.bool_opts:
-            param_name, var = elm['param_name'], elm['bool_var']
-            self.params[param_name] = var.get()
+            param_name, cb = elm['param_name'], elm['cb']
+            self.params[param_name] = cb.isChecked()
         if self.params['yLog']:
             self.subplot.axes.set_yscale('log')
         else:

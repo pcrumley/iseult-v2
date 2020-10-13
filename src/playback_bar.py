@@ -1,11 +1,13 @@
-import tkinter as Tk
-from tkinter import ttk
+from PyQt5.QtWidgets import (QWidget, QSlider, QHBoxLayout,
+                             QLabel, QLineEdit, QPushButton,
+                             QComboBox, QCheckBox)
+from PyQt5.QtCore import Qt, QTimer
 from main_settings_window import SettingsFrame
 import numpy as np
 import time
 
 
-class playbackBar(Tk.Frame):
+class playbackBar(QWidget):
 
     """
     A Class that will handle the time-stepping in Iseult, and has the
@@ -14,109 +16,125 @@ class playbackBar(Tk.Frame):
     """
 
     def __init__(self, oengus, tstep_param):
-        Tk.Frame.__init__(self)
+        super().__init__()
         self.oengus = oengus
         # This param should be the time-step of the simulation
         self.param = tstep_param
 
-        self._cur_sim = 0  # A way to hold the current simulation
+        self._cur_sim = -1  # A way to hold the current simulation
 
         self._play_debouncer = -np.inf
         self.play_pressed = False
         self.settings_window = None
+        self.ignoreChange = False
 
-        # make a button that skips left
-        self.skipLB = ttk.Button(self, text='<', command=self.skip_left)
-        self.skipLB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        self.initUI()
 
-        # make the play button
-        self.playB = ttk.Button(self, text='Play', command=self.play_handler)
-        self.playB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        # attach the parameter to the Playbackbar
+        self.param.attach(self)
 
-        # a button that skips right
-        self.skipRB = ttk.Button(self, text='>', command=self.skip_right)
-        self.skipRB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        # A hack to update the slider
+        self._cur_sim = 0
 
-        self.cur_sim_name = Tk.StringVar(self)
-        self.cur_sim_name.set(self.oengus.sims[self.cur_sim].name)
-        self.cur_sim_name.trace('w', self.simChanged)
+    def initUI(self):
 
-        self.sim_menu = ttk.OptionMenu(
-            self,
-            self.cur_sim_name,
-            self.cur_sim_name.get(),
-            *tuple(
-                map(lambda x: self.oengus.sims[x].name,
-                    self.oengus.sims_shown)))
-        self.sim_menu.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # the Check boxes for the dimension
-        # An entry box that will let us choose the time-step
-        ttk.Label(self, text='n= ').pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        hbox = QHBoxLayout()
 
-        # A StringVar for a box to type in a frame num, linked to self.param
-        self.tstep = Tk.StringVar()
-        # set it to the param value
-        self.tstep.set(str(self.param.value))
+        skip_left_btn = QPushButton(self)
+        skip_left_btn.setText("<")
+        skip_left_btn.clicked.connect(self.skip_left)
 
-        # the entry box
-        self.txt_enter = ttk.Entry(self, textvariable=self.tstep, width=6)
-        self.txt_enter.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        self.play_btn = QPushButton(self)
+        self.play_btn.setText("Play")
+        self.play_btn.clicked.connect(self.play_handler)
 
-        # A slider that will show the progress in the simulation as well as
-        # allow us to select a time. Now the slider just changes the tstep box
-        self.slider = ttk.Scale(
-            self,
-            from_=self.param.minimum,
-            to=self.param.maximum,
-            command=self.scale_handler)
-        self.cur_sim = 0
-        self.slider.set(self.param.value)
-        self.slider.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
-        # bind releasing the moust button to updating the plots.
-        self.slider.bind("<ButtonRelease-1>", self.update_value)
+        skip_right_btn = QPushButton(self)
+        skip_right_btn.setText(">")
+        skip_right_btn.clicked.connect(self.skip_right)
 
-        new_frame = ttk.Frame(self)
-        self.loop_var = Tk.IntVar()
-        self.loop_var.set(self.oengus.MainParamDict['LoopPlayback'])
-        self.loop_var.trace('w', self.loop_changed)
-        self.loop_btn = ttk.Checkbutton(
-            new_frame, text='Loop',
-            variable=self.loop_var)
-        self.loop_btn.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
+        self.sim_combo = QComboBox(self)
+        self.update_sim_list()
+        self.sim_combo.currentIndexChanged.connect(self.simChanged)
 
-        new_frame.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
+        # label for box to change time
+        self.label = QLabel('n=', self)
+        self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.label.setMinimumWidth(30)
 
+        # A box to type in a frame num, linked to self.param
+        self.edit = QLineEdit(self)
+        self.edit.setMaximumWidth(55)
+        self.edit.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.edit.setMinimumWidth(30)
+        self.edit.setText(str(self.param.value))
+        self.edit.returnPressed.connect(self.text_callback)
+        self.edit.clearFocus()
+        # box to enter time.
+        self.sld = QSlider(Qt.Horizontal, self)
+        self.sld.setRange(self.param.minimum, self.param.maximum)
+        self.sld.setFocusPolicy(Qt.NoFocus)
+        self.sld.setPageStep(1)
+
+        # update the text box whenever sld is change
+        self.sld.valueChanged.connect(self.scale_handler)
+        # only update the plot when the user releases the mouse
+        self.sld.mouseReleaseEvent = self.update_value
+
+        self.simChanged()
+
+        self.loop_chk = QCheckBox(self)
+        self.loop_chk.setText("loop")
+        self.loop_chk.setChecked(self.oengus.MainParamDict['LoopPlayback'])
+        self.loop_chk.stateChanged.connect(self.loop_changed)
+
+        settings_btn = QPushButton(self)
+        settings_btn.setText("Settings")
+        settings_btn.clicked.connect(self.open_settings)
+
+        reload_btn = QPushButton(self)
+        reload_btn.setText("Reload")
+        reload_btn.clicked.connect(self.on_reload)
+
+        clear_btn = QPushButton(self)
+        clear_btn.setText("Clear Cache")
+        clear_btn.clicked.connect(self.on_refresh)
+
+        ####
+        #
+        # Add all the objects to the hbox
+        #
+        ####
+
+        hbox.addWidget(skip_left_btn)
+        hbox.addWidget(self.play_btn)
+        hbox.addWidget(skip_right_btn)
+
+        hbox.addWidget(self.sim_combo)
+
+        hbox.addWidget(self.label)
+        hbox.addWidget(self.edit)
+        hbox.addSpacing(5)
+        hbox.addWidget(self.sld)
+        hbox.addWidget(self.loop_chk)
+
+        hbox.addWidget(settings_btn)
+        hbox.addWidget(reload_btn)
+        hbox.addWidget(clear_btn)
+
+        hbox.setContentsMargins(0, 0, 0, 0)
+        self.setFixedHeight(30);
+        self.setLayout(hbox)
+
+        """
         # a measurement button that should lauch a window to take measurements.
         # self.measuresB = ttk.Button(
         #    self, text='FFT', command=self.open_measures)
         # self.measuresB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-        # a settings button that should lauch some global settings.
-        self.settingsB = ttk.Button(
-            self,
-            text='Settings',
-            command=self.open_settings)
-        self.settingsB.pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-
-        # a reload button that looks the files and then refreshes the plot
-        ttk.Button(
-            self, text='Reload',
-            command=self.on_reload).pack(side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # a button that clears the cache
-        ttk.Button(
-            self, text='Clear Cache',
-            command=self.on_refresh).pack(
-                side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        ttk.Button(
-            self, text='Home',
-            command=self.oengus.home).pack(
-                side=Tk.LEFT, fill=Tk.BOTH, expand=0)
-        # attach the parameter to the Playbackbar
-        self.param.attach(self)
+        """
 
     def update_slider(self):
         self.param.set_max(len(self.oengus.sims[self._cur_sim]))
-        self.slider.config(to=self.param.maximum)
+        self.sld.setRange(self.param.minimum, self.param.maximum)
 
     @property
     def cur_sim(self):
@@ -129,21 +147,26 @@ class playbackBar(Tk.Frame):
         self.update_slider()
 
     def update_sim_list(self):
-        menu = self.sim_menu["menu"]
-        menu.delete(0, "end")
-        for x in self.oengus.sims_shown:
-            name = self.oengus.sims[x].name
-            menu.add_command(
-                label=name,
-                command=lambda value=name: self.cur_sim_name.set(value))
-
-    def simChanged(self, *args):
-        if self.cur_sim_name.get() == self.oengus.sims[self.cur_sim].name:
-            pass
+        self.ignoreChange = True
+        self.sim_combo.clear()
+        for i in self.oengus.sims_shown:
+            self.sim_combo.addItem(self.oengus.sims[i].name)
+        index = self.sim_combo.findText(self.oengus.sims[self.cur_sim].name)
+        self.ignoreChange = False
+        if index >= 0:
+            self.sim_combo.setCurrentIndex(index)
         else:
-            names = [sim.name for sim in self.oengus.sims]
-            self.cur_sim = names.index(self.cur_sim_name.get())
-            self.oengus.cur_sim = self.cur_sim
+            self.sim_combo.setCurrentIndex(0)
+
+    def simChanged(self):
+        if not self.ignoreChange:
+            if self.sim_combo.currentText() == self.oengus.sims[self.cur_sim].name:
+                pass
+            elif self.sim_combo.currentText() in self.oengus.sim_names:
+                self.cur_sim = self.oengus.sim_names.index(self.sim_combo.currentText())
+                self.oengus.cur_sim = self.cur_sim
+        #else:
+        #    self.update_sim_list()
 
     def on_reload(self):
         self.oengus.sims[self.cur_sim].refresh_directory()
@@ -152,9 +175,13 @@ class playbackBar(Tk.Frame):
     def open_settings(self):
         if self.settings_window is None:
             self.settings_window = SettingsFrame(self.oengus)
+            self.settings_window.show()
         else:
+            #self.settings_window.destroy()
             self.settings_window.destroy()
             self.settings_window = SettingsFrame(self.oengus)
+            self.settings_window.show()
+            #self.settings_window = SettingsFrame(self.oengus)
 
     def on_refresh(self, *args):
         for sim in self.oengus.sims:
@@ -162,18 +189,15 @@ class playbackBar(Tk.Frame):
         self.update_slider()
         self.oengus.draw_output()
 
-    def loop_changed(self, *args):
-        if self.loop_var.get() == self.oengus.MainParamDict['LoopPlayback']:
-            pass
-        else:
-            self.oengus.MainParamDict['LoopPlayback'] = self.loop_var.get()
-            self.param.loop = self.oengus.MainParamDict['LoopPlayback']
+    def loop_changed(self):
+        self.oengus.MainParamDict['LoopPlayback'] = self.loop_chk.isChecked()
+        self.param.loop = self.oengus.MainParamDict['LoopPlayback']
 
-    def skip_left(self, e=None):
+    def skip_left(self):
         self.param.set(
             self.param.value - self.oengus.MainParamDict['SkipSize'])
 
-    def skip_right(self, e=None):
+    def skip_right(self):
         self.param.set(
             self.param.value + self.oengus.MainParamDict['SkipSize'])
 
@@ -182,18 +206,18 @@ class playbackBar(Tk.Frame):
         if tic - self._play_debouncer > .05:
             self._play_debouncer = tic
             if not self.play_pressed:
-                # Set the value of play pressed to true, change the button name to
-                # pause, turn off clear_fig, and start the play loop.
+                # Set the value of play pressed to true, change the button name
+                # to pause, turn off clear_fig, and start the play loop.
                 self.play_pressed = True
-                self.playB.config(text='Pause')
-
-                self.after(
-                    int(self.oengus.MainParamDict['WaitTime']*1E3), self.blink)
+                self.play_btn.setText('Pause')
+                QTimer.singleShot(
+                    int(self.oengus.MainParamDict['WaitTime']*1E3),
+                    self.blink)
             else:
                 # pause the play loop, turn clear fig back on,
                 # and set the button name back to play
                 self.play_pressed = False
-                self.playB.config(text='Play')
+                self.play_btn.setText('Play')
 
     def blink(self):
         if self.play_pressed:
@@ -209,32 +233,32 @@ class playbackBar(Tk.Frame):
                     self.param.value + self.oengus.MainParamDict['SkipSize'])
 
             # start loopin'
-            self.after(
+            QTimer.singleShot(
                 int(self.oengus.MainParamDict['WaitTime']*1E3),
                 self.blink)
 
     def text_callback(self):
         try:
             # make sure the user types in a int
-            if int(self.tstep.get()) != self.param.value:
-                self.param.set(int(float(self.tstep.get())))
+            if int(self.edit.text()) != self.param.value:
+                self.param.set(int(self.edit.text()))
         except ValueError:
             # if they type in random stuff, just set it ot the param value
-            self.tstep.set(str(self.param.value))
+            self.edit.setText(str(self.param.value))
 
     def scale_handler(self, e):
         # if changing the scale will change the value of the parameter, do so
         try:
-            if int(self.tstep.get()) != int(self.slider.get()):
-                self.tstep.set(str(int(self.slider.get())))
+            if int(self.edit.text()) != int(self.sld.value()):
+                self.edit.setText(str(int(self.sld.value())))
         except ValueError:
-            # if they type in random stuff, just set it ot the param value
-            self.tstep.set(str(int(self.slider.get())))
+            # if they type in random stuff, just set it to the param value
+            self.edit.setText(str(int(self.sld.value())))
 
     def update_value(self, *args):
-        if int(self.slider.get()) != self.param.value:
-            self.param.set(int(self.slider.get()))
+        if int(self.sld.value()) != self.param.value:
+            self.param.set(int(self.sld.value()))
 
     def set_knob(self, value):
-        self.slider.set(value)
-        self.tstep.set(str(value))
+        self.sld.setValue(value)
+        self.edit.setText(str(value))

@@ -186,7 +186,7 @@ MainParamDict:
     right: 0.95
     top: 0.93
     wspace: 0.23
-  WaitTime: 0.01
+  WaitTime: 0.05
   WindowSize: 1200x700
   annotateTextSize: 18
   cbarLabelPad: 15

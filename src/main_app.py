@@ -3,12 +3,11 @@ import os
 import sys
 import yaml
 from functools import partial
-import tkinter as Tk
 from pic_sim import picSim
 from oengus import Oengus
 import numpy as np
 from mpl_param import Param
-from custom_toolbar import myCustomToolbar
+
 from movie_dialog import MovieDialog
 from open_sim_dialog import OpenSimDialog
 from save_config import SaveDialog
@@ -17,20 +16,23 @@ from vector_flds_settings import VectorFieldsSettings
 from scalar_vs_time_settings import ScalarVsTimeSettings
 from phase_settings import phaseSettings
 from playback_bar import playbackBar
+from matplotlib.backends.qt_compat import QtCore, QtWidgets
+from PyQt5.QtGui import QKeySequence
+from custom_toolbar import myCustomToolbar
+from PyQt5.QtCore import Qt, QFileSystemWatcher
+from PyQt5.QtWidgets import QAction, qApp
 
 
-def destroy(e):
-    sys.exit()
-
-
-class MainApp(Tk.Tk):
+class MainApp(QtWidgets.QMainWindow):
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, name, cmd_args):
 
-        Tk.Tk.__init__(self)
-        # self.update_idletasks()
-        menubar = Tk.Menu(self)
-        self.wm_title(name)
+        super().__init__()
+        self._main = QtWidgets.QWidget()
+        self.setCentralWidget(self._main)
+        self.setFocusPolicy(Qt.StrongFocus)
+        layout = QtWidgets.QVBoxLayout(self._main)
+        self.setWindowTitle(name)
 
         self.cmd_args = cmd_args
 
@@ -44,13 +46,92 @@ class MainApp(Tk.Tk):
 
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
 
+        self.oengus = Oengus(
+            interactive=True, mainApp=self,
+            preset_view=cmd_args.p)
+        # open a sim
+        if len(self.cmd_args.O[0]) == 0:
+            self.oengus.sims[0].outdir = os.curdir
+        else:
+            for i, outdir in enumerate(self.cmd_args.O):
+                if i == len(self.oengus.sims):
+                    self.oengus.add_sim(f'sim{i}')
+                self.oengus.sims[i].outdir = outdir
+        self.oengus.create_graphs()
+        self.resize(
+            *map(lambda x: int(x),
+            self.oengus.MainParamDict['WindowSize'].split('x')))
+        layout.addWidget(self.oengus.canvas)
+        self.toolbar = myCustomToolbar(self.oengus.canvas, self)
+        self.addToolBar(QtCore.Qt.BottomToolBarArea,
+                        self.toolbar)
+        # self.toolbar.update()
+        # self.oengus.canvas._tkcanvas.pack(
+        #    side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
+
+        self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
+
+        # Make the object hold the timestep info
+
+        self.time_step = Param(1, minimum=1, maximum=1000)
+        self.playbackbar = playbackBar(self.oengus, self.time_step)
+        layout.addWidget(self.playbackbar)
+        self.time_step.attach(self)
+        self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
+        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
+        self.popups_dict = {}
+        self.create_shortcuts()
+        self.build_menu()
+        #self.config(menu=menubar)
+        #self.protocol("WM_DELETE_WINDOW", sys.exit)
+
+        # Overload the close function
+        self.closeEvent = self.on_quit
+
+    def build_menu(self):
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)
+        bar = self.menuBar()
+        # File Menu
+        fileMenu = bar.addMenu('&File')
+
+        savePresetAction = QAction('Save Current State', self)
+        savePresetAction.triggered.connect(self.open_save_dialog)
+        fileMenu.addAction(savePresetAction)
+
+        openSimAction = QAction('Open Simulation', self)
+        openSimAction.triggered.connect(self.open_sim_dialog)
+        fileMenu.addAction(openSimAction)
+
+        makeAMovieAction = QAction('Make a Movie', self)
+        makeAMovieAction.triggered.connect(self.open_movie_dialog)
+        fileMenu.addAction(makeAMovieAction)
+
+        exitAct = QAction(' &Quit', self)
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.triggered.connect(qApp.quit)
+
+        fileMenu.addAction(exitAct)
+
+
+        self.views_menu = bar.addMenu("Preset Views")
+        self.views_update()
+        self.view_dir_watcher = QFileSystemWatcher()
+        self.view_dir_watcher.addPath(
+            os.path.join(self.IseultDir, '.iseult_configs'))
+        self.view_dir_watcher.directoryChanged.connect(self.views_update)
+
+        # file.addAction("New")
+
+        # self.show()
+        """
+        menubar = Tk.Menu(self)
+        self.wm_title()
         fileMenu = Tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="File", underline=0, menu=fileMenu)
 
-        fileMenu.add_command(
-            label='Save Current State', command=self.OpenSaveDialog)
-        fileMenu.add_command(
-            label='Open Simulation', command=self.open_sim_dialog)
+
         fileMenu.add_command(
            label='Make a Movie', command=self.open_movie_dialog)
         fileMenu.add_command(label="Exit", underline=1,
@@ -62,55 +143,39 @@ class MainApp(Tk.Tk):
 
         menubar.add_cascade(
             label='Preset Views', underline=0, menu=self.preset_menu)
+        """
 
+    def create_shortcuts(self):
+        self.settings_acc = QtWidgets.QShortcut(QKeySequence('s'), self)
+        self.settings_acc.activated.connect(self.open_settings)
+
+        self.shortcut_play = QtWidgets.QShortcut(
+            QKeySequence('space'), self)
+        self.shortcut_play.activated.connect(self.playbackbar.play_handler)
+
+        self.shortcut_skip_right = QtWidgets.QShortcut(
+            QKeySequence('right'), self)
+        self.shortcut_skip_right.activated.connect(self.playbackbar.skip_right)
+
+        self.shortcut_skip_left = QtWidgets.QShortcut(
+            QKeySequence('left'), self)
+        self.shortcut_skip_left.activated.connect(self.playbackbar.skip_left)
+
+        """
         self.bind_all("<Control-q>", self.quit)
         # self.bind_all("<Command-o>", self.OnOpen)
         self.bind_all("S", self.open_settings)
-
-        self.oengus = Oengus(
-            interactive=True, tkApp=self,
-            preset_view=cmd_args.p)
-        # open a sim
-        if len(self.cmd_args.O[0]) == 0:
-            self.oengus.sims[0].outdir = os.curdir
-        else:
-            for i, outdir in enumerate(self.cmd_args.O):
-                if i == len(self.oengus.sims):
-                    self.oengus.add_sim(f'sim{i}')
-                self.oengus.sims[i].outdir = outdir
-        self.oengus.create_graphs()
-        self.geometry(self.oengus.MainParamDict['WindowSize'])
-        self.minsize(780, 280)
-
-        self.toolbar = myCustomToolbar(self.oengus.canvas, self)
-        self.toolbar.update()
-        # self.oengus.canvas._tkcanvas.pack(
-        #    side=Tk.RIGHT, fill=Tk.BOTH, expand=1)
-        self.oengus.canvas.get_tk_widget().pack(
-            side=Tk.TOP, fill=Tk.BOTH, expand=1)
-        self.oengus.canvas.mpl_connect('button_press_event', self.onclick)
-
-        # Make the object hold the timestep info
-        self.time_step = Param(1, minimum=1, maximum=1000)
-        self.playbackbar = playbackBar(self.oengus, self.time_step)
-        self.playbackbar.pack(side=Tk.TOP, fill=Tk.BOTH, expand=0)
-        self.time_step.attach(self)
-        self.time_step.loop = self.oengus.MainParamDict['LoopPlayback']
-        self.time_step.set_max(len(self.oengus.sims[self.playbackbar.cur_sim]))
-        self.time_step.set(len(self.oengus.sims[self.playbackbar.cur_sim]))
-
-        self.popups_dict = {}
-
-        self.config(menu=menubar)
-        self.protocol("WM_DELETE_WINDOW", sys.exit)
         self.bind('<Return>', self.txt_enter)
         self.bind('<Left>', self.playbackbar.skip_left)
         self.bind('<Right>', self.playbackbar.skip_right)
         self.bind_all('r', self.playbackbar.on_reload())
         self.bind('<space>', self.playbackbar.play_handler)
-        self.update()
-
+        """
     def views_update(self):
+        # Clear the menu of all actions
+        for act in self.views_menu.actions():
+            self.removeAction(act)
+        self.views_menu.clear()
         tmpdir = os.listdir(os.path.join(self.IseultDir, '.iseult_configs'))
         tmpdir = [elm for elm in tmpdir]
         tmpdir.sort()
@@ -124,19 +189,15 @@ class MainApp(Tk.Tk):
                     if 'ConfigName' in cfgDict['general'].keys():
                         tmpstr = cfgDict['general']['ConfigName']
                         cfiles.append((cfile, tmpstr))
-                        try:
-                            self.preset_menu.delete(tmpstr)
-
-                        except Tk.TclError:
-                            pass
 
         cfiles = sorted(cfiles, key=lambda x: x[1])
         for cfile, name in cfiles:
-            self.preset_menu.add_command(
-                label=name,
-                command=partial(
-                    self.load_config,
+            load_view_action = QAction(name, self)
+            load_view_action.triggered.connect(partial(
+                   self.load_config,
                     name))
+            self.views_menu.addAction(load_view_action)
+
 
     def onclick(self, event):
         '''After being clicked, we should use the x and y of the cursor to
@@ -169,14 +230,17 @@ class MainApp(Tk.Tk):
                     self.popups_dict[f'{i,j}'].destroy()
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self, (i, j))
+                self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'VectorFlds':
                 self.popups_dict[f'{i,j}'] = VectorFieldsSettings(self, (i, j))
+                self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'PhasePlot':
                 self.popups_dict[f'{i,j}'] = phaseSettings(self, (i, j))
+                self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'ScalarVsTime':
                 self.popups_dict[f'{i,j}'] = ScalarVsTimeSettings(self, (i, j))
-
-    def OpenSaveDialog(self):
+                self.popups_dict[f'{i,j}'].show()
+    def open_save_dialog(self):
         SaveDialog(self)
 
     def open_sim_dialog(self):
@@ -198,15 +262,16 @@ class MainApp(Tk.Tk):
 
         # There are a few parameters that need to be loaded separately,
         # mainly in the playbackbar.
-        self.playbackbar.loop_var.set(
+        self.playbackbar.loop_chk.setChecked(
             self.oengus.MainParamDict['LoopPlayback'])
 
         self.oengus.create_graphs()
         # self.geometry(self.oengus.MainParamDict['WindowSize'])
         self.oengus.canvas.draw()
         # refresh the geometry
-
-        self.geometry(self.oengus.MainParamDict['WindowSize'])
+        self.resize(
+            *map(lambda x: int(x),
+                self.oengus.MainParamDict['WindowSize'].split('x')))
 
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
@@ -214,6 +279,13 @@ class MainApp(Tk.Tk):
         self.oengus.figure.clf()
         self.oengus.create_graphs()
         self.oengus.canvas.draw()
+
+    def update_all_sim_lists(self):
+        # Calc the current sims shown
+        self.oengus.calc_sims_shown()
+
+        # update playbackbar combo
+        self.playbackbar.update_sim_list()
 
     def txt_enter(self, e):
         self.playbackbar.text_callback()
@@ -237,9 +309,19 @@ class MainApp(Tk.Tk):
                 sim.set_time(cur_t, units=unit)
         self.oengus.draw_output()
 
-        self.oengus.canvas.get_tk_widget().update_idletasks()
+    def on_quit(self, *event):
+        if self.playbackbar.settings_window is not None:
+            self.playbackbar.settings_window.close()
 
 
 def runMe(cmd_args):
+    # Check whether there is already a running QApplication (e.g., if running
+    # from an IDE).
+    qapp = QtWidgets.QApplication.instance()
+    if not qapp:
+        qapp = QtWidgets.QApplication(sys.argv)
     app = MainApp('Iseult', cmd_args)
-    app.mainloop()
+    app.show()
+    app.activateWindow()
+    app.raise_()
+    qapp.exec_()

@@ -17,7 +17,7 @@ from spectra_plot import SpectralPlot
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
-    def __init__(self, preset_view='Default', interactive=True, tkApp=None):
+    def __init__(self, preset_view='Default', interactive=True, mainApp=None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
         self.sim_name = ''
         self.sims = [picSim(name='sim0')]
@@ -36,11 +36,14 @@ class Oengus():
 
         self.interactive = interactive
         # Create the figure
-        self.figure = Figure(edgecolor='none', facecolor='w')
+
+        self.figure = Figure(edgecolor='none', facecolor='w', dpi=100)
+
         if self.interactive:
-            from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-            self.canvas = FigureCanvasTkAgg(self.figure, master=tkApp)
-            self.tkApp = tkApp
+            from matplotlib.backends.backend_qt4agg import FigureCanvas
+            self.canvas = FigureCanvas(self.figure)
+            self.canvas.draw()
+            self.mainApp = mainApp
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             self.canvas = FigureCanvasAgg(self.figure)
@@ -282,10 +285,14 @@ class Oengus():
         self.MainParamDict['NumberOfSims'] += 1
 
     def pop_sim(self):
-        if len(self.sims) > 1:
-            self.sims.pop(-1)
+        # make sure the sim isn't shown.
+        max_shown = max(self.sims_shown)
+        if len(self.sims) > max_shown + 1:
+
             self.sim_names.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
+            return self.sims.pop(-1)
+        return None
 
     def create_graphs(self):
         # divy up the figure into a bunch of subplots using GridSpec.
@@ -301,6 +308,9 @@ class Oengus():
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()  # self.sim, -1)
 
+        self.make_title()
+
+    def make_title(self):
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
             outname = os.path.abspath(sim.outdir)
@@ -313,13 +323,12 @@ class Oengus():
                 self.figure.suptitle(
                     f'{outname} is empty',
                     size=self.MainParamDict['TitleFontSize'])
-
     def home(self):
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].go_home()
         if self.interactive:
-            self.tkApp.toolbar.update()
+            self.mainApp.toolbar.update()
         self.canvas.draw()
 
     def link_axes(self, ax, ax_type=None, subplot=None):
@@ -354,16 +363,20 @@ class Oengus():
                 self.SubPlotList[i][j].refresh()
                 self.SubPlotList[i][j].load_axes_pos()
         if self.interactive:
-            self.tkApp.toolbar.update()
+            self.mainApp.toolbar.update()
 
         if self.MainParamDict['ShowTitle']:
             sim = self.sims[0]
             outname = os.path.abspath(sim.outdir)
             try:
                 f_end = sim.file_list[sim.get_time()]
-                self.figure.suptitle(f'{outname}/*.{f_end}')
+                self.figure.suptitle(
+                    f'{outname}/*.{f_end}',
+                    size=self.MainParamDict['TitleFontSize'])
             except IndexError:
-                self.figure.suptitle(f'{outname} is empty')
+                self.figure.suptitle(
+                    f'{outname} is empty',
+                    size=self.MainParamDict['TitleFontSize'])
 
         self.canvas.draw()
         if not self.interactive:
@@ -412,8 +425,6 @@ class Oengus():
                 for sim_num in self.sims_shown:
                     self.sims[sim_num].set_time(cur_t, units=None)
             self.draw_output()
-            # if self.interactive:
-            #    self.canvas.get_tk_widget().update_idletasks()
 
             s, (width, height) = self.canvas.print_to_buffer()
             im = Image.frombytes('RGBA', (width, height), s)

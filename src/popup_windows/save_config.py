@@ -1,7 +1,7 @@
 import os
 import yaml
-import tkinter as Tk
-from tkinter import ttk, messagebox
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QVBoxLayout, QLineEdit,
+                             QLabel, QMessageBox)
 
 
 def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
@@ -12,9 +12,8 @@ def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
     # non-string values to keys internally, but will receive an error
     # when attempting to write to a file or when you get it in non-raw
     # mode. SafeConfigParser does not allow such assignments to take place.
-    # config.add_section('general')
+
     cfgDict = {}
-    # config.set('general', 'ConfigName', cfgname)
 
     cfgDict['general'] = {'ConfigName': cfgname}
 
@@ -48,103 +47,66 @@ def save_iseult_cfg(oengus, window_size, cfgfile, cfgname):
         cfgFile.write(yaml.safe_dump(cfgDict))
 
 
-class SaveDialog(Tk.Toplevel):
-
+class SaveDialog(QDialog):
     def __init__(self, parent, title=None):
-
-        Tk.Toplevel.__init__(self, parent)
-        self.transient(parent)
-
-        if title:
-            self.title(title)
-
+        super().__init__(parent)
         self.parent = parent
+        if title:
+            self.setWindowTitle(title)
+        self.init_ui()
+        self.exec_()
 
-        self.result = None
+    def init_ui(self):
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 
-        body = ttk.Frame(self)
-        self.initial_focus = self.body(body)
-        body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
-        self.buttonbox()
-        self.grab_set()
-        if not self.initial_focus:
-            self.initial_focus = self
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-        self.initial_focus.focus_set()
-        self.wait_window(self)
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.ok)
+        self.buttonBox.rejected.connect(self.reject)
 
-    # construction hooks
-    def body(self, master):
-        # create dialog body.  return widget that should have
-        # initial focus.  this method should be overridden
-        ttk.Label(master, text="Name of View:").grid(row=0)
-        self.e1 = ttk.Entry(master, width=17)
-        self.e1.grid(row=0, column=1, sticky=Tk.E)
+        self.name_QLineEdit = QLineEdit(self)
 
-    def buttonbox(self):
-        # add standard button box. override if you don't want the
-        # standard buttons
-
-        box = ttk.Frame(self)
-
-        w = ttk.Button(
-            box, text="Save", width=10, command=self.ok, default=Tk.ACTIVE)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-
-        self.bind("<Return>", self.ok)
-        self.bind("<Escape>", self.cancel)
-
-        box.pack()
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(QLabel("Name of View:"))
+        self.layout.addWidget(self.name_QLineEdit)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
 
     # standard button semantics
     def ok(self, event=None):
-
-        if not self.validate():
-            self.initial_focus.focus_set()
-            return
-
-        self.withdraw()
-        self.update_idletasks()
-
-        self.apply()
-
-        self.cancel()
-
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
+        if self.validate():
+            self.apply()
+            self.accept()
 
     # command hooks
     def validate(self):
         ''' Check to make sure the config file doesn't already exist'''
-        Name = str(self.e1.get()).strip()
+        Name = str(self.name_QLineEdit.text()).strip()
         ok_special_chars = ['.', '_', ' ']
         for char in ok_special_chars:
             Name = Name.replace(char, '')
         if Name == '':
-            messagebox.showwarning(
-                "Bad input",
-                "Field must contain a name, please try again"
-            )
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Bad input")
+            msg.setInformativeText("Field cannot be empty, please try again")
+            msg.exec_()
         elif not Name.isalnum():
-            messagebox.showwarning(
-                "Bad input",
-                "Name must be alpha numeric (whitespace, '_', or '.' are ok)."
-            )
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Bad input")
+            msg.setInformativeText(
+                "Name must be alpha numeric (whitespace, '_', or '.' are ok).")
+            msg.exec_()
         else:
-            return 1
+            return True
 
     def apply(self):
         ''' Save the config file'''
-        w_size = f'{self.parent.winfo_width()}x{self.parent.winfo_height()}'
+        w_size = f'{self.parent.width()}x{self.parent.height()}'
         cfg_dir = os.path.join(self.parent.IseultDir, '.iseult_configs')
-        new_cfg_file = str(self.e1.get()).strip().replace(' ', '_') + '.yml'
+        new_cfg_file = str(
+            self.name_QLineEdit.text()).strip().replace(' ', '_') + '.yml'
         new_cfg_file = os.path.join(cfg_dir, new_cfg_file)
         save_iseult_cfg(
             self.parent.oengus, w_size,
-            new_cfg_file, str(self.e1.get()).strip())
+            new_cfg_file, str(self.name_QLineEdit.text()).strip())

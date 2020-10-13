@@ -1,175 +1,168 @@
-import tkinter as Tk
-from tkinter import ttk, filedialog, messagebox
 from functools import partial
 import os
 import sys
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QLineEdit, QPushButton,
+                             QLabel, QMessageBox, QGridLayout, QFileDialog,
+                             QVBoxLayout, QHBoxLayout)
 
 
-class OpenSimDialog(Tk.Toplevel):
+class OpenSimDialog(QDialog):
     def __init__(self, parent, title='Open Sim'):
-        Tk.Toplevel.__init__(self, parent)
-        self.transient(parent)
-        if title:
-            self.title(title)
+        super().__init__(parent)
         self.parent = parent
+        if title:
+            self.setWindowTitle(title)
 
-        self.body = ttk.Frame(self)
-        self.initial_focus = self.build_sim_table(self.body)
-#        body.pack(fill=Tk.BOTH)#, expand=True)
-        self.body.pack(fill=Tk.BOTH, anchor=Tk.CENTER, expand=1)
+        self.init_ui()
+        self.exec_()
 
-        self.buttonbox()
+    def init_ui(self):
+        self.layout = QVBoxLayout(self)
+        sim_table = QGridLayout()
+        self.build_sim_table(sim_table)
+        self.layout.addLayout(sim_table)
 
-        self.grab_set()
+        add_remove_btn_box = QHBoxLayout()
+        add_remove_btn_box.setSpacing(0)
+        # Add btn
+        add_btn = QPushButton(self)
+        add_btn.setText("Add Sim")
+        add_btn.setMaximumWidth(100)
+        add_btn.setMinimumWidth(100)
+        add_btn.clicked.connect(partial(self.add, sim_table))
+        add_remove_btn_box.addWidget(add_btn)
 
-        if not self.initial_focus:
-            self.initial_focus = self
+        # Remove Sim
+        rm_btn = QPushButton(self)
+        rm_btn.setText("Remove Sim")
+        rm_btn.setMaximumWidth(100)
+        rm_btn.setMinimumWidth(100)
+        rm_btn.clicked.connect(self.remove)
+        add_remove_btn_box.addWidget(rm_btn)
 
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.layout.addLayout(add_remove_btn_box)
+        # Cancel & OK buttons (actually... cancel doesn't work. Let's rm it)
+        QBtn = QDialogButtonBox.Ok #| QDialogButtonBox.Cancel
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.ok)
+        self.buttonBox.rejected.connect(self.reject)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
 
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
-
-        self.initial_focus.focus_set()
-
-        self.wait_window(self)
-
-    #
-    # construction hooks
-
-    def build_sim_table(self, master):
+    def build_sim_table(self, grid_layout):
         # create dialog body.  return widget that should have
         # initial focus.
-        ttk.Label(master, text="Sim #").grid(row=0, column=0)
-        ttk.Label(master, text="name").grid(row=0, column=1)
-        ttk.Label(master, text="directory").grid(row=0, column=2)
+        grid_layout.addWidget(QLabel('Sim #'), 0, 0)
+        grid_layout.addWidget(QLabel('name'), 0, 1)
+        grid_layout.addWidget(QLabel('directory'), 0, 2)
+
         self.labels = []
         self.names = []
         self.dirs = []
         self.buttons = []
 
         for i in range(len(self.parent.oengus.sims)):
-            self.labels.append(ttk.Label(master, text=f'{i}'))
-            self.labels[-1].grid(row=i+1, column=0)
-            e_name = ttk.Entry(master, width=17)
-            e_name.insert(0, self.parent.oengus.sims[i].name)
-            e_name.grid(row=i+1, column=1, sticky=Tk.E)
-            self.names.append(e_name)
+            self.labels.append(QLabel(f'{i}'))
+            grid_layout.addWidget(self.labels[-1], i+1, 0)
+            edit_name = QLineEdit(self)
+            edit_name.setText(self.parent.oengus.sims[i].name)
+            edit_name.setMaximumWidth(175)
+            edit_name.setMinimumWidth(20)
 
-            e_dir = ttk.Entry(master, width=27)
+            grid_layout.addWidget(edit_name, i+1, 1)
+            self.names.append(edit_name)
+
+            edit_dir = QLineEdit(self)
+            edit_dir.setMinimumWidth(175)
+
             if self.parent.oengus.sims[i].outdir is not None:
-                e_dir.insert(0, self.parent.oengus.sims[i].outdir)
-            e_dir.grid(row=i+1, column=2, sticky=Tk.E)
-            self.dirs.append(e_dir)
+                edit_dir.setText(self.parent.oengus.sims[i].outdir)
+            grid_layout.addWidget(edit_dir, i+1, 2)
+            self.dirs.append(edit_dir)
 
-            btn = Tk.Button(
-                master,
-                text='Open Dir',
-                command=partial(self.open_dir, i))
-            btn.grid(row=i+1, column=3)
-            self.buttons.append(btn)
+            open_dir_btn = QPushButton(self)
+            open_dir_btn.setText('Open Dir')
+            open_dir_btn.clicked.connect(partial(self.open_dir, i))
+            grid_layout.addWidget(open_dir_btn, i+1, 3)
+            self.buttons.append(open_dir_btn)
 
     def open_dir(self, i, *args):
-        name = filedialog.askdirectory(
-            initialdir=os.curdir)
-        self.dirs[i].delete(0, Tk.END)
-        self.dirs[i].insert(0, name)
-
-    def buttonbox(self):
-        # add standard button box. override if you don't want the
-        # standard buttons
-        box = ttk.Frame(self)
-        w = ttk.Button(
-            box, text='Add Sim', width=10,
-            command=self.add, default=Tk.ACTIVE)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Remove Sim", width=10, command=self.remove)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(
-            box, text="Open", width=10,
-            command=self.ok)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-        w = ttk.Button(box, text="Cancel", width=10, command=self.cancel)
-        w.pack(side=Tk.LEFT, padx=5, pady=5)
-
-        self.bind("<Return>", self.ok)
-        self.bind("<Escape>", self.cancel)
-
-        box.pack()
+        open_dir_dialog = QFileDialog(self)
+        open_dir_dialog.setDirectory(os.curdir)
+        open_dir_dialog.setFileMode(QFileDialog.Directory)
+        if open_dir_dialog.exec_():
+            dirNames = open_dir_dialog.selectedFiles()
+            if len(dirNames) > 0:
+                self.dirs[i].setText(dirNames[0])
 
     # standard button semantics
-    def add(self, event=None):
+    def add(self, grid_layout):
         n = len(self.dirs)
         self.parent.oengus.add_sim(f'sim{n}')
-        self.labels.append(ttk.Label(self.body, text=f'{n}'))
-        self.labels[-1].grid(row=n+1, column=0)
-        e_name = ttk.Entry(self.body, width=17)
-        e_name.insert(0, self.parent.oengus.sims[n].name)
-        e_name.grid(row=n+1, column=1, sticky=Tk.E)
-        self.names.append(e_name)
 
-        e_dir = ttk.Entry(self.body, width=27)
+        self.labels.append(QLabel(f'{n}'))
+        grid_layout.addWidget(self.labels[-1], n+1, 0)
+        edit_name = QLineEdit(self)
+        edit_name.setText(self.parent.oengus.sims[n].name)
+        edit_name.setMaximumWidth(175)
+        edit_name.setMinimumWidth(20)
+
+        grid_layout.addWidget(edit_name, n+1, 1)
+        self.names.append(edit_name)
+
+        edit_dir = QLineEdit(self)
+        edit_dir.setMinimumWidth(175)
+
         if self.parent.oengus.sims[n].outdir is not None:
-            e_dir.insert(0, self.parent.oengus.sims[n].outdir)
-        e_dir.grid(row=n+1, column=2, sticky=Tk.E)
-        self.dirs.append(e_dir)
-        btn = Tk.Button(
-            self.body,
-            text='Open Dir',
-            command=partial(self.open_dir, n))
-        btn.grid(row=n+1, column=3)
-        self.buttons.append(btn)
+            edit_dir.setText(self.parent.oengus.sims[n].outdir)
+        grid_layout.addWidget(edit_dir, n+1, 2)
+        self.dirs.append(edit_dir)
+
+        open_dir_btn = QPushButton(self)
+        open_dir_btn.setText('Open Dir')
+        open_dir_btn.clicked.connect(partial(self.open_dir, n))
+        grid_layout.addWidget(open_dir_btn, n+1, 3)
+        self.buttons.append(open_dir_btn)
 
     def remove(self, event=None):
-        if len(self.labels) > 1:
-            self.labels[-1].destroy()
+        if self.parent.oengus.pop_sim() is not None:
+            self.labels[-1].deleteLater()
             self.labels.pop()
-            self.names[-1].destroy()
+            self.names[-1].deleteLater()
             self.names.pop()
-            self.dirs[-1].destroy()
+            self.dirs[-1].deleteLater()
             self.dirs.pop()
-            self.buttons[-1].destroy()
+            self.buttons[-1].deleteLater()
             self.buttons.pop()
-            self.parent.oengus.pop_sim()
 
     def ok(self, event=None):
-        if not self.validate():
-            # put focus back
-            self.initial_focus.focus_set()
-            return
-        self.update_idletasks()
-        self.withdraw()
-        self.apply()
-        self.cancel()
+        if self.validate():
+            self.apply()
+            self.accept()
 
-    def cancel(self, event=None):
-        # put focus back to the parent window
-        self.parent.focus_set()
-        self.destroy()
-
-    #
-    # command hooks
     def validate(self):
         ''' Check to make sure the directories are ok '''
         # First change all the names.
         bad = False
         for dir in self.dirs:
-            dirname = str(dir.get())
+            dirname = str(dir.text())
             if not os.path.isdir(dirname):
-                messagebox.showwarning(
-                    "Bad input",
-                    f"{dirname} is not a directory"
-                )
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Bad input")
+                msg.setInformativeText(
+                    f"{dirname} is not a directory")
+                msg.exec_()
                 bad = True
-        if not bad:
-            return 1
+                break
+        return not bad
 
     def apply(self):
         # First change all the names.
         for i, name in enumerate(self.names):
-            self.parent.oengus.sims[i].name = str(name.get())
+            self.parent.oengus.sims[i].name = name.text()
         for i, dir in enumerate(self.dirs):
-            if self.parent.oengus.sims[i].outdir != str(dir.get()):
-                self.parent.oengus.sims[i].outdir = str(dir.get())
-        self.parent.playbackbar.cur_sim = self.parent.playbackbar.cur_sim
+            if self.parent.oengus.sims[i].outdir != dir.text():
+                self.parent.oengus.sims[i].outdir = dir.text()
+        self.parent.update_all_sim_lists()
         self.parent.oengus.draw_output()

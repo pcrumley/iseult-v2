@@ -26,6 +26,7 @@ class vectorFldsPlot(iseultPlot):
         'OutlineText': True,
         'spatial_x': True,
         'spatial_y': False,
+        'symmetric_y': False,
         'show_labels': True,
         'normalize_fields': True,  # Normalize fields to their upstream values
         'cnorm_type': 'Linear',  # Colormap norm: Log, Pow or Linear
@@ -97,15 +98,6 @@ class vectorFldsPlot(iseultPlot):
         if shock_loc['axis'] != 'x' or shock_loc['shock_loc'] == 0:
             print("Shock must be defined along x axis.")
             self.param_dict['show_shock'] = False
-
-        self.shock_line = self.axes.axvline(
-            shock_loc['shock_loc'], linewidth=1.5,
-            linestyle='--', color='w',
-            path_effects=[
-                PathEffects.Stroke(linewidth=2, foreground='k'),
-                PathEffects.Normal()])
-        self.shock_line.set_visible(
-            self.param_dict['show_shock'])
 
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
         self.istep = sim.get_data(data_class='param', attribute='istep')
@@ -234,6 +226,16 @@ class vectorFldsPlot(iseultPlot):
                 labelpad=self.parent.MainParamDict['xLabelPad'],
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
+
+        self.shock_line = self.axes.axvline(
+            shock_loc['shock_loc'], linewidth=1.5,
+            linestyle='--', color='w',
+            path_effects=[
+                PathEffects.Stroke(linewidth=2, foreground='k'),
+                PathEffects.Normal()])
+
+        self.shock_line.set_visible(
+            self.param_dict['show_shock'])
 
         self.update_labels_and_colors()
         self.refresh()
@@ -417,24 +419,27 @@ class vectorFldsPlot(iseultPlot):
         # MANUALLY, WILL BE MORE EFFICIENT!
 
         if not self.param_dict['twoD']:
-            self.axes.dataLim = mtransforms.Bbox.unit()
-            self.axes.dataLim.update_from_data_xy(
-                xy=np.vstack(
-                    self.line_list[0].get_data()).T,
-                ignore=True)
-
+            min_max = [np.inf, -np.inf]
             for line, key in zip(self.line_list, self.key_list):
-
                 if self.param_dict[key]:
-                    xy = np.vstack(line.get_data()).T
-                    self.axes.dataLim.update_from_data_xy(xy, ignore=False)
+                    min_max[0] = min(min_max[0], line.get_data()[1].min())
+                    min_max[1] = max(min_max[1], line.get_data()[1].max())
+            if np.isinf(min_max[0]):
+                min_max = [-1, 1]
+            dist = min_max[1]-min_max[0]
+            min_max[0] -= 0.04*dist
+            min_max[1] += 0.04*dist
 
-            self.axes.autoscale('y')
             if self.param_dict['set_v_min']:
-                self.axes.set_ylim(bottom=self.param_dict['v_min'])
-
+                min_max[0] = self.param_dict['v_min']
             if self.param_dict['set_v_max']:
-                self.axes.set_ylim(top=self.param_dict['v_max'])
+                min_max[0] = self.param_dict['v_max']
+            if self.param_dict['symmetric_y']:
+                tmp = max(abs(min_max[0]), abs(min_max[1]))
+                min_max[0] = -tmp
+                min_max[1] = tmp
+
+            self.axes.set_ylim(min_max)
 
             if self.parent.MainParamDict['SetxLim']:
                 self.axes.set_xlim(

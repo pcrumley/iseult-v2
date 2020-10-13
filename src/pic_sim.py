@@ -59,7 +59,7 @@ class picSim(object):
             self._shock_finder = _shock_finders[tmp](self)
         else:
             self.shock_finder_name = 'not_implemented'
-            self.shock_finder = _shock_finders['not_implemented'](self)
+            self._shock_finder = _shock_finders['not_implemented'](self)
 
     def get_shock_finder_opts(self):
         try:
