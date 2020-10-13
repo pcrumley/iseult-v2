@@ -239,7 +239,7 @@ class MainApp(QtWidgets.QMainWindow):
                 self.popups_dict[f'{i,j}'].show()
             elif self.oengus.SubPlotList[i][j].chart_type == 'ScalarVsTime':
                 self.popups_dict[f'{i,j}'] = ScalarVsTimeSettings(self, (i, j))
-
+                self.popups_dict[f'{i,j}'].show()
     def open_save_dialog(self):
         SaveDialog(self)
 
