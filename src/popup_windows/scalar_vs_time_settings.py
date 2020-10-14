@@ -17,7 +17,6 @@ class ScalarVsTimeSettings(iseultPlotSettings):
         self.ignoreChange = False
         self.plot_opts = ['label', 'color', 'ls', 'marker', 'markersize']
         self.lines = self.params['lines']
-
         self.init_ui()
 
     def init_ui(self):
@@ -205,7 +204,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
 
         tmp_dict['quant_combo'] = QComboBox(self)
 
-        self.update_quantity_combo(list(scalars), tmp_dict['quant_combo'])
+        self.update_quantity_combo(i, list(scalars), tmp_dict['quant_combo'])
 
         tmp_dict['quant_combo'].currentIndexChanged.connect(
             partial(self.scalar_changed, i))
@@ -280,6 +279,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
                     sim_combo.currentText())
                 # update available quantities
                 self.update_quantity_combo(
+                    i,
                     list(scalars),
                     self.line_var_helpers[i]['quant_combo'])
                 print(line['sim_num'])
@@ -290,14 +290,17 @@ class ScalarVsTimeSettings(iseultPlotSettings):
                 self.subplot.load_axes_pos()
                 self.parent.oengus.canvas.draw()
 
-    def update_quantity_combo(self, options, combo):
+    def update_quantity_combo(self, i, options, combo):
         self.ignoreChange = True
-        cur_scalar = combo.currentText()
+        cur_scalar = self.lines[i]['scalar']
         combo.clear()
         for attr in options:
             combo.addItem(attr)
-        if not (cur_scalar in options):
+        if cur_scalar in options:
+            combo.setCurrentText(cur_scalar)
+        else:
             combo.setCurrentText(options[0])
+ 
         self.ignoreChange = False
 
     def line_plot_options_callback(self):

@@ -146,7 +146,7 @@ class scalar_vs_timePlot(iseultPlot):
         self.legend.set_visible(self.param_dict['show_legend'])
         self.legend.get_frame().set_facecolor('k')
         self.legend.get_frame().set_linewidth(0.0)
-        self.legend.set_draggable(True, update='loc')
+        # self.legend.set_draggable(True, update='loc')
         self.legend._set_loc(self.legend_loc)
 
     def draw(self):

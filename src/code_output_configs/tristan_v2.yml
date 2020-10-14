@@ -154,6 +154,7 @@ prtls:
       z:
         label: $z [c/\omega_{pe}]$
         expr: z_2 / pls:c_omp
+
 scalar_flds:
   B_total:
     label: $|B|$
@@ -173,9 +174,7 @@ scalar_flds:
   theta_B:
     label: $\theta_B$
     expr: arctan2(sqrt(by*by+bz*bz), bx)
-  E_dot_B:
-    label: $E\cdot B$
-    expr: ex*bx + ey*by + ez*bz
+
 scalars:
   Total KE_e:
     expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:ch1) * alg:c * alg:c * prt:m1
