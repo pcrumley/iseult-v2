@@ -73,7 +73,10 @@ class scalarFldsPlot(iseultPlot):
 
     def draw(self):
         sim = self.parent.sims[self.param_dict['sim_num']]
-        shock_loc = sim.get_shock_loc()
+        shock_loc = sim.get_data(
+            data_class = 'shock_finders',
+            shock_method = self.parent.MainParamDict['shock_method']
+        )
         # at some point we may need to support
         # shocks along different axes but for now
         if shock_loc['axis'] != 'x' or shock_loc['shock_loc'] == 0:
@@ -291,7 +294,10 @@ class scalarFldsPlot(iseultPlot):
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])
         if self.param_dict['show_shock']:
-            tmp = sim.get_shock_loc()
+            tmp = sim.get_data(
+                data_class = 'shock_finders',
+                shock_method = self.parent.MainParamDict['shock_method']
+            )
             if tmp['axis'] == 'x':
                 self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
         self.set_v_max_min()

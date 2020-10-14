@@ -140,6 +140,7 @@ class Oengus():
             'FigSize':  [12.0, 6.22],
             'dpi': 100,
             'FFT_color': 'k',
+            'shock_method': 'Density Half Max',
             'legendLabelSize': 11}
         for key, val in self.cfgDict['MainParamDict'].items():
             self.MainParamDict[key] = val

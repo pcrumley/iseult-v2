@@ -230,3 +230,13 @@ vec_flds:
     z:
       label: $J_z$
       expr: jz
+
+shock_finders:
+
+  Constant Velocity:
+    expr: const_vel_shock(getsim())
+    axis: x
+
+  Density Half Max:
+    expr: dens_half_max_shock(dens1 + dens2, pls:c_omp, out:istep)
+    axis: x

@@ -30,6 +30,7 @@ import math
 import numpy as np
 import h5py
 from functools import lru_cache
+from shock_finder_methods import dens_half_max_shock, const_vel_shock
 
 _CONSTANTS = {
     'pi': math.pi,
@@ -40,6 +41,9 @@ _CONSTANTS = {
 _fld_cache_size = 32
 _prtl_cache_size = 32
 
+#def tmp():
+#    print('hi')
+#    return 1
 _FUNCTIONS = {
     'abs': abs,
     'arccos': np.arccos,
@@ -66,7 +70,10 @@ _FUNCTIONS = {
     'sqrt': np.sqrt,
     'tan': np.tan,
     'tanh': np.tanh,
-    'take': np.take
+    'take': np.take,
+    'getsim': lambda: (_ for _ in ()).throw(NotImplementedError),
+    'dens_half_max_shock': dens_half_max_shock,
+    'const_vel_shock': const_vel_shock
 }
 
 
@@ -114,12 +121,16 @@ def get_h5attr(filepath, attribute, prtl_stride=None):
 
 
 class ExprParser:
-    def __init__(self, string='', vars=None):
+    def __init__(self, sim, string='', vars=None):
+
         self.__string = string
         self.index = 0
         self.__vars = {}
         self.vars = vars
         self.f_suffix = ''
+        self.functions = dict(_FUNCTIONS)
+        self.sim = sim
+        self.functions['getsim'] = lambda: self.sim
 
     def getValue(self, expr=None):
         if expr is not None:
@@ -203,8 +214,13 @@ class ExprParser:
                 values.append(-1 * self.parseMultiplication())
             else:
                 break
-
-        return sum(values)
+        try:
+            return sum(values)
+        except TypeError as ex:
+            if type(values[0]) == type(self.sim) and len(values) == 1:
+                return values[0]
+            else:
+                raise ex
 
     def parseMultiplication(self):
         values = [self.parseParenthesis()]
@@ -229,12 +245,16 @@ class ExprParser:
             else:
                 break
 
-        value = 1.0
-
-        for factor in values:
-            value *= factor
-        return value
-
+        try:
+            value = 1.0
+            for factor in values:
+                value *= factor
+            return value
+        except TypeError as ex:
+            if type(values[0]) == type(self.sim) and len(values) == 1:
+                return values[0]
+            else:
+                raise ex
     def parseParenthesis(self):
         self.skipWhitespace()
         char = self.peek()
@@ -299,7 +319,7 @@ class ExprParser:
                 break
         var = ''.join(var)
 
-        function = _FUNCTIONS.get(var.lower())
+        function = self.functions.get(var.lower())
         if function is not None:
             args = self.parseArguments()
             return function(*args)
@@ -352,10 +372,10 @@ class ExprParser:
 
 def evaluate(expression, vars=None):
     try:
-        p = ExprParser(expression, vars)
+        p = ExprParser(np.arange(10), expression, vars)
         value = p.getValue()
     except Exception as ex:
-        raise Exception
+        raise ex
 
     return value
 
@@ -365,7 +385,7 @@ if __name__ == "__main__":
     #    'x': np.linspace(0,np.pi,num = 100), 'y':10 }) - np.cos(12) +4) < 1E-8
     # assert evaluate("exp(0)") == 1
     # assert evaluate("-(1 + 2) * 3") == -9
-    print(evaluate("(1-2)/3.0 + 0.0000"))
+    # print(evaluate("(1-2)/3.0 + 0.0000"))
     print(evaluate("abs(-2) + pi / 4"))
     # print(evaluate("(x + e * 10) / 10", { 'x' : 3 }))
     print(evaluate("1.0 / 3 * 6"))
@@ -373,3 +393,4 @@ if __name__ == "__main__":
     print(evaluate("cos(pi) * 1"))
     print(evaluate("arctan2(2, 1)"))
     print(evaluate("pow(3, 5)"))
+    print(evaluate('sum(getsim())'))

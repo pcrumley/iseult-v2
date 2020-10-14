@@ -77,8 +77,11 @@ class iseultPlotSettings(QWidget):
         self.params['show_shock'] = sender.isChecked()
         if self.params['show_shock']:
             sim = self.oengus.sims[self.params['sim_num']]
-            shock_loc = sim.get_shock_loc()
-            if shock_loc['shock_loc'] < 0 or shock_loc['axis'] != 'x':
+            shock_loc = sim.get_data(
+                data_class = 'shock_finders',
+                shock_method = self.oengus.MainParamDict['shock_method']
+            )
+            if shock_loc['axis'] != 'x':
                 print('Not Implemented Yet')
                 self.ShockVar.set(False)
 

@@ -6,7 +6,6 @@ import yaml
 import numpy as np
 from my_parser import ExprParser, AttributeNotFound
 from dict_of_spect_methods import _spect_classes
-from dict_of_shock_finder_methods import _shock_finders
 
 _default_cfg = os.path.join(
     os.path.dirname(__file__), 'code_output_configs', 'tristan_v1.yml')
@@ -26,10 +25,8 @@ class picSim(object):
         self.__cur_n = -1
         self._fnum = []  # An array that holds the suffix of all the files
         self.time_array = []  # An array that holds the times
-        self.parser = ExprParser()
+        self.parser = ExprParser(self)
         self._cfg_file = ''
-        self.shock_finder_name = 'not_implemented'
-        self._shock_finder = _shock_finders[self.shock_finder_name](self)
 
         if 'iseult_conf.yml' in os.listdir(self.outdir):
 
@@ -47,28 +44,21 @@ class picSim(object):
             # first see if v1 works:
             self.try_default_sim_types()
 
-    @property
-    def shock_finder(self):
-        return self._shock_finder
+    def get_shock_speed(self):
+        if 'shock_speed' not in self._data_dictionary:
+            shock_loc = self.get_data(
+                data_class='shock_finders',
+                shock_method='Density Half Max',
+                n=len(self) - 1
+            )['shock_loc']
+            end_time = self.get_data(
+                data_class='param',
+                attribute='time',
+                n=len(self) - 1
+            )
+            self._data_dictionary['shock_speed'] = shock_loc/end_time
+        return self._data_dictionary['shock_speed']
 
-    @shock_finder.setter
-    def shock_finder(self, shock_method_name):
-        if shock_method_name in self._cfgDict['shock_methods']['opts'].keys():
-            tmp = self._cfgDict['shock_methods']['opts'][shock_method_name]
-            self.shock_finder_name = shock_method_name
-            self._shock_finder = _shock_finders[tmp](self)
-        else:
-            self.shock_finder_name = 'not_implemented'
-            self._shock_finder = _shock_finders['not_implemented'](self)
-
-    def get_shock_finder_opts(self):
-        try:
-            return [k for k in self._cfgDict['shock_methods']['opts'].keys()]
-        except KeyError:
-            return ['Not Implemented']
-
-    def get_shock_loc(self, n=None):
-        return self.shock_finder.calc_shock_loc(n)
 
     def get_time(self, units=None):
         if units not in self.available_units:
@@ -466,14 +456,14 @@ class picSim(object):
             }
             try:
                 f_suffix = self.file_list[n]
-                hash_key = 'axes' + lookup['attribute'] + f_suffix
+                hash_key = 'scalar' + lookup['attribute'] + f_suffix
                 if hash_key not in self._data_dictionary:
-                    expr = self._cfgDict['axes'][lookup['attribute']]['expr']
+                    expr = self._cfgDict['scalar'][lookup['attribute']]['expr']
                     self.parser.string = expr
                     self.parser.f_suffix = f_suffix
                     self._data_dictionary[hash_key] = self.parser.getValue()
                 response_dict['data'] = self._data_dictionary[hash_key]
-                label = self._cfgDict['axes'][lookup['attribute']]['label']
+                label = self._cfgDict['scalar'][lookup['attribute']]['label']
                 response_dict['label'] = label
             except IndexError:
                 pass
@@ -481,6 +471,27 @@ class picSim(object):
                 pass
             return response_dict
 
+        elif lookup['data_class'] == 'shock_finders':
+            response_dict = {
+                'shock_loc': 0,
+                'axis': 'x'
+            }
+            try:
+                f_suffix = self.file_list[n]
+                hash_key = 'shock_finders' + lookup['shock_method'] + f_suffix
+                if hash_key not in self._data_dictionary:
+                    expr = self._cfgDict['shock_finders'][lookup['shock_method']]['expr']
+                    self.parser.string = expr
+                    self.parser.f_suffix = f_suffix
+                    self._data_dictionary[hash_key] = self.parser.getValue()
+                response_dict['shock_loc'] = self._data_dictionary[hash_key]
+                label = self._cfgDict['shock_finders'][lookup['shock_method']]['axis']
+                response_dict['axis'] = label
+            except IndexError:
+                pass
+            except AttributeNotFound:
+                pass
+            return response_dict
 
 if __name__ == '__main__':
     sim = picSim(dirpath=os.path.join(os.path.dirname(__file__), '../output'))

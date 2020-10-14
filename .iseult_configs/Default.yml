@@ -137,15 +137,8 @@ MainParamDict:
   2DSlicePlane: 0
   Average1D: false
   AxLabelSize: 11
-  ClearFig: true
   ColorMap: Blue/Green/Red/Yellow
-  ConstantShockVel: true
   DivColorMap: Blue/Green/Red/Yellow
-  DoLorentzBoost: false
-  FFTLeft: 0.0
-  FFTRelative: true
-  FFTRight: 200.0
-  FFT_color: k
   FigSize:
   - 11.76
   - 5.66
@@ -214,7 +207,6 @@ MainParamDict:
   - Blue/Green/Red/Yellow
   - Cube YF
   - Linear_L
-  dpi: 100
   electron_color: '#fca636'
   electron_fit_color: yellow
   ion_color: '#d6556d'

@@ -60,7 +60,8 @@ class MainApp(QtWidgets.QMainWindow):
         self.oengus.create_graphs()
         self.resize(
             *map(lambda x: int(x),
-                 layout.addWidget(self.oengus.canvas)
+                self.oengus.MainParamDict['WindowSize'].split('x')))
+        layout.addWidget(self.oengus.canvas)
         self.toolbar = myCustomToolbar(self.oengus.canvas, self)
         self.addToolBar(QtCore.Qt.BottomToolBarArea,
                         self.toolbar)

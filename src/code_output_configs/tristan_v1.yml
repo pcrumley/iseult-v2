@@ -283,10 +283,12 @@ spectra:
   # see ~/src/utils/spectra_utils how this is defined.
   name_of_spect_class: tristan-v1-spec
 
-shock_methods:
-  # see ~/src/utils/shock_finders
-  shock_finder: Constant Velocity
-  opts:
-    # see ~/src/utils/shock_finders/constant_vel_v1
-    Constant Velocity: constant_vel_v1
-    Density Half Max: density_max_v1
+shock_finders:
+
+  Constant Velocity:
+    expr:  const_vel_shock(getsim())
+    axis: x
+
+  Density Half Max:
+    expr: dens_half_max_shock(dens, c_omp, istep)
+    axis: x
