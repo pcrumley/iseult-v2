@@ -71,6 +71,7 @@ class iseultPlot:
             return [self.param_dict['sim_num']]
         else:
             return []
+
     def norm(self, vmin=None, vmax=None):
         if self.param_dict['cnorm_type'] == "Linear":
             if self.param_dict['UseDivCmap']:

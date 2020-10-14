@@ -27,7 +27,7 @@ class MovieDialog(QDialog):
 
         # get movie directory:
         cur_sim = self.oengus.sims[self.oengus.cur_sim]
-        movie_dir=os.path.abspath(os.path.join(cur_sim.outdir, '../'))
+        movie_dir = os.path.abspath(os.path.join(cur_sim.outdir, '../'))
 
         self.movie_opts_edits[-1].setText(movie_dir)
 

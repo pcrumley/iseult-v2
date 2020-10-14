@@ -61,7 +61,6 @@ if __name__ == '__main__':
         os.path.join(os.path.dirname(__file__), 'src', 'plots'))
 
     if not cmd_args.b:
-        #matplotlib.use('TkAgg')
         from main_app import runMe
         runMe(cmd_args)
     else:

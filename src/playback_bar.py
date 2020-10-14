@@ -168,8 +168,6 @@ class playbackBar(QWidget):
                 self.cur_sim = self.oengus.sim_names.index(
                     self.sim_combo.currentText())
                 self.oengus.cur_sim = self.cur_sim
-        #else:
-        #    self.update_sim_list()
 
     def on_reload(self):
         self.oengus.sims[self.cur_sim].refresh_directory()

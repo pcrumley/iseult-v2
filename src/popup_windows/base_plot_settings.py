@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QCheckBox, QLineEdit
 
+
 class iseultPlotSettings(QWidget):
     '''
     The base class that all of the subplots settings must be subclasses of.'''

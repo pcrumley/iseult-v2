@@ -1,5 +1,6 @@
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 
+
 class myCustomToolbar(NavigationToolbar2QT):
     def __init__(self, plotCanvas, parent):
         # create the default toolbar

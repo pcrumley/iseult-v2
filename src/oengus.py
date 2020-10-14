@@ -153,9 +153,9 @@ class Oengus():
             1, self.MainParamDict['NumberOfSims'])
 
         # Loading a config file may change the stride... watch out!
-        #for sim in self.sims:
-        #    if sim.xtra_stride != self.MainParamDict['PrtlStride']:
-        #        sim.xtra_stride = self.MainParamDict['PrtlStride']
+        # for sim in self.sims:
+        #     if sim.xtra_stride != self.MainParamDict['PrtlStride']:
+        #         sim.xtra_stride = self.MainParamDict['PrtlStride']
 
         # Loading a config file may change the number of sims
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
@@ -250,7 +250,6 @@ class Oengus():
                     self.SubPlotList[i].append(
                         self.plot_types_dict[tmpchart_type](
                             self, (i, j), self.cfgDict[tmp_str]))
-                    # self.showingTotEnergy += tmpchart_type == 'TotalEnergyPlot'
                     try:
                         show_cpus = self.cfgDict[tmp_str]['show_cpu_domains']
                         self.showingCPUs += show_cpus
@@ -323,6 +322,7 @@ class Oengus():
                 self.figure.suptitle(
                     f'{outname} is empty',
                     size=self.MainParamDict['TitleFontSize'])
+
     def home(self):
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):

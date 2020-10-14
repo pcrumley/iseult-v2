@@ -324,10 +324,11 @@ class SettingsTab(QWidget):
 
     def div_cmap_changed(self, *args):
         # Note here that Tkinter passes an event object to onselect()
-        if self.div_cmap_combo.currentText() == self.main_params['DivColorMap']:
+        div_cmap_name = self.div_cmap_combo.currentText()
+        if div_cmap_name == self.main_params['DivColorMap']:
             pass
         else:
-            self.main_params['DivColorMap'] = self.div_cmap_combo.currentText()
+            self.main_params['DivColorMap'] = div_cmap_name
             self.oengus.figure.clf()
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
@@ -489,12 +490,16 @@ class SimTab(QWidget):
             if self.sim_combo.currentText() != self.sim_selected.name:
 
                 try:
-                    ind = self.oengus.sim_names.index(self.sim_combo.currentText())
+                    ind = self.oengus.sim_names.index(
+                        self.sim_combo.currentText())
                 except ValueError:
                     ind = 0
 
                 self.sim_selected = self.oengus.sims[ind]
-                index = self.shock_combo.findText(self.sim_selected.shock_finder_name)
+
+                index = self.shock_combo.findText(
+                    self.sim_selected.shock_finder_name)
+
                 if index >= 0:
                     self.shock_combo.setCurrentIndex(index)
                 else:
@@ -515,8 +520,9 @@ class SimTab(QWidget):
 
     def shock_finder_changed(self, *args):
         if not self.ignoreChange:
-            if self.sim_selected.shock_finder_name != self.shock_combo.currentText():
-                self.sim_selected.shock_finder = self.shock_combo.currentText()
+            combo_name = self.shock_combo.currentText()
+            if self.sim_selected.shock_finder_name != combo_name:
+                self.sim_selected.shock_finder = combo_name
                 # self.shock_finder_var.set(self.sim_selected.shock_finder_name)
                 # update shock lines
                 for i in range(self.oengus.MainParamDict['NumOfRows']):

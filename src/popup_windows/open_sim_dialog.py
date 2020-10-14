@@ -53,7 +53,7 @@ class OpenSimDialog(QDialog):
 
         self.layout.addLayout(add_remove_btn_box)
         # Cancel & OK buttons (actually... cancel doesn't work. Let's rm it)
-        QBtn = QDialogButtonBox.Ok #| QDialogButtonBox.Cancel
+        QBtn = QDialogButtonBox.Ok
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.ok)
         self.buttonBox.rejected.connect(self.reject)
