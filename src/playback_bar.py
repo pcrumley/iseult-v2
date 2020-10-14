@@ -22,7 +22,7 @@ class playbackBar(QWidget):
         # This param should be the time-step of the simulation
         self.param = tstep_param
 
-        self._cur_sim = -1  # A way to hold the current simulation
+        self._cur_sim = self.oengus.cur_sim # A way to hold the current simulation
 
         self._play_debouncer = -np.inf
         self.play_pressed = False

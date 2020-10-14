@@ -85,7 +85,7 @@ class MainApp(QtWidgets.QMainWindow):
         self.build_menu()
         #self.config(menu=menubar)
         #self.protocol("WM_DELETE_WINDOW", sys.exit)
-
+        self.playbackbar.update_slider()
         # Overload the close function
         self.closeEvent = self.on_quit
 
@@ -311,7 +311,8 @@ class MainApp(QtWidgets.QMainWindow):
     def on_quit(self, *event):
         if self.playbackbar.settings_window is not None:
             self.playbackbar.settings_window.deleteLater()
-
+        for key, val in self.popups_dict.items():
+            val.deleteLater()
 
 def runMe(cmd_args):
     # Check whether there is already a running QApplication (e.g., if running
