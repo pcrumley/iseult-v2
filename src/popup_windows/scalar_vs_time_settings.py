@@ -282,7 +282,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
                     i,
                     list(scalars),
                     self.line_var_helpers[i]['quant_combo'])
-                print(line['sim_num'])
+
                 self.parent.oengus.calc_sims_shown()
                 self.parent.playbackbar.update_sim_list()
                 self.subplot.save_axes_pos()
@@ -300,7 +300,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
             combo.setCurrentText(cur_scalar)
         else:
             combo.setCurrentText(options[0])
- 
+
         self.ignoreChange = False
 
     def line_plot_options_callback(self):

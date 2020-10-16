@@ -4,6 +4,7 @@ from base_plot import iseultPlot
 from itertools import cycle
 import matplotlib.colors as mcolors
 from matplotlib.lines import Line2D as mlines
+from copy import deepcopy
 from validate_plot_opts import validate_color, validate_ls, \
     validate_marker, validate_marker_size
 
@@ -46,7 +47,7 @@ class scalar_vs_timePlot(iseultPlot):
         tmp_dict = {}
         tmp_dict.update(self.plot_param_dict)
         tmp_dict.update(param_dict)
-        iseultPlot.__init__(self, parent, pos, tmp_dict)
+        iseultPlot.__init__(self, parent, pos, deepcopy(tmp_dict))
         self.shown_lines = []
         self.chart_type = 'ScalarVsTime'
         self.x_axis_info = None
