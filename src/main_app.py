@@ -283,6 +283,9 @@ class MainApp(QtWidgets.QMainWindow):
         # Calc the current sims shown
         self.oengus.calc_sims_shown()
 
+        # change the names_list in oengus
+        self.oengus.sim_names = [sim.name for sim in self.oengus.sims]
+
         # update playbackbar combo
         self.playbackbar.update_sim_list()
 
