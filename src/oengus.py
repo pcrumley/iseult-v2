@@ -316,8 +316,9 @@ class Oengus():
             outname = os.path.abspath(sim.outdir)
             try:
                 f_end = sim.file_list[sim.get_time()]
+                cur_time = int(round(sim.get_time(units='c_ompe')))
                 self.figure.suptitle(
-                    f'{outname}/*.{f_end}',
+                    f'{outname}/*.{f_end} at ' + r'$\omega_{pe}t=$' + f'{cur_time}',
                     size=self.MainParamDict['TitleFontSize'])
             except IndexError:
                 self.figure.suptitle(
@@ -371,8 +372,9 @@ class Oengus():
             outname = os.path.abspath(sim.outdir)
             try:
                 f_end = sim.file_list[sim.get_time()]
+                cur_time = int(round(sim.get_time(units='c_ompe')))
                 self.figure.suptitle(
-                    f'{outname}/*.{f_end}',
+                    f'{outname}/*.{f_end} at ' + r'$\omega_{pe}t=$' + f'{cur_time}',
                     size=self.MainParamDict['TitleFontSize'])
             except IndexError:
                 self.figure.suptitle(

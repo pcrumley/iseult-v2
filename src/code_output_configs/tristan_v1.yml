@@ -149,13 +149,13 @@ prtls:
         label: $\gamma_e\beta_{e,z}$
         expr: we
       x:
-        label: $x$
+        label: $x\ [c/\omega_{pe}]$
         expr: xe * pow(c_omp, -1)
       y:
-        label: $y$
+        label: $y\ [c/\omega_{pe}]$
         expr: ye * pow(c_omp, -1)
       z:
-        label: $z$
+        label: $z\ [c/\omega_{pe}]$
         expr: ze * pow(c_omp, -1)
 
   ions:
@@ -183,13 +183,13 @@ prtls:
         label: $\gamma_i\beta_{i,z}$
         expr: wi
       x:
-        label: $x$
+        label: $x\ [c/\omega_{pe}]$
         expr: xi * pow(c_omp, -1)
       y:
-        label: $y$
+        label: $y\ [c/\omega_{pe}]$
         expr: yi * pow(c_omp, -1)
       z:
-        label: $z$
+        label: $z\ [c/\omega_{pe}]$
         expr: zi * pow(c_omp, -1)
 
 scalar_flds:
@@ -286,7 +286,7 @@ spectra:
 shock_finders:
 
   Constant Velocity:
-    expr:  const_vel_shock(getsim())
+    expr: const_vel_shock(getsim())
     axis: x
 
   Density Half Max:
