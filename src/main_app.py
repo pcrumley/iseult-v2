@@ -59,8 +59,10 @@ class MainApp(QtWidgets.QMainWindow):
                 self.oengus.sims[i].outdir = outdir
         self.oengus.create_graphs()
         self.resize(
-            *map(lambda x: int(x),
-                self.oengus.MainParamDict['WindowSize'].split('x')))
+            *map(
+                lambda x:
+                    int(x),
+                    self.oengus.MainParamDict['WindowSize'].split('x')))
         layout.addWidget(self.oengus.canvas)
         self.toolbar = myCustomToolbar(self.oengus.canvas, self)
         self.addToolBar(QtCore.Qt.BottomToolBarArea,
@@ -83,8 +85,6 @@ class MainApp(QtWidgets.QMainWindow):
         self.popups_dict = {}
         self.create_shortcuts()
         self.build_menu()
-        #self.config(menu=menubar)
-        #self.protocol("WM_DELETE_WINDOW", sys.exit)
         self.playbackbar.update_slider()
         # Overload the close function
         self.closeEvent = self.on_quit
@@ -114,36 +114,12 @@ class MainApp(QtWidgets.QMainWindow):
 
         fileMenu.addAction(exitAct)
 
-
         self.views_menu = bar.addMenu("Preset Views")
         self.views_update()
         self.view_dir_watcher = QFileSystemWatcher()
         self.view_dir_watcher.addPath(
             os.path.join(self.IseultDir, '.iseult_configs'))
         self.view_dir_watcher.directoryChanged.connect(self.views_update)
-
-        # file.addAction("New")
-
-        # self.show()
-        """
-        menubar = Tk.Menu(self)
-        self.wm_title()
-        fileMenu = Tk.Menu(menubar, tearoff=False)
-        menubar.add_cascade(label="File", underline=0, menu=fileMenu)
-
-
-        fileMenu.add_command(
-           label='Make a Movie', command=self.open_movie_dialog)
-        fileMenu.add_command(label="Exit", underline=1,
-                            command=quit, accelerator="Ctrl+Q")
-        # fileMenu.add_command(
-        #   label= 'Reset Session', command = self.ResetSession)
-        self.preset_menu = Tk.Menu(
-            menubar, tearoff=False, postcommand=self.views_update)
-
-        menubar.add_cascade(
-            label='Preset Views', underline=0, menu=self.preset_menu)
-        """
 
     def create_shortcuts(self):
         self.settings_acc = QtWidgets.QShortcut(QKeySequence('s'), self)
@@ -161,16 +137,6 @@ class MainApp(QtWidgets.QMainWindow):
             QKeySequence('left'), self)
         self.shortcut_skip_left.activated.connect(self.playbackbar.skip_left)
 
-        """
-        self.bind_all("<Control-q>", self.quit)
-        # self.bind_all("<Command-o>", self.OnOpen)
-        self.bind_all("S", self.open_settings)
-        self.bind('<Return>', self.txt_enter)
-        self.bind('<Left>', self.playbackbar.skip_left)
-        self.bind('<Right>', self.playbackbar.skip_right)
-        self.bind_all('r', self.playbackbar.on_reload())
-        self.bind('<space>', self.playbackbar.play_handler)
-        """
     def views_update(self):
         # Clear the menu of all actions
         for act in self.views_menu.actions():
@@ -193,11 +159,9 @@ class MainApp(QtWidgets.QMainWindow):
         cfiles = sorted(cfiles, key=lambda x: x[1])
         for cfile, name in cfiles:
             load_view_action = QAction(name, self)
-            load_view_action.triggered.connect(partial(
-                   self.load_config,
-                    name))
+            load_view_action.triggered.connect(
+                partial(self.load_config, name))
             self.views_menu.addAction(load_view_action)
-
 
     def onclick(self, event):
         '''After being clicked, we should use the x and y of the cursor to
@@ -228,6 +192,7 @@ class MainApp(QtWidgets.QMainWindow):
             if f'{i,j}' in self.popups_dict:
                 if self.popups_dict[f'{i,j}'] is not None:
                     self.popups_dict[f'{i,j}'].deleteLater()
+                    self.popups_dict[f'{i,j}'] = None
             if self.oengus.SubPlotList[i][j].chart_type == 'ScalarFlds':
                 self.popups_dict[f'{i,j}'] = ScalarFieldsSettings(self, (i, j))
                 self.popups_dict[f'{i,j}'].show()
@@ -240,6 +205,7 @@ class MainApp(QtWidgets.QMainWindow):
             elif self.oengus.SubPlotList[i][j].chart_type == 'ScalarVsTime':
                 self.popups_dict[f'{i,j}'] = ScalarVsTimeSettings(self, (i, j))
                 self.popups_dict[f'{i,j}'].show()
+
     def open_save_dialog(self):
         SaveDialog(self)
 
@@ -269,8 +235,10 @@ class MainApp(QtWidgets.QMainWindow):
         self.oengus.canvas.draw()
         # refresh the geometry
         self.resize(
-            *map(lambda x: int(x),
-                self.oengus.MainParamDict['WindowSize'].split('x')))
+            *map(
+                lambda x:
+                    int(x),
+                    self.oengus.MainParamDict['WindowSize'].split('x')))
 
     def changePlotType(self, pos, new_plot_type):
         self.oengus.SubPlotList[pos[0]][pos[1]] = \
@@ -316,6 +284,7 @@ class MainApp(QtWidgets.QMainWindow):
             self.playbackbar.settings_window.deleteLater()
         for key, val in self.popups_dict.items():
             val.deleteLater()
+
 
 def runMe(cmd_args):
     # Check whether there is already a running QApplication (e.g., if running
