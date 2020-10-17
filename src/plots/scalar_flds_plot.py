@@ -44,15 +44,17 @@ class scalarFldsPlot(iseultPlot):
     def axis_info(self):
         if self.parent.MainParamDict['LinkSpatial'] != 0:
             self.x_axis_info = {'data_ax': 'x', 'pos': self.pos, 'axes': 'x'}
-
+            sim = self.parent.sims[self.param_dict['sim_num']]
+            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+            slice_plane = sim_params['2DSlicePlane']
             if self.param_dict['twoD']:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+                if slice_plane == 0:  # x-y plane
                     self.y_axis_info = {
                         'data_ax': 'y',
                         'pos': self.pos,
                         'axes': 'y'
                     }
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z
+                elif slice_plane == 1:  # x-z
                     self.y_axis_info = {
                         'data_ax': 'z',
                         'pos': self.pos,
@@ -101,6 +103,8 @@ class scalarFldsPlot(iseultPlot):
         self.istep = sim.get_data(data_class='param', attribute='istep')
 
         # FIND THE SLICE
+        sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+        slice_plane = sim_params['2DSlicePlane']
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
 
@@ -148,14 +152,14 @@ class scalarFldsPlot(iseultPlot):
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:
+            if slice_plane == 0:
                 self.axes.set_ylabel(
                     r'$y\ [c/\omega_{pe}]$',
                     labelpad=self.parent.MainParamDict['yLabelPad'],
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])
 
-            if self.parent.MainParamDict['2DSlicePlane'] == 1:
+            if slice_plane == 0:
                 self.axes.set_ylabel(
                     r'$z\ [c/\omega_{pe}]$',
                     labelpad=self.parent.MainParamDict['yLabelPad'],
@@ -210,6 +214,7 @@ class scalarFldsPlot(iseultPlot):
         this and last time, is that we won't actually do any drawing in the
         plot. The plot will be redrawn after all subplots data is changed. '''
         sim = self.parent.sims[self.param_dict['sim_num']]
+        sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
 
         self.scalar_fld = sim.get_data(
             data_class='scalar_flds',
@@ -225,14 +230,13 @@ class scalarFldsPlot(iseultPlot):
             attribute='istep')
 
         # FIND THE SLICE
-
+        slice_plane = sim_params['2DSlicePlane']
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
 
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.param_dict['twoD'] == 0:
-            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
             if sim_params['Average1D']:
                 self.linedens[0].set_data(
                     self.xaxis['data'],
@@ -255,10 +259,10 @@ class scalarFldsPlot(iseultPlot):
                     self.xaxis['data'][-1])
 
         else:  # Now refresh the plot if it is 2D
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+            if slice_plane:  # x-y plane
                 self.image.set_data(
                     self.scalar_fld['data'][self.zSlice, :, :])
-            elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z plane
+            elif slice_plane:  # x-z plane
                 self.image.set_data(
                     self.scalar_fld['data'][:, self.ySlice, :])
             self.an_2d.set_text(self.scalar_fld['label'])
@@ -268,6 +272,7 @@ class scalarFldsPlot(iseultPlot):
             self.xmax = self.xaxis['data'][-1]
             self.image.set_extent([
                 self.xmin, self.xmax, self.ymin, self.ymax])
+
             if self.parent.MainParamDict['SetxLim']:
                 self.axes.set_xlim(
                     self.parent.MainParamDict['xLeft'],
@@ -282,21 +287,7 @@ class scalarFldsPlot(iseultPlot):
             else:
                 self.axes.set_ylim(self.ymin, self.ymax)
 
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                self.axes.set_ylabel(
-                    r'$y\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
-
-            if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                self.axes.set_ylabel(
-                    r'$z\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
         if self.param_dict['show_shock']:
-            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
             tmp = sim.get_data(
                 data_class='shock_finders',
                 shock_method=sim_params['shock_method']

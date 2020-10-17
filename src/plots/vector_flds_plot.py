@@ -62,15 +62,18 @@ class vectorFldsPlot(iseultPlot):
     def axis_info(self):
         if self.parent.MainParamDict['LinkSpatial'] != 0:
             self.x_axis_info = {'data_ax': 'x', 'pos': self.pos, 'axes': 'x'}
+            sim = self.parent.sims[self.param_dict['sim_num']]
+            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+            slice_plane = sim_params['2DSlicePlane']
 
             if self.param_dict['twoD']:
-                if self.parent.MainParamDict['2DSlicePlane'] == 0:  # x-y plane
+                if slice_plane == 0:  # x-y plane
                     self.y_axis_info = {
                         'data_ax': 'y',
                         'pos': self.pos,
                         'axes': 'y'
                     }
-                elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z
+                elif slice_plane == 1:  # x-z
                     self.y_axis_info = {
                         'data_ax': 'z',
                         'pos': self.pos,
@@ -253,7 +256,9 @@ class vectorFldsPlot(iseultPlot):
         will be redrawn after all subplots data are changed.'''
 
         sim = self.parent.sims[self.param_dict['sim_num']]
+        sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
 
+        slice_plane = sim_params['2DSlicePlane']
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
@@ -280,9 +285,9 @@ class vectorFldsPlot(iseultPlot):
 
             self.an_2d.set_text(self.vec_2d['label'])
 
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:   # x-y plane
+            if slice_plane == 0:   # x-y plane
                 self.image.set_data(self.vec_2d['data'][self.zSlice, :, :])
-            elif self.parent.MainParamDict['2DSlicePlane'] == 1:  # x-z plane
+            elif slice_plane == 1:  # x-z plane
                 self.image.set_data(self.vec_2d['data'][:, self.ySlice, :])
 
             self.ymin = 0
@@ -317,8 +322,7 @@ class vectorFldsPlot(iseultPlot):
                     fld=self.param_dict['field_type'],
                     component='z')
 
-            if self.parent.MainParamDict['Average1D']:
-
+            if sim_params['Average1D']:
                 if self.param_dict['show_x']:
                     self.line_x[0].set_data(
                         self.xaxis['data'],
@@ -389,7 +393,6 @@ class vectorFldsPlot(iseultPlot):
             self.cbar.set_cmap(new_cmaps.cmaps[cmap])
 
         else:
-
             self.axes.set_ylabel(
                 sim.get_data(
                     data_class='vec_flds',

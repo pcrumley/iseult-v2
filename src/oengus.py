@@ -165,7 +165,6 @@ class Oengus():
         # Loading a config file may change the number of sims
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
             tmp_num = self.MainParamDict['NumberOfSims']
-            print(tmp_num)
             while len(self.sims) < tmp_num:
                 self.add_sim(f'sim{len(self.sims)}')
             while tmp_num < len(self.sims):
@@ -305,6 +304,7 @@ class Oengus():
             cur_t = self.sims[self.cur_sim].get_time(units=unit)
             self.sims[-1].set_time(cur_t, units=unit)
         self.MainParamDict['NumberOfSims'] += 1
+
     def pop_sim(self):
         # make sure the sim isn't shown.
         max_shown = max(self.sims_shown)
