@@ -16,8 +16,10 @@ class picSim(object):
 
     def __init__(self,
                  name=None,
+                 num=None,
                  dirpath=os.curdir,
                  cfg_file=_default_cfg):
+        self.sim_num = num
         self._outdir = dirpath
         self._xtra_stride = 1
         self._data_dictionary = {}

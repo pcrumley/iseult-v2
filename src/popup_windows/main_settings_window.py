@@ -496,9 +496,8 @@ class SimTab(QWidget):
                     ind = 0
 
                 self.sim_selected = self.oengus.sims[ind]
-
-                index = self.shock_combo.findText(
-                    self.oengus.MainParamDict['shock_method'])
+                sim_params = self.oengus.MainParamDict['sim_params'][ind]
+                index = self.shock_combo.findText(sim_params['shock_method'])
 
                 if index >= 0:
                     self.shock_combo.setCurrentIndex(index)
@@ -509,9 +508,12 @@ class SimTab(QWidget):
         self.ignoreChange = True
         self.shock_combo.clear()
 
-        for method_name in self.sim_selected.get_available_quantities()['shock_finders']:
+        avail_opts = self.sim_selected.get_available_quantities()
+        for method_name in avail_opts['shock_finders']:
             self.shock_combo.addItem(method_name)
-        index = self.shock_combo.findText(self.oengus.MainParamDict['shock_method'])
+        sim_params = self.oengus.MainParamDict[
+            'sim_params'][self.sim_selected.sim_num]
+        index = self.shock_combo.findText(sim_params['shock_method'])
         self.ignoreChange = False
         if index >= 0:
             self.shock_combo.setCurrentIndex(index)
@@ -521,8 +523,10 @@ class SimTab(QWidget):
     def shock_finder_changed(self, *args):
         if not self.ignoreChange:
             combo_name = self.shock_combo.currentText()
-            if self.oengus.MainParamDict['shock_method'] != combo_name:
-                self.oengus.MainParamDict['shock_method'] = combo_name
+            sim_params = self.oengus.MainParamDict[
+                'sim_params'][self.sim_selected.sim_num]
+            if sim_params['shock_method'] != combo_name:
+                sim_params['shock_method'] = combo_name
                 # self.shock_finder_var.set(self.sim_selected.shock_finder_name)
                 # update shock lines
                 for i in range(self.oengus.MainParamDict['NumOfRows']):

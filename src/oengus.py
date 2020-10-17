@@ -13,18 +13,17 @@ from vector_flds_plot import vectorFldsPlot
 from phase_plot import phasePlot
 from scalar_v_time import scalar_vs_timePlot
 from spectra_plot import SpectralPlot
+from copy import deepcopy
 
 
 class Oengus():
     """ We simply derive a new class of Frame as the man frame of our app"""
     def __init__(self, preset_view='Default', interactive=True, mainApp=None):
         self.IseultDir = os.path.join(os.path.dirname(__file__), '..')
-        self.sim_name = ''
-        self.sims = [picSim(name='sim0')]
+        self.sims = []
         self.cur_sim = 0  # the curent sim on the playback bar
-        self.sim_names = [sim.name for sim in self.sims]
+        self.sim_names = []
         self.sims_shown = []
-        self.dirname = ''
 
         # Create a dictionary to save the axes lims in case spatial
         # axes are shared across plots.
@@ -49,6 +48,7 @@ class Oengus():
             self.canvas = FigureCanvasAgg(self.figure)
         # self.canvas.mpl_connect('draw_event', self.on_draw)
         self.load_view(preset_view)
+        self.add_sim('sim0')
 
     #    def on_draw(self, event):
     #        print(event.name)
@@ -141,15 +141,19 @@ class Oengus():
             'dpi': 100,
             'FFT_color': 'k',
             'shock_method': 'Density Half Max',
-            'legendLabelSize': 11}
-        for key, val in self.cfgDict['MainParamDict'].items():
-            self.MainParamDict[key] = val
+            'legendLabelSize': 11,
+            'sim_params':
+                []
+            }
+
+        self.MainParamDict.update(
+            deepcopy(self.cfgDict['MainParamDict']))
+
         self.electron_color = self.MainParamDict['electron_color']
         self.ion_color = self.MainParamDict['ion_color']
         self.shock_color = self.MainParamDict['shock_color']
         self.ion_fit_color = self.MainParamDict['ion_fit_color']
         self.electron_fit_color = self.MainParamDict['electron_fit_color']
-        self.FFT_color = self.MainParamDict['FFT_color']
         self.MainParamDict['NumberOfSims'] = max(
             1, self.MainParamDict['NumberOfSims'])
 
@@ -274,10 +278,17 @@ class Oengus():
                         self.sims_shown.append(sim_num)
         self.sims_shown.sort()
 
-    def add_sim(self, name):
-        self.sims.append(picSim(name=name))
-        self.sim_names.append(self.sims[-1].name)
-        # self.sims[-1].xtra_stride = self.MainParamDict['PrtlStride']
+    def add_sim(self, name, params={}):
+        sim_num = len(self.sims)
+        self.sims.append(picSim(name=name, num=sim_num))
+        self.sim_names.append(name)
+        sim_params = {
+            'shock_method': 'Density Half Max',
+            'Average1D': 0,
+            '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
+        }
+        sim_params.update(deepcopy(params))
+        self.MainParamDict['sim_params'].append(sim_params)
         if self.MainParamDict['LinkTime']:
             unit = self.MainParamDict['TimeUnits']
             cur_t = self.sims[self.cur_sim].get_time(units=unit)
@@ -288,7 +299,7 @@ class Oengus():
         # make sure the sim isn't shown.
         max_shown = max(self.sims_shown)
         if len(self.sims) > max_shown + 1:
-
+            self.MainParamDict['sim_params'].pop(-1)
             self.sim_names.pop(-1)
             self.MainParamDict['NumberOfSims'] -= 1
             return self.sims.pop(-1)
