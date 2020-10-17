@@ -26,6 +26,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import math
 import numpy as np
 import h5py
@@ -95,7 +96,7 @@ def h5_getter(filepath, attribute):
 
 @lru_cache(maxsize=_fld_cache_size)
 def flds_getter(filepath, attribute):
-    self.h5_getter(filepath, attribute)
+    return h5_getter(filepath, attribute)
 
 
 @lru_cache(maxsize=_prtl_cache_size)
@@ -112,11 +113,12 @@ def prtl_getter(filepath, attribute, prtl_stride=None):
 
 
 def get_h5attr(filepath, attribute, prtl_stride=None):
-    if filepath.split('.') == 'flds':
+    if os.path.basename(filepath).split('.')[0] == 'flds':
         return flds_getter(filepath, attribute)
-    elif filepath.split('.') == 'prtl':
-        return prtl_getter(self, filepath, attribute, prtl_stride)
+    elif os.path.basename(filepath).split('.')[0] == 'prtl':
+        return prtl_getter(filepath, attribute, prtl_stride)
     else:
+        #print(prtl_stride)
         return h5_getter(filepath, attribute)
 
 
@@ -130,6 +132,7 @@ class ExprParser:
         self.f_suffix = ''
         self.functions = dict(_FUNCTIONS)
         self.sim = sim
+        self.prtl_stride = 1
         self.functions['getsim'] = lambda: self.sim
 
     def getValue(self, expr=None):
@@ -329,7 +332,10 @@ class ExprParser:
             return constant
         fpath = self.vars.get(var, None)
 
-        value = get_h5attr(fpath+self.f_suffix, var)
+        value = get_h5attr(
+            fpath+self.f_suffix,
+            var,
+            prtl_stride=self.prtl_stride)
         return value
         # if len(value) > 0:
 

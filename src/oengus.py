@@ -48,7 +48,7 @@ class Oengus():
             self.canvas = FigureCanvasAgg(self.figure)
         # self.canvas.mpl_connect('draw_event', self.on_draw)
         self.load_view(preset_view)
-        self.add_sim('sim0')
+        # self.add_sim('sim0')
 
     #    def on_draw(self, event):
     #        print(event.name)
@@ -165,7 +165,8 @@ class Oengus():
         # Loading a config file may change the number of sims
         if self.MainParamDict['NumberOfSims'] != len(self.sims):
             tmp_num = self.MainParamDict['NumberOfSims']
-            while tmp_num > len(self.sims):
+            print(tmp_num)
+            while len(self.sims) < tmp_num:
                 self.add_sim(f'sim{len(self.sims)}')
             while tmp_num < len(self.sims):
                 self.pop_sim()
@@ -185,9 +186,9 @@ class Oengus():
                 attribute=attr)['data']
             ) - 1
 
-        slice = int(
-            np.around(
-                self.MainParamDict[param]*maxInd))
+        slice_percent = self.MainParamDict['sim_params'][sim.sim_num][param]
+
+        slice = int(np.around(slice_percent*maxInd))
 
         return slice
 
@@ -278,7 +279,7 @@ class Oengus():
                         self.sims_shown.append(sim_num)
         self.sims_shown.sort()
 
-    def add_sim(self, name, params={}):
+    def add_sim(self, name):
         sim_num = len(self.sims)
         self.sims.append(picSim(name=name, num=sim_num))
         self.sim_names.append(name)
@@ -286,15 +287,24 @@ class Oengus():
             'shock_method': 'Density Half Max',
             'Average1D': 0,
             '2DSlicePlane': 0,  # 0 = x-y plane, 1 == x-z plane
+            'PrtlStride': 5,
+            'xSlice': 0.0,
+            'ySlice': 0.5,
+            'zSlice': 0.5
         }
-        sim_params.update(deepcopy(params))
-        self.MainParamDict['sim_params'].append(sim_params)
+        if len(self.MainParamDict['sim_params']) < len(self.sims):
+            self.MainParamDict['sim_params'].append(sim_params)
+        else:
+            self.MainParamDict['sim_params'][-1].update(sim_params)
+
+        if self.sims[-1].xtra_stride != sim_params['PrtlStride']:
+            self.sims[-1].xtra_stride = sim_params['PrtlStride']
+
         if self.MainParamDict['LinkTime']:
             unit = self.MainParamDict['TimeUnits']
             cur_t = self.sims[self.cur_sim].get_time(units=unit)
             self.sims[-1].set_time(cur_t, units=unit)
         self.MainParamDict['NumberOfSims'] += 1
-
     def pop_sim(self):
         # make sure the sim isn't shown.
         max_shown = max(self.sims_shown)

@@ -61,7 +61,6 @@ class picSim(object):
             self._data_dictionary['shock_speed'] = shock_loc/end_time
         return self._data_dictionary['shock_speed']
 
-
     def get_time(self, units=None):
         if units not in self.available_units:
             units = None
@@ -248,6 +247,7 @@ class picSim(object):
     @xtra_stride.setter
     def xtra_stride(self, stride):
         self._xtra_stride = stride
+        self.parser.prtl_stride = stride
         self.clear_caches()
 
     def get_available_quantities(self):

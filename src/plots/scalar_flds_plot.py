@@ -232,7 +232,8 @@ class scalarFldsPlot(iseultPlot):
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.param_dict['twoD'] == 0:
-            if self.parent.MainParamDict['Average1D']:
+            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+            if sim_params['Average1D']:
                 self.linedens[0].set_data(
                     self.xaxis['data'],
                     np.average(

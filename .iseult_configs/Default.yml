@@ -137,8 +137,15 @@ MainParamDict:
   2DSlicePlane: 0
   Average1D: false
   AxLabelSize: 11
+  ClearFig: true
   ColorMap: Blue/Green/Red/Yellow
+  ConstantShockVel: true
   DivColorMap: Blue/Green/Red/Yellow
+  DoLorentzBoost: false
+  FFTLeft: 0.0
+  FFTRelative: true
+  FFTRight: 200.0
+  FFT_color: k
   FigSize:
   - 11.76
   - 5.66
@@ -207,6 +214,7 @@ MainParamDict:
   - Blue/Green/Red/Yellow
   - Cube YF
   - Linear_L
+  dpi: 200
   electron_color: '#fca636'
   electron_fit_color: yellow
   ion_color: '#d6556d'
@@ -215,6 +223,15 @@ MainParamDict:
   kRight: 1.0
   legendLabelSize: 11
   shock_color: w
+  shock_method: Density Half Max
+  sim_params:
+  - 2DSlicePlane: 0
+    Average1D: 0
+    PrtlStride: 5
+    shock_method: Constant Velocity
+    xSlice: 0.0
+    ySlice: 0.5
+    zSlice: 0.5
   xLabelPad: 0
   xLeft: 0.0
   xLimsRelative: false
