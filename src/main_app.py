@@ -281,9 +281,12 @@ class MainApp(QtWidgets.QMainWindow):
 
     def on_quit(self, *event):
         if self.playbackbar.settings_window is not None:
-            self.playbackbar.settings_window.deleteLater()
+             self.playbackbar.settings_window.deleteLater()
+             self.playbackbar.settings_window = None
         for key, val in self.popups_dict.items():
-            val.deleteLater()
+            if val is not None:
+                val.deleteLater()
+                val = None
 
 
 def runMe(cmd_args):
