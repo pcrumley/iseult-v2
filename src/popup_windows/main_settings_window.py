@@ -447,6 +447,9 @@ class SimTab(QWidget):
         self.build_ui()
 
     def build_ui(self):
+        min_width = 150
+        max_width = 200
+
         layout = QGridLayout()
         self.setLayout(layout)
 
@@ -475,6 +478,42 @@ class SimTab(QWidget):
         row.addWidget(self.shock_combo)
         layout.addLayout(row, 1, 2)
 
+        ####
+        #
+        #  prtl stride: | QLineEdit | | x | average 1D |
+        #
+        ####
+
+        sim_ind = self.sim_selected.sim_num
+        sim_params = self.main_params['sim_params'][sim_ind]
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Prtl Stride'))
+        self.prtl_stride_edit = QLineEdit(self)
+        self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
+        self.prtl_stride_edit.setMaximumWidth(max_width)
+        self.prtl_stride_edit.setMinimumWidth(min_width)
+        self.prtl_stride_edit.returnPressed.connect(self.stride_changed)
+        self.prtl_stride_edit.clearFocus()
+        row.addWidget(self.prtl_stride_edit)
+        layout.addLayout(row, 2, 2)
+
+    def stride_changed(self):
+        # Note here that Tkinter passes an event object to SkipSizeChange()
+        if not self.ignoreChange:
+            ind = self.sim_selected.sim_num
+            sim_params = self.main_params['sim_params'][ind]
+            try:
+                sim_params['PrtlStride'] = int(self.prtl_stride_edit.text())
+                self.sim_selected.xtra_stride = sim_params['PrtlStride']
+                for i in range(self.oengus.MainParamDict['NumOfRows']):
+                    for j in range(self.oengus.MainParamDict['NumOfCols']):
+                        self.oengus.SubPlotList[i][j].save_axes_pos()
+                        self.oengus.SubPlotList[i][j].refresh()
+                        self.oengus.SubPlotList[i][j].load_axes_pos()
+                self.oengus.canvas.draw()
+            except ValueError:
+                self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
+
     def update_sim_list(self):
         self.ignoreChange = True
         self.sim_combo.clear()
@@ -488,7 +527,6 @@ class SimTab(QWidget):
     def sim_selection_changed(self):
         if not self.ignoreChange:
             if self.sim_combo.currentText() != self.sim_selected.name:
-
                 try:
                     ind = self.oengus.sim_names.index(
                         self.sim_combo.currentText())
@@ -497,12 +535,8 @@ class SimTab(QWidget):
 
                 self.sim_selected = self.oengus.sims[ind]
                 sim_params = self.oengus.MainParamDict['sim_params'][ind]
-                index = self.shock_combo.findText(sim_params['shock_method'])
-
-                if index >= 0:
-                    self.shock_combo.setCurrentIndex(index)
-                else:
-                    self.shock_combo.setCurrentIndex(0)
+                self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
+                self.update_shock_opts()
 
     def update_shock_opts(self):
         self.ignoreChange = True
