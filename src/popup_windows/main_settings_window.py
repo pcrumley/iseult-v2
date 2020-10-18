@@ -275,6 +275,7 @@ class SettingsTab(QWidget):
         for i, tup in enumerate(cbs):
             cb = QCheckBox(tup[0])
             cb.param_name = tup[1]
+            cb.setChecked(self.main_params[tup[1]])
             cb.stateChanged.connect(self.cb_handler)
             row.addWidget(cb)
         main_layout.addLayout(row, 4, 0, 3, 1)
@@ -487,7 +488,7 @@ class SimTab(QWidget):
         sim_ind = self.sim_selected.sim_num
         sim_params = self.main_params['sim_params'][sim_ind]
         row = QHBoxLayout()
-        row.addWidget(QLabel('Prtl Stride'))
+
         self.prtl_stride_edit = QLineEdit(self)
         self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
         self.prtl_stride_edit.setMaximumWidth(max_width)
@@ -501,7 +502,10 @@ class SimTab(QWidget):
         self.average1D_cb.stateChanged.connect(self.avg_changed)
 
         row.addWidget(self.average1D_cb)
+        row.addWidget(QLabel('Prtl Stride'))
         layout.addLayout(row, 2, 2)
+
+        # radio buttons to choose plane.
 
     def avg_changed(self):
         ind = self.sim_selected.sim_num
