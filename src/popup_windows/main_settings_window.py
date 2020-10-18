@@ -495,7 +495,26 @@ class SimTab(QWidget):
         self.prtl_stride_edit.returnPressed.connect(self.stride_changed)
         self.prtl_stride_edit.clearFocus()
         row.addWidget(self.prtl_stride_edit)
+
+        self.average1D_cb = QCheckBox("Average1D")
+        self.average1D_cb.setChecked(sim_params['Average1D'])
+        self.average1D_cb.stateChanged.connect(self.avg_changed)
+
+        row.addWidget(self.average1D_cb)
         layout.addLayout(row, 2, 2)
+
+    def avg_changed(self):
+        ind = self.sim_selected.sim_num
+        sim_params = self.main_params['sim_params'][ind]
+
+        if sim_params['Average1D'] != self.average1D_cb.isChecked():
+            sim_params['Average1D'] = self.average1D_cb.isChecked()
+            for i in range(self.oengus.MainParamDict['NumOfRows']):
+                for j in range(self.oengus.MainParamDict['NumOfCols']):
+                    self.oengus.SubPlotList[i][j].save_axes_pos()
+                    self.oengus.SubPlotList[i][j].refresh()
+                    self.oengus.SubPlotList[i][j].load_axes_pos()
+            self.oengus.canvas.draw()
 
     def stride_changed(self):
         # Note here that Tkinter passes an event object to SkipSizeChange()
@@ -536,6 +555,7 @@ class SimTab(QWidget):
                 self.sim_selected = self.oengus.sims[ind]
                 sim_params = self.oengus.MainParamDict['sim_params'][ind]
                 self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
+                self.average1D_cb.setChecked(sim_params['Average1D'])
                 self.update_shock_opts()
 
     def update_shock_opts(self):
