@@ -1,22 +1,27 @@
 from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QVBoxLayout,
                              QComboBox, QCheckBox, QTabWidget, QSpinBox,
-                             QRadioButton)
+                             QRadioButton, QDialog)
 from PyQt5.QtCore import Qt, QTimer
 from new_cmaps import cmap_to_hex
 import new_cmaps
 from functools import partial
 
 
-class SettingsFrame(QWidget):
+class SettingsFrame(QDialog):
     def __init__(self, main_app):
-        super().__init__()
+        super().__init__(main_app)
+        self.setModal(0)
         self.main_app = main_app
         self.oengus = self.main_app.oengus
         # self.main_params = self.oengus.MainParamDict
         self.setWindowTitle('Settings')
         self.build_ui()
         self.ignoreChange = False
+        self.show()
+
+    def closeEvent(self, event):
+        self.main_app.playbackbar.settings_window = None
 
     def build_ui(self):
         layout = QGridLayout()

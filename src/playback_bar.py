@@ -177,9 +177,11 @@ class playbackBar(QWidget):
         if self.settings_window is None:
             self.settings_window = SettingsFrame(self.main_app)
             self.settings_window.show()
+
         else:
-            self.settings_window.destroy()
+            self.settings_window.deleteLater()
             self.settings_window = SettingsFrame(self.main_app)
+
             self.settings_window.show()
 
     def clear_caches(self, *args):
@@ -259,5 +261,11 @@ class playbackBar(QWidget):
             self.param.set(int(self.sld.value()))
 
     def set_knob(self, value):
+        # set the slider to the new value
         self.sld.setValue(value)
+
+        # set the timestep line_edit to the value
         self.edit.setText(str(value))
+
+        # Now if there is a main settings window, update its slice choosers
+        #if self.settings_window

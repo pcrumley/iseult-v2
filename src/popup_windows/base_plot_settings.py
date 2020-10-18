@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QComboBox, QLabel, QCheckBox, QLineEdit
+from PyQt5.QtWidgets import (QWidget, QComboBox, QLabel, QCheckBox,
+                             QLineEdit, QDialog)
 
 
-class iseultPlotSettings(QWidget):
+class iseultPlotSettings(QDialog):
     '''
     The base class that all of the subplots settings must be subclasses of.'''
 
@@ -11,8 +12,8 @@ class iseultPlotSettings(QWidget):
         'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc', 'lanczos']
 
     def __init__(self, parent, loc):
-        super().__init__()
-
+        super().__init__(parent)
+        self.setModal(0)
         self.parent = parent
         self.oengus = parent.oengus
         self.loc = loc
@@ -20,6 +21,9 @@ class iseultPlotSettings(QWidget):
 
         self.subplot = self.oengus.SubPlotList[self.loc[0]][self.loc[1]]
         self.params = self.subplot.param_dict
+        self.show()
+    def closeEvent(self, event):
+        self.parent.popups_dict[f'{self.loc[0],self.loc[1]}'] = None
 
     def interpl_QComboBox(self):
         combo = QComboBox(self)
