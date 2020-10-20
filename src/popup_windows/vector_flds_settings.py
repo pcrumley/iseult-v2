@@ -125,6 +125,7 @@ class VectorFieldsSettings(iseultPlotSettings):
             self.update_fld_combo()
 
             self.parent.update_all_sim_lists()
+            self.subplot.axis_info()
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()

@@ -149,16 +149,6 @@ class phaseSettings(iseultPlotSettings):
                 self.subplot.update_labels_and_colors()
                 self.oengus.canvas.draw()
 
-    def x_valChanged(self, *args):
-        if self.params['x_val'] == self.xval_var.get():
-            pass
-        else:
-            self.params['x_val'] = self.xval_var.get()
-            self.subplot.axis_info()
-            self.subplot.refresh()
-            self.subplot.update_labels_and_colors()
-            self.oengus.canvas.draw()
-
     def sim_changed(self):
         cur_sim_name = self.oengus.sim_names[self.params['sim_num']]
         if self.sim_combo.currentText() == cur_sim_name:
@@ -170,6 +160,7 @@ class phaseSettings(iseultPlotSettings):
             self.update_attr_combos()
 
             self.parent.update_all_sim_lists()
+            self.subplot.axis_info()
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()

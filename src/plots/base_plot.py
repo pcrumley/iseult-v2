@@ -110,12 +110,14 @@ class iseultPlot:
                 self.parent.link_axes,
                 ax_type='x',
                 subplot=self))
+
         self.axes.callbacks.connect(
             'ylim_changed',
             partial(
                 self.parent.link_axes,
                 ax_type='y',
                 subplot=self))
+
         self.axC = self.figure.add_subplot(
             self.gs[
                 self.parent.cbar_extent[0]:self.parent.cbar_extent[1],

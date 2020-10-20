@@ -22,6 +22,7 @@ class iseultPlotSettings(QDialog):
         self.subplot = self.oengus.SubPlotList[self.loc[0]][self.loc[1]]
         self.params = self.subplot.param_dict
         self.show()
+
     def closeEvent(self, event):
         self.parent.popups_dict[f'{self.loc[0],self.loc[1]}'] = None
 

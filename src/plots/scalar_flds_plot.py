@@ -43,20 +43,36 @@ class scalarFldsPlot(iseultPlot):
 
     def axis_info(self):
         if self.parent.MainParamDict['LinkSpatial'] != 0:
-            self.x_axis_info = {'data_ax': 'x', 'pos': self.pos, 'axes': 'x'}
             sim = self.parent.sims[self.param_dict['sim_num']]
             sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
             slice_plane = sim_params['2DSlicePlane']
+
+            if slice_plane == 2:
+                self.x_axis_info = {
+                    'data_ax': 'y',
+                    'sim_num': self.param_dict['sim_num'],
+                    'pos': self.pos,
+                    'axes': 'x'
+                }
+            else:
+                self.x_axis_info = {
+                    'data_ax': 'x',
+                    'sim_num': self.param_dict['sim_num'],
+                    'pos': self.pos,
+                    'axes': 'x'
+                }
             if self.param_dict['twoD']:
                 if slice_plane == 0:  # x-y plane
                     self.y_axis_info = {
                         'data_ax': 'y',
+                        'sim_num': self.param_dict['sim_num'],
                         'pos': self.pos,
                         'axes': 'y'
                     }
-                elif slice_plane == 1:  # x-z
+                elif slice_plane == 1 or slice_plane == 2:  # x-z
                     self.y_axis_info = {
                         'data_ax': 'z',
+                        'sim_num': self.param_dict['sim_num'],
                         'pos': self.pos,
                         'axes': 'y'
                     }

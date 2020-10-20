@@ -59,6 +59,7 @@ class phasePlot(iseultPlot):
                 if self.param_dict['x_val'] == val:
                     self.x_axis_info = {
                         'data_ax': val,
+                        'sim_num': self.param_dict['sim_num'],
                         'pos': self.pos,
                         'axes': 'x'
                     }
@@ -70,6 +71,7 @@ class phasePlot(iseultPlot):
                 if self.param_dict['y_val'] == val:
                     self.x_axis_info = {
                         'data_ax': val,
+                        'sim_num': self.param_dict['sim_num'],
                         'pos': self.pos,
                         'axes': 'y'
                     }
