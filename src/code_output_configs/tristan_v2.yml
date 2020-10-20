@@ -4,6 +4,8 @@ h5_files_list:
   prtl.tot.*:
     - ind_1
     - ind_2
+    - wei_1
+    - wei_2
     - proc_1
     - proc_2
     - u_1
@@ -177,10 +179,10 @@ scalar_flds:
 
 scalars:
   Total KE_e:
-    expr: sum(sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * out:stride * abs(prt:ch1) * alg:c * alg:c * prt:m1
+    expr: sum((sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * wei_1) * out:stride * pow(alg:c, 4) * prt:m1 * pow(pls:c_omp, -2)/ pls:ppc0
     label: '$KE_e$'
   Total KE_i:
-    expr: sum(sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * out:stride * abs(prt:ch2) * alg:c * alg:c * prt:m2
+    expr: sum((sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * wei_2) * out:stride * abs(prt:ch1) * pow(alg:c,4)* prt:m2 * pow(pls:c_omp, -2)/ pls:ppc0
     label: '$KE_i'
   B_tot_Sq:
     expr: sum(bx*bx + by*by + bz*bz) * pow(out:istep, 2) * 0.5

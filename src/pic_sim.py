@@ -277,7 +277,7 @@ class picSim(object):
         response_dict = {}
 
         if lookup['data_class'] == 'scalar_v_time':
-
+            self.parser.prtl_stride = 1 
             response_dict = {
                 'data': np.array([]),
                 'times': np.array([]),
@@ -332,6 +332,7 @@ class picSim(object):
                 pass
             except AttributeNotFound:
                 pass
+            self.parser.prtl_stride = self.xtra_stride
             return response_dict
 
         elif lookup['data_class'] == 'prtls':

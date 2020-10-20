@@ -132,8 +132,17 @@ class ExprParser:
         self.f_suffix = ''
         self.functions = dict(_FUNCTIONS)
         self.sim = sim
-        self.prtl_stride = 1
+        self._prtl_stride = 1
         self.functions['getsim'] = lambda: self.sim
+
+    @property
+    def prtl_stride(self):
+        return self._prtl_stride
+
+    @prtl_stride.setter
+    def prtl_stride(self, val):
+        prtl_getter.cache_clear()
+        self._prtl_stride = val
 
     def getValue(self, expr=None):
         if expr is not None:
