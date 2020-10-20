@@ -359,7 +359,7 @@ class vectorFldsPlot(iseultPlot):
                         self.xaxis['data'],
                         self.vec_z['data'][self.zSlice, self.ySlice, :])
 
-        if self.param_dict['show_shock']:
+        if self.param_dict['show_shock'] and slice_plane < 2:
             sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
             tmp = sim.get_data(
                 data_class='shock_finders',
@@ -367,6 +367,8 @@ class vectorFldsPlot(iseultPlot):
             )
             if tmp['axis'] == 'x':
                 self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
+        else:
+            self.shock_line.set_visible(False)
         self.set_v_max_min()
         self.save_home()
 

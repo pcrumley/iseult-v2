@@ -61,6 +61,15 @@ class picSim(object):
             self._data_dictionary['shock_speed'] = shock_loc/end_time
         return self._data_dictionary['shock_speed']
 
+    def get_domain_size(self):
+        response = {}
+        for elm in ['x', 'y', 'z']:
+            response[elm] = len(
+                self.get_data(data_class='axes',
+                              attribute=elm)['data']
+           )
+        return response
+
     def get_time(self, units=None):
         if units not in self.available_units:
             units = None
@@ -431,7 +440,7 @@ class picSim(object):
 
         elif lookup['data_class'] == 'axes':
             response_dict = {
-                'data': np.arange(2),
+                'data': np.arange(1),
                 'label': ''
             }
             try:

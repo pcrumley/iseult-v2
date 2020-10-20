@@ -159,7 +159,7 @@ class scalarFldsPlot(iseultPlot):
                     color='black',
                     size=self.parent.MainParamDict['AxLabelSize'])
 
-            if slice_plane == 0:
+            if slice_plane == 1:
                 self.axes.set_ylabel(
                     r'$z\ [c/\omega_{pe}]$',
                     labelpad=self.parent.MainParamDict['yLabelPad'],
@@ -259,10 +259,10 @@ class scalarFldsPlot(iseultPlot):
                     self.xaxis['data'][-1])
 
         else:  # Now refresh the plot if it is 2D
-            if slice_plane:  # x-y plane
+            if slice_plane == 0:  # x-y plane
                 self.image.set_data(
                     self.scalar_fld['data'][self.zSlice, :, :])
-            elif slice_plane:  # x-z plane
+            elif slice_plane == 1:  # x-z plane
                 self.image.set_data(
                     self.scalar_fld['data'][:, self.ySlice, :])
             self.an_2d.set_text(self.scalar_fld['label'])
@@ -287,7 +287,7 @@ class scalarFldsPlot(iseultPlot):
             else:
                 self.axes.set_ylim(self.ymin, self.ymax)
 
-        if self.param_dict['show_shock']:
+        if self.param_dict['show_shock'] and slice_plane < 2:
             tmp = sim.get_data(
                 data_class='shock_finders',
                 shock_method=sim_params['shock_method']

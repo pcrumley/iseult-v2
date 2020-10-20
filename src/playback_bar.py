@@ -268,4 +268,5 @@ class playbackBar(QWidget):
         self.edit.setText(str(value))
 
         # Now if there is a main settings window, update its slice choosers
-        #if self.settings_window
+        if self.settings_window is not None:
+            self.settings_window.update_slice_info()

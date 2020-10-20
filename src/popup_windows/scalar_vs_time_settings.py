@@ -330,7 +330,7 @@ class ScalarVsTimeSettings(iseultPlotSettings):
 
             try:
                 ms = float(helper['markersize']['entry'].text())
-                if ms >=0:
+                if ms >= 0:
                     plot_args['markersize'] = ms
                 else:
                     helper['markersize']['entry'].setText(

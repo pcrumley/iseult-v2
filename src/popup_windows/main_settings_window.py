@@ -23,11 +23,16 @@ class SettingsFrame(QDialog):
     def closeEvent(self, event):
         self.main_app.playbackbar.settings_window = None
 
+    def update_slice_info(self):
+        self.sim_tab.update_slice_widgets()
+
     def build_ui(self):
         layout = QGridLayout()
         tabwidget = QTabWidget()
-        tabwidget.addTab(SettingsTab(self.main_app), "General Settings")
-        tabwidget.addTab(SimTab(self.main_app), "Sim Settings")
+        self.settings_tab = SettingsTab(self.main_app)
+        self.sim_tab = SimTab(self.main_app)
+        tabwidget.addTab(self.settings_tab, "General Settings")
+        tabwidget.addTab(self.sim_tab, "Sim Settings")
         layout.addWidget(tabwidget, 0, 0)
         self.setLayout(layout)
 
@@ -72,7 +77,7 @@ class SettingsTab(QWidget):
         self.build_ui()
 
     def build_ui(self):
-        main_layout = QGridLayout()
+        main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignTop)
         self.setLayout(main_layout)
 
@@ -90,12 +95,11 @@ class SettingsTab(QWidget):
         ###
 
         # Row 1
-        upper_left = QVBoxLayout()
+        upp_grid = QGridLayout()
         upp_left_min_width = 150
         upp_left_max_width = 200
 
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Skip Size:'))
+        upp_grid.addWidget(QLabel('Skip Size:'), 0, 0)
         self.tstep = QLineEdit(self)
         self.tstep.setMaximumWidth(upp_left_max_width)
         self.tstep.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -103,24 +107,20 @@ class SettingsTab(QWidget):
         self.tstep.setText(str(self.main_params['SkipSize']))
         self.tstep.returnPressed.connect(self.skip_size_changed)
         self.tstep.clearFocus()
-        row.addWidget(self.tstep)
-        upper_left.addLayout(row)
+        upp_grid.addWidget(self.tstep, 0, 1)
 
         # Row 2
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Playback Wait Time:'))
+        upp_grid.addWidget(QLabel('Playback Wait Time:'), 1, 0)
         self.wait_time = QLineEdit(self)
         self.wait_time.setMaximumWidth(upp_left_max_width)
         self.wait_time.setMinimumWidth(upp_left_min_width)
         self.wait_time.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.wait_time.setText(str(self.main_params['WaitTime']))
         self.wait_time.returnPressed.connect(self.wait_time_changed)
-        row.addWidget(self.wait_time)
-        upper_left.addLayout(row)
+        upp_grid.addWidget(self.wait_time, 1, 1)
 
         # Row 3
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Color map:'))
+        upp_grid.addWidget(QLabel('Color map:'), 2, 0)
         self.cmap_combo = QComboBox(self)
         for cmap in new_cmaps.sequential:
             self.cmap_combo.addItem(cmap)
@@ -128,12 +128,10 @@ class SettingsTab(QWidget):
         self.cmap_combo.currentIndexChanged.connect(self.cmap_changed)
         self.cmap_combo.setMaximumWidth(upp_left_max_width)
         self.cmap_combo.setMinimumWidth(upp_left_min_width)
-        row.addWidget(self.cmap_combo)
-        upper_left.addLayout(row)
+        upp_grid.addWidget(self.cmap_combo, 2, 1)
 
         # Row 4
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Diverging cmap:'))
+        upp_grid.addWidget(QLabel('Diverging cmap:'), 3, 0)
         self.div_cmap_combo = QComboBox(self)
         for cmap in new_cmaps.diverging:
             self.div_cmap_combo.addItem(cmap)
@@ -141,12 +139,10 @@ class SettingsTab(QWidget):
         self.div_cmap_combo.currentIndexChanged.connect(self.div_cmap_changed)
         self.div_cmap_combo.setMaximumWidth(upp_left_max_width)
         self.div_cmap_combo.setMinimumWidth(upp_left_min_width)
-        row.addWidget(self.div_cmap_combo)
-        upper_left.addLayout(row)
+        upp_grid.addWidget(self.div_cmap_combo, 3, 1)
 
         # Row 5
-        row = QHBoxLayout()
-        row.addWidget(QLabel('# of Columns:'))
+        upp_grid.addWidget(QLabel('# of Columns:'), 4, 0)
         self.col_sb = QSpinBox(self)
         self.col_sb.setRange(1, self.main_params['MaxCols'])
         self.col_sb.setValue(self.main_params['NumOfCols'])
@@ -154,12 +150,10 @@ class SettingsTab(QWidget):
         self.col_sb.valueChanged.connect(self.col_changed)
         self.col_sb.setMaximumWidth(upp_left_max_width)
         self.col_sb.setMinimumWidth(upp_left_min_width)
-        row.addWidget(self.col_sb)
-        upper_left.addLayout(row)
+        upp_grid.addWidget(self.col_sb, 4, 1)
 
         # Row 6
-        row = QHBoxLayout()
-        row.addWidget(QLabel('# of rows:'))
+        upp_grid.addWidget(QLabel('# of rows:'), 5, 0)
         self.row_sb = QSpinBox(self)
         self.row_sb.setRange(1, self.main_params['MaxRows'])
         self.row_sb.setValue(self.main_params['NumOfRows'])
@@ -167,10 +161,7 @@ class SettingsTab(QWidget):
         self.row_sb.valueChanged.connect(self.row_changed)
         self.row_sb.setMaximumWidth(upp_left_max_width)
         self.row_sb.setMinimumWidth(upp_left_min_width)
-        row.addWidget(self.row_sb)
-        upper_left.addLayout(row)
-
-        main_layout.addLayout(upper_left, 0, 0)
+        upp_grid.addWidget(self.row_sb, 5, 1)
 
         ###
         #
@@ -186,15 +177,13 @@ class SettingsTab(QWidget):
         #
         ###
 
-        upper_right = QVBoxLayout()
-        upper_right.setAlignment(Qt.AlignTop)
-        upper_right.addWidget(QLabel('Share Spatial Axes:'))
+        upp_grid.addWidget(QLabel('Share Spatial Axes:'), 0, 2)
         radiobutton = QRadioButton("None")
         if self.main_params['LinkSpatial'] == 0:
             radiobutton.setChecked(True)
         radiobutton.shared_axes = 0
         radiobutton.toggled.connect(self.radio_clicked)
-        upper_right.addWidget(radiobutton)
+        upp_grid.addWidget(radiobutton, 1, 2)
 
         radiobutton = QRadioButton("All Spatial")
         if self.main_params['LinkSpatial'] == 1:
@@ -202,15 +191,16 @@ class SettingsTab(QWidget):
 
         radiobutton.shared_axes = 1
         radiobutton.toggled.connect(self.radio_clicked)
-        upper_right.addWidget(radiobutton)
+        upp_grid.addWidget(radiobutton, 2, 2)
 
         radiobutton = QRadioButton("All Fields")
         if self.main_params['LinkSpatial'] == 2:
             radiobutton.setChecked(True)
         radiobutton.shared_axes = 2
         radiobutton.toggled.connect(self.radio_clicked)
-        upper_right.addWidget(radiobutton)
-        main_layout.addLayout(upper_right, 0, 1)
+        upp_grid.addWidget(radiobutton, 3, 2)
+
+        main_layout.addLayout(upp_grid)
 
         ###
         #
@@ -262,7 +252,7 @@ class SettingsTab(QWidget):
         self.ytop.setText(str(self.main_params['yTop']))
         self.ytop.returnPressed.connect(self.check_if_limval_changed)
         mid.addWidget(self.ytop, 2, 2)
-        main_layout.addLayout(mid, 1, 0, 3, 1)
+        main_layout.addLayout(mid)
 
         ##
         #
@@ -283,7 +273,7 @@ class SettingsTab(QWidget):
             cb.setChecked(self.main_params[tup[1]])
             cb.stateChanged.connect(self.cb_handler)
             row.addWidget(cb)
-        main_layout.addLayout(row, 4, 0, 3, 1)
+        main_layout.addLayout(row)
 
     def skip_size_changed(self):
         # Note here that Tkinter passes an event object to SkipSizeChange()
@@ -467,50 +457,198 @@ class SimTab(QWidget):
         #  Choose shock finder: | ComboBox |
         #
         ####
-
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Choose sim'))
+        layout.addWidget(QLabel('Choose sim'), 0, 0)
         self.sim_combo = QComboBox(self)
         self.update_sim_list()
         self.sim_combo.currentIndexChanged.connect(self.sim_selection_changed)
-        row.addWidget(self.sim_combo)
-        layout.addLayout(row, 0, 2)
+        layout.addWidget(self.sim_combo, 0, 1)
 
-        row = QHBoxLayout()
-        row.addWidget(QLabel('Choose Shock Finder'))
+        layout.addWidget(QLabel('Choose Shock Finder'), 1, 0)
         self.shock_combo = QComboBox(self)
         self.update_shock_opts()
         self.shock_combo.currentIndexChanged.connect(self.shock_finder_changed)
-        row.addWidget(self.shock_combo)
-        layout.addLayout(row, 1, 2)
+        layout.addWidget(self.shock_combo, 1, 1)
 
         ####
         #
-        #  prtl stride: | QLineEdit | | x | average 1D |
+        #  prtl stride:
+        #  | QLineEdit | | x | average 1D |
         #
         ####
 
         sim_ind = self.sim_selected.sim_num
         sim_params = self.main_params['sim_params'][sim_ind]
-        row = QHBoxLayout()
+
+        layout.addWidget(QLabel('Prtl Stride'), 2, 0)
 
         self.prtl_stride_edit = QLineEdit(self)
         self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
         self.prtl_stride_edit.setMaximumWidth(max_width)
         self.prtl_stride_edit.setMinimumWidth(min_width)
         self.prtl_stride_edit.returnPressed.connect(self.stride_changed)
-        self.prtl_stride_edit.clearFocus()
-        row.addWidget(self.prtl_stride_edit)
-
+        layout.addWidget(self.prtl_stride_edit, 2, 1)
         self.average1D_cb = QCheckBox("Average1D")
         self.average1D_cb.setChecked(sim_params['Average1D'])
         self.average1D_cb.stateChanged.connect(self.avg_changed)
 
-        row.addWidget(self.average1D_cb)
-        row.addWidget(QLabel('Prtl Stride'))
-        layout.addLayout(row, 2, 2)
+        layout.addWidget(self.average1D_cb, 3, 0)
+
+
 
         # radio buttons to choose plane.
+        row = QHBoxLayout()
+        row.addWidget(QLabel('Choose 2D-plane:'))
+
+        self.slice_radio_btns = []
+        radiobutton = QRadioButton("x-y")
+        radiobutton.plane = 0
+        radiobutton.toggled.connect(self.radio_clicked)
+        self.slice_radio_btns.append(radiobutton)
+        row.addWidget(radiobutton)
+
+        radiobutton = QRadioButton("x-z")
+        radiobutton.plane = 1
+        radiobutton.toggled.connect(self.radio_clicked)
+        self.slice_radio_btns.append(radiobutton)
+
+        row.addWidget(radiobutton)
+
+        radiobutton = QRadioButton("y-z")
+        radiobutton.plane = 2
+        radiobutton.toggled.connect(self.radio_clicked)
+        self.slice_radio_btns.append(radiobutton)
+
+        row.addWidget(radiobutton)
+        layout.addLayout(row, 4, 0, 1, 2)
+
+        # Now do the sliders
+
+        self.sliders_dict = {}
+        for i, ax in enumerate(['x', 'y', 'z']):
+            row = QHBoxLayout()
+            sld_obj = {}
+            sld_obj['label'] = QLabel(self)
+            #sld_obj['edit'] = QLineEdit(self)
+            #sld_obj['edit'].setMaximumWidth(55)
+            #sld_obj['edit'].setMinimumWidth(30)
+            #self.edit.setText(str(self.param.value))
+            #sld_obj['edit'].clearFocus()
+            # box to enter time.
+            sld_obj['sld'] = QSlider(Qt.Horizontal, self)
+            sld_obj['sld'].ax = ax
+            # update the text box whenever sld is change
+            sld_obj['sld'].valueChanged.connect(self.scale_handler)
+            # only update the plot when the user releases the mouse
+            sld_obj['sld'].mouseReleaseEvent = partial(self.update_slice_val, ax)
+
+            # self.sld.setRange(self.param.minimum, self.param.maximum)
+            sld_obj['sld'].setFocusPolicy(Qt.NoFocus)
+            sld_obj['sld'].setPageStep(1)
+
+            row.addWidget(QLabel(f'{ax}-slice'))
+            row.addWidget(sld_obj['sld'])
+            row.addWidget(sld_obj['label'])
+            self.sliders_dict[ax] = sld_obj
+
+            layout.addLayout(row, 5 + i, 0, 1, 2)
+
+        self.update_slice_widgets()
+
+    def scale_handler(self, e):
+        # if changing the scale will change the value of the parameter, do so
+        sld = self.sender()
+        ax = self.sim_selected.get_data(
+            data_class='axes',
+            attribute=sld.ax)['data']
+
+        self.sliders_dict[sld.ax]['label'].setText(
+            f'{round(ax[int(sld.value())], 2)}'
+        )
+
+    def update_slice_val(self, ax_name, e):
+        sim_ind = self.sim_selected.sim_num
+        sim_params = self.main_params['sim_params'][sim_ind]
+
+        sld = self.sliders_dict[ax_name]['sld']
+        ax = self.sim_selected.get_data(
+            data_class='axes',
+            attribute=ax_name)['data']
+        next_sld_val = float(sld.value())/(len(ax)-1.0)
+        if next_sld_val != sim_params[f'{ax_name}Slice']:
+            sim_params[f'{ax_name}Slice'] = next_sld_val
+            if not sim_params['Average1D']:
+                for i in range(self.oengus.MainParamDict['NumOfRows']):
+                    for j in range(self.oengus.MainParamDict['NumOfCols']):
+                        self.oengus.SubPlotList[i][j].save_axes_pos()
+                        self.oengus.SubPlotList[i][j].refresh()
+                        self.oengus.SubPlotList[i][j].load_axes_pos()
+                self.oengus.canvas.draw()
+
+    def update_slice_widgets(self):
+        sim_ind = self.sim_selected.sim_num
+        sim_params = self.main_params['sim_params'][sim_ind]
+
+        for btn in self.slice_radio_btns:
+            btn.setChecked(btn.plane == sim_params['2DSlicePlane'])
+
+        sim_sizes = self.sim_selected.get_domain_size()
+        x_ax = self.sim_selected.get_data(
+            data_class='axes',
+            attribute='x')['data']
+        y_ax = self.sim_selected.get_data(
+            data_class='axes',
+            attribute='y')['data']
+        z_ax = self.sim_selected.get_data(
+            data_class='axes',
+            attribute='z')['data']
+
+        self.slice_radio_btns[1].setEnabled(len(z_ax) > 1)
+        self.slice_radio_btns[2].setEnabled(False)
+        #    (len(y_ax) > 1) and (len(z_ax) > 1))
+
+        # enable or disable sliders
+        # for key in ['edit', 'sld']:
+        self.sliders_dict['x']['sld'].setEnabled(
+            sim_params['2DSlicePlane'] == 2
+        )
+
+        self.sliders_dict['y']['sld'].setEnabled(
+            (sim_params['2DSlicePlane'] != 2) and
+            (len(y_ax) > 1)
+        )
+
+        self.sliders_dict['z']['sld'].setEnabled(
+            (sim_params['2DSlicePlane'] != 2) and
+            (len(z_ax) > 1)
+        )
+        self.update_slider_vals()
+
+    def update_slider_vals(self):
+        for key in ['x', 'y', 'z']:
+            ax = self.sim_selected.get_data(
+                data_class='axes',
+                attribute=key)['data']
+            if len(ax) > 1:
+                self.sliders_dict[key]['sld'].setRange(0, len(ax)-1)
+
+                self.sliders_dict[key]['sld'].setValue(
+                    self.oengus.calc_slices(
+                        key, self.sim_selected
+                    )
+                )
+    def radio_clicked(self):
+        # If the shared axes are changed, we have to call the link
+        # handler on every subplot
+        radioButton = self.sender()
+        sim_ind = self.sim_selected.sim_num
+        sim_params = self.main_params['sim_params'][sim_ind]
+
+        if radioButton.isChecked():
+            if sim_params['2DSlicePlane'] != radioButton.plane:
+                 sim_params['2DSlicePlane'] = radioButton.plane
+                 self.oengus.figure.clf()
+                 self.oengus.create_graphs()
+                 self.oengus.canvas.draw()
 
     def avg_changed(self):
         ind = self.sim_selected.sim_num
@@ -566,6 +704,7 @@ class SimTab(QWidget):
                 self.prtl_stride_edit.setText(str(sim_params['PrtlStride']))
                 self.average1D_cb.setChecked(sim_params['Average1D'])
                 self.update_shock_opts()
+                self.update_slice_widgets()
 
     def update_shock_opts(self):
         self.ignoreChange = True

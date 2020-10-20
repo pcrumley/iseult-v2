@@ -270,6 +270,9 @@ class phasePlot(iseultPlot):
                 data_class='shock_finders',
                 shock_method=sim_params['shock_method']
             )
-            if tmp['axis'] == 'x':
+            if tmp['axis'] == self.param_dict['x_val']:
+                self.shock_line.set_visible(True)
                 self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
+            else:
+                self.shock_line.set_visible(False)
         self.save_home()
