@@ -324,7 +324,7 @@ class Oengus():
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].build_axes()
-
+                self.SubPlotList[i][j].axes_info()
         for i in range(self.MainParamDict['NumOfRows']):
             for j in range(self.MainParamDict['NumOfCols']):
                 self.SubPlotList[i][j].draw()  # self.sim, -1)
