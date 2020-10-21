@@ -10,5 +10,4 @@ output_v2/
 build/
 .DS_Store
 .iseult_configs/
-\#
-.\#
+*\#
