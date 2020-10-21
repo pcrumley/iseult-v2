@@ -121,6 +121,7 @@ class scalarFldsPlot(iseultPlot):
         # FIND THE SLICE
         sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
         slice_plane = sim_params['2DSlicePlane']
+        self.xSlice = self.parent.calc_slices('x', sim)
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
 
@@ -261,6 +262,7 @@ class scalarFldsPlot(iseultPlot):
 
         # FIND THE SLICE
         slice_plane = sim_params['2DSlicePlane']
+        self.xSlice = self.parent.calc_slices('x', sim)
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
 

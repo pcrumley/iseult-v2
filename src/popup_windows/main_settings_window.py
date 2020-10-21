@@ -1,3 +1,4 @@
+
 from PyQt5.QtWidgets import (QWidget, QSlider, QGridLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QVBoxLayout,
                              QComboBox, QCheckBox, QTabWidget, QSpinBox,
@@ -609,7 +610,8 @@ class SimTab(QWidget):
         # enable or disable sliders
         # for key in ['edit', 'sld']:
         self.sliders_dict['x']['sld'].setEnabled(
-            sim_params['2DSlicePlane'] == 2
+            sim_params['2DSlicePlane'] == 2 and
+            (len(x_ax) > 1)
         )
 
         self.sliders_dict['y']['sld'].setEnabled(
@@ -618,7 +620,6 @@ class SimTab(QWidget):
         )
 
         self.sliders_dict['z']['sld'].setEnabled(
-            (sim_params['2DSlicePlane'] != 2) and
             (len(z_ax) > 1)
         )
         self.update_slider_vals()
@@ -628,6 +629,7 @@ class SimTab(QWidget):
             ax = self.sim_selected.get_data(
                 data_class='axes',
                 attribute=key)['data']
+
             if len(ax) > 1:
                 self.sliders_dict[key]['sld'].setRange(0, len(ax)-1)
 
@@ -646,6 +648,7 @@ class SimTab(QWidget):
         if radioButton.isChecked():
             if sim_params['2DSlicePlane'] != radioButton.plane:
                  sim_params['2DSlicePlane'] = radioButton.plane
+                 self.update_slice_widgets()
                  self.oengus.figure.clf()
                  self.oengus.create_graphs()
                  self.oengus.canvas.draw()

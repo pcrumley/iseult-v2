@@ -289,6 +289,7 @@ class vectorFldsPlot(iseultPlot):
         sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
 
         slice_plane = sim_params['2DSlicePlane']
+        self.xSlice = self.parent.calc_slices('x', sim)
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
