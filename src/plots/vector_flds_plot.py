@@ -110,6 +110,8 @@ class vectorFldsPlot(iseultPlot):
     def draw(self):
         sim = self.parent.sims[self.param_dict['sim_num']]
         sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+        slice_plane = sim_params['2DSlicePlane']
+
         shock_loc = sim.get_data(
             data_class='shock_finders',
             shock_method=sim_params['shock_method']
@@ -123,6 +125,30 @@ class vectorFldsPlot(iseultPlot):
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
         self.istep = sim.get_data(data_class='param', attribute='istep')
 
+        ##
+        #
+        # Load all the axis data for their labels
+        #
+        ##
+
+        self.xaxis = sim.get_data(
+            data_class='axes',
+            attribute='x')
+        if slice_plane == 0:  # x-y plane
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+        elif slice_plane == 1:  # x-z plane
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='z')
+        elif slice_plane == 2:
+            self.xaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='z')
         # Make the plots
         if self.param_dict['twoD']:
 
@@ -155,30 +181,19 @@ class vectorFldsPlot(iseultPlot):
                 self.axC.set_visible(False)
 
             self.axes.set_xlabel(
-                r'$x\ [c/\omega_{pe}]$',
+                self.xaxis['label'],
                 labelpad=self.parent.MainParamDict['xLabelPad'],
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
-            if self.parent.MainParamDict['2DSlicePlane'] == 0:
-                self.axes.set_ylabel(
-                    r'$y\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
-
-            if self.parent.MainParamDict['2DSlicePlane'] == 1:
-                self.axes.set_ylabel(
-                    r'$z\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_ylabel(
+                self.yaxis['label'],
+                labelpad=self.parent.MainParamDict['yLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
         else:
             self.axC.set_visible(False)
-            self.xaxis = sim.get_data(
-                data_class='axes',
-                attribute='x')
 
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(
@@ -256,7 +271,7 @@ class vectorFldsPlot(iseultPlot):
                 PathEffects.Normal()])
 
         self.shock_line.set_visible(
-            self.param_dict['show_shock'])
+            self.param_dict['show_shock'] and slice_plane < 2)
 
         self.update_labels_and_colors()
         self.refresh()
@@ -304,12 +319,13 @@ class vectorFldsPlot(iseultPlot):
                 self.image.set_data(self.vec_2d['data'][self.zSlice, :, :])
             elif slice_plane == 1:  # x-z plane
                 self.image.set_data(self.vec_2d['data'][:, self.ySlice, :])
+            elif slice_plane == 2:
+                self.image.set_data(self.vec_2d['data'][:, :, self.xSlice])
+            self.ymin = self.yaxis['data'][0]
+            self.ymax = self.yaxis['data'][-1]
 
-            self.ymin = 0
-            self.ymax = self.image.get_array().shape[0]/self.c_omp*self.istep
-
-            self.xmin = 0
-            self.xmax = self.image.get_array().shape[1]/self.c_omp*self.istep
+            self.xmin = self.xaxis['data'][0]
+            self.xmax = self.xaxis['data'][-1]
             self.image.set_extent([self.xmin, self.xmax, self.ymin, self.ymax])
 
         # Main goal, only change what is showing..
@@ -338,43 +354,51 @@ class vectorFldsPlot(iseultPlot):
                     component='z')
 
             if sim_params['Average1D']:
+                ax_tup = (0, 2) if slice_plane == 2 else (0, 1)
                 if self.param_dict['show_x']:
                     self.line_x[0].set_data(
                         self.xaxis['data'],
-                        np.average(
-                            self.vec_x['data'].reshape(
-                                -1, self.vec_x['data'].shape[-1]), axis=0))
+                        np.average(self.vec_x['data'], axis=ax_tup))
 
                 if self.param_dict['show_y']:
                     self.line_y[0].set_data(
                         self.xaxis['data'],
-                        np.average(
-                            self.vec_y['data'].reshape(
-                                -1, self.vec_y['data'].shape[-1]), axis=0))
+                        np.average(self.vec_y['data'], axis=ax_tup))
 
                 if self.param_dict['show_z']:
                     self.line_z[0].set_data(
                         self.xaxis['data'],
-                        np.average(
-                            self.vec_z['data'].reshape(
-                                -1, self.vec_z['data'].shape[-1]), axis=0))
+                        np.average(self.vec_z['data'], axis=ax_tup))
 
             else:  # x-y plane
-                if self.param_dict['show_x']:
-                    self.line_x[0].set_data(
-                        self.xaxis['data'],
-                        self.vec_x['data'][self.zSlice, self.ySlice, :])
+                if slice_plane == 2:
+                    if self.param_dict['show_x']:
+                        self.line_x[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_x['data'][self.zSlice, :, self.xSlice])
+                    if self.param_dict['show_y']:
+                        self.line_y[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_y['data'][self.zSlice, :, self.xSlice])
+                    if self.param_dict['show_z']:
+                        self.line_z[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_z['data'][self.zSlice, :, self.xSlice])
+                else:
+                    if self.param_dict['show_x']:
+                        self.line_x[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_x['data'][self.zSlice, self.ySlice, :])
+                    if self.param_dict['show_y']:
+                        self.line_y[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_y['data'][self.zSlice, self.ySlice, :])
+                    if self.param_dict['show_z']:
+                        self.line_z[0].set_data(
+                            self.xaxis['data'],
+                            self.vec_z['data'][self.zSlice, self.ySlice, :])
 
-                if self.param_dict['show_y']:
-                    self.line_y[0].set_data(
-                        self.xaxis['data'],
-                        self.vec_y['data'][self.zSlice, self.ySlice, :])
-                if self.param_dict['show_z']:
-                    self.line_z[0].set_data(
-                        self.xaxis['data'],
-                        self.vec_z['data'][self.zSlice, self.ySlice, :])
-
-        if self.param_dict['show_shock'] and slice_plane < 2:
+        if self.param_dict['show_shock']:
             sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
             tmp = sim.get_data(
                 data_class='shock_finders',
@@ -382,8 +406,8 @@ class vectorFldsPlot(iseultPlot):
             )
             if tmp['axis'] == 'x':
                 self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
-        else:
-            self.shock_line.set_visible(False)
+        # else:
+        #    self.shock_line.set_visible(False)
         self.set_v_max_min()
         self.save_home()
 
@@ -414,7 +438,10 @@ class vectorFldsPlot(iseultPlot):
                 sim.get_data(
                     data_class='vec_flds',
                     fld=self.param_dict['field_type'],
-                    component='x')['axis_label'])
+                    component='x')['axis_label'],
+                labelpad=self.parent.MainParamDict['yLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
             self.vec_x = sim.get_data(
                 data_class='vec_flds',

@@ -603,8 +603,8 @@ class SimTab(QWidget):
             attribute='z')['data']
 
         self.slice_radio_btns[1].setEnabled(len(z_ax) > 1)
-        self.slice_radio_btns[2].setEnabled(False)
-        #    (len(y_ax) > 1) and (len(z_ax) > 1))
+        self.slice_radio_btns[2].setEnabled( # False)
+            (len(y_ax) > 1) and (len(z_ax) > 1))
 
         # enable or disable sliders
         # for key in ['edit', 'sld']:

@@ -127,6 +127,30 @@ class scalarFldsPlot(iseultPlot):
         self.scalar_fld = sim.get_data(
             data_class='scalar_flds',
             fld=self.param_dict['flds_type'])
+        ##
+        #
+        # Load all the axis data for their labels
+        #
+        ##
+
+        self.xaxis = sim.get_data(
+            data_class='axes',
+            attribute='x')
+        if slice_plane == 0:  # x-y plane
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+        elif slice_plane == 1:  # x-z plane
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='z')
+        elif slice_plane == 2:
+            self.xaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+            self.yaxis = sim.get_data(
+                data_class='axes',
+                attribute='z')
 
         # Now that the data is loaded, start making the plots
         # Make the plots
@@ -163,31 +187,20 @@ class scalarFldsPlot(iseultPlot):
                 self.axC.set_visible(False)
 
             self.axes.set_xlabel(
-                r'$x\ [c/\omega_{pe}]$',
+                self.xaxis['label'],
                 labelpad=self.parent.MainParamDict['xLabelPad'],
                 color='black',
                 size=self.parent.MainParamDict['AxLabelSize'])
 
-            if slice_plane == 0:
-                self.axes.set_ylabel(
-                    r'$y\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
-
-            if slice_plane == 1:
-                self.axes.set_ylabel(
-                    r'$z\ [c/\omega_{pe}]$',
-                    labelpad=self.parent.MainParamDict['yLabelPad'],
-                    color='black',
-                    size=self.parent.MainParamDict['AxLabelSize'])
+            self.axes.set_ylabel(
+                self.yaxis['label'],
+                labelpad=self.parent.MainParamDict['yLabelPad'],
+                color='black',
+                size=self.parent.MainParamDict['AxLabelSize'])
 
         # 1D simulations
         else:
             self.axC.set_visible(False)
-            self.xaxis = sim.get_data(
-                data_class='axes',
-                attribute='x')
 
             self.linedens = self.axes.plot(
                 [1, 1], [-0.5, 0.5],
@@ -218,7 +231,7 @@ class scalarFldsPlot(iseultPlot):
                 PathEffects.Normal()])
 
         self.shock_line.set_visible(
-            self.param_dict['show_shock'])
+            self.param_dict['show_shock'] and slice_plane < 2)
 
         self.refresh()
         self.link_handler()
@@ -238,6 +251,7 @@ class scalarFldsPlot(iseultPlot):
         self.xaxis = sim.get_data(
             data_class='axes',
             attribute='x')
+
         self.c_omp = sim.get_data(
             data_class='param',
             attribute='c_omp')
@@ -254,16 +268,27 @@ class scalarFldsPlot(iseultPlot):
         # First do the 1D plots, because it is simpler
         if self.param_dict['twoD'] == 0:
             if sim_params['Average1D']:
-                self.linedens[0].set_data(
-                    self.xaxis['data'],
-                    np.average(
-                        self.scalar_fld['data'].reshape(
-                            -1, self.scalar_fld['data'].shape[-1]), axis=0))
+                if slice_plane == 2:
+                    self.linedens[0].set_data(
+                        self.xaxis['data'],
+                        np.average(
+                            self.scalar_fld['data'], axis=(0,2)))
+                else:
+                    self.linedens[0].set_data(
+                        self.xaxis['data'],
+                        np.average(
+                            self.scalar_fld['data'], axis=(0,1)))
+
 
             else:  #
-                self.linedens[0].set_data(
-                    self.xaxis['data'],
-                    self.scalar_fld['data'][self.zSlice, self.ySlice, :])
+                if slice_plane == 2:
+                    self.linedens[0].set_data(
+                        self.xaxis['data'],
+                        self.scalar_fld['data'][self.zSlice, :, self.xSlice])
+                else:
+                    self.linedens[0].set_data(
+                        self.xaxis['data'],
+                        self.scalar_fld['data'][self.zSlice, self.ySlice, :])
 
             if self.parent.MainParamDict['SetxLim']:
                 self.axes.set_xlim(
@@ -275,16 +300,33 @@ class scalarFldsPlot(iseultPlot):
                     self.xaxis['data'][-1])
 
         else:  # Now refresh the plot if it is 2D
+
             if slice_plane == 0:  # x-y plane
+                self.yaxis = sim.get_data(
+                    data_class='axes',
+                    attribute='y')
                 self.image.set_data(
                     self.scalar_fld['data'][self.zSlice, :, :])
             elif slice_plane == 1:  # x-z plane
+                self.yaxis = sim.get_data(
+                    data_class='axes',
+                    attribute='z')
                 self.image.set_data(
                     self.scalar_fld['data'][:, self.ySlice, :])
+            elif slice_plane == 2:
+                self.xaxis = sim.get_data(
+                    data_class='axes',
+                    attribute='y')
+                self.yaxis = sim.get_data(
+                    data_class='axes',
+                    attribute='z')
+                self.image.set_data(
+                    self.scalar_fld['data'][:, :, self.xSlice])
+
             self.an_2d.set_text(self.scalar_fld['label'])
-            self.ymin = 0
-            self.ymax = self.image.get_array().shape[0]/self.c_omp*self.istep
-            self.xmin = 0
+            self.ymin = self.yaxis['data'][0]
+            self.ymax = self.yaxis['data'][-1]
+            self.xmin = self.xaxis['data'][0]
             self.xmax = self.xaxis['data'][-1]
             self.image.set_extent([
                 self.xmin, self.xmax, self.ymin, self.ymax])
