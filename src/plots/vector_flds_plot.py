@@ -335,6 +335,10 @@ class vectorFldsPlot(iseultPlot):
             self.xaxis = sim.get_data(
                 data_class='axes',
                 attribute='x')
+            if slice_plane == 2:
+                self.xaxis = sim.get_data(
+                    data_class='axes',
+                    attribute='y')
 
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(

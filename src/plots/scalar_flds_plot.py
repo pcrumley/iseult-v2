@@ -266,6 +266,11 @@ class scalarFldsPlot(iseultPlot):
         self.ySlice = self.parent.calc_slices('y', sim)
         self.zSlice = self.parent.calc_slices('z', sim)
 
+        if slice_plane == 2:
+            self.xaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         if self.param_dict['twoD'] == 0:
