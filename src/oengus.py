@@ -119,7 +119,7 @@ class Oengus():
             'yLabelPad': 0,
             'cbarLabelPad': 15,
             'SetxLim': False,
-            'xLimsRelative': False,
+            'Rel2Shock': False,
             'ConstantShockVel': True,
             'xRight': 100.0,
             'LinkSpatial': 2,

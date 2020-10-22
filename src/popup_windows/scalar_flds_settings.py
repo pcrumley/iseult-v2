@@ -132,7 +132,7 @@ class ScalarFieldsSettings(iseultPlotSettings):
             self.params['flds_type'] = self.fld_combo.currentText()
             self.subplot.remove()
             self.subplot.build_axes()
-            self.subplot.axis_info()
+            # self.subplot.axis_info()
 
             self.subplot.draw()
             self.parent.oengus.canvas.draw()

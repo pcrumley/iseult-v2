@@ -255,17 +255,18 @@ class SettingsTab(QWidget):
         mid.addWidget(self.ytop, 2, 2)
         main_layout.addLayout(mid)
 
-        ##
-        #
-        # bottom checkpanel
-        #
-        # |x| show title |x| aspect = 1 |x| horizontal Cbars
-        #
-        ##
+    ##
+    #
+    # bottom checkpanel
+    #
+    # |x| show title |x| aspect = 1 |x| lims rel to shock |x| horizontal Cbars
+    #
+    ##
 
         cbs = [
             ('show title', 'ShowTitle'),
             ('aspect = 1', 'ImageAspect'),
+            ('lims rel to shock', 'Rel2Shock'),
             ('Horizontal cbars', 'HorizontalCbars')]
         row = QHBoxLayout()
         for i, tup in enumerate(cbs):
@@ -402,13 +403,13 @@ class SettingsTab(QWidget):
 
     def cb_handler(self):
         cb = self.sender()
-        if cb.param_name == 'ImageAspect':
-            self.main_params['ImageAspect'] = cb.isChecked()
+        if cb.param_name in ['ImageAspect', 'Rel2Shock']:
+            self.main_params[cb.param_name] = cb.isChecked()
             self.oengus.figure.clf()
             self.oengus.create_graphs()
             self.oengus.canvas.draw()
 
-        if cb.param_name == 'ShowTitle':
+        elif cb.param_name == 'ShowTitle':
             self.main_params['ShowTitle'] = cb.isChecked()
             if not self.main_params['ShowTitle']:
                 self.oengus.figure.suptitle('')
@@ -417,7 +418,7 @@ class SettingsTab(QWidget):
 
             self.oengus.canvas.draw()
 
-        if cb.param_name == 'HorizontalCbars':
+        elif cb.param_name == 'HorizontalCbars':
             if cb.isChecked():
                 self.oengus.axes_extent = self.main_params['HAxesExtent']
                 self.oengus.cbar_extent = self.main_params['HCbarExtent']

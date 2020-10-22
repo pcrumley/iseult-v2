@@ -295,6 +295,27 @@ class vectorFldsPlot(iseultPlot):
         self.c_omp = sim.get_data(data_class='param', attribute='c_omp')
         self.istep = sim.get_data(data_class='param', attribute='istep')
 
+        self.xaxis = sim.get_data(
+            data_class='axes',
+            attribute='x')
+        if slice_plane == 2:
+            self.xaxis = sim.get_data(
+                data_class='axes',
+                attribute='y')
+
+        tmp = sim.get_data(
+            data_class='shock_finders',
+            shock_method=sim_params['shock_method']
+        )
+        if tmp['axis'] == 'x':
+            if self.parent.MainParamDict['Rel2Shock']:
+                self.xaxis['data'] = self.xaxis['data'] - tmp['shock_loc']
+                self.shock_line.set_xdata([0, 0])
+                self.axes.set_xlabel(
+                    '$x-x_s' + self.xaxis['label'][2:])
+            elif self.param_dict['show_shock']:
+                self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
+
         # Now that the data is loaded, start making the plots
         if self.param_dict['twoD']:
             if self.param_dict['show_x']:
@@ -332,14 +353,6 @@ class vectorFldsPlot(iseultPlot):
         # Main goal, only change what is showing..
         # First do the 1D plots, because it is simpler
         else:
-            self.xaxis = sim.get_data(
-                data_class='axes',
-                attribute='x')
-            if slice_plane == 2:
-                self.xaxis = sim.get_data(
-                    data_class='axes',
-                    attribute='y')
-
             if self.param_dict['show_x']:
                 self.vec_x = sim.get_data(
                     data_class='vec_flds',
@@ -403,16 +416,6 @@ class vectorFldsPlot(iseultPlot):
                             self.xaxis['data'],
                             self.vec_z['data'][self.zSlice, self.ySlice, :])
 
-        if self.param_dict['show_shock']:
-            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
-            tmp = sim.get_data(
-                data_class='shock_finders',
-                shock_method=sim_params['shock_method']
-            )
-            if tmp['axis'] == 'x':
-                self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
-        # else:
-        #    self.shock_line.set_visible(False)
         self.set_v_max_min()
         self.save_home()
 

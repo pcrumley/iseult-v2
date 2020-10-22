@@ -40,7 +40,8 @@ class phasePlot(iseultPlot):
         'set_y_max': False,
         'UseDivCmap': False,
         'interpolation': 'nearest',
-        'face_color': 'gainsboro'}
+        'face_color': 'gainsboro',
+        'respect_zoom': False}
 
     # A way to make the colorbar display better
     gradient = np.linspace(0, 1, 256)
@@ -202,6 +203,7 @@ class phasePlot(iseultPlot):
             ymin = np.min(self.y_values['data'])
             ymax = np.max(self.y_values['data'])
             ymax = ymax if ymax > ymin else ymin + 1
+            # only implement shock finder in x direction
 
             if self.param_dict['weighted']:
                 hist2d = Fast2DWeightedHist(
@@ -226,10 +228,42 @@ class phasePlot(iseultPlot):
             if True:  # replace with if masked:
                 hist2d[hist2d == 0] = self.clim[0] * 0.8
 
-            # set the colors
+            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
+            calc_shock = self.param_dict['show_shock']
+            calc_shock = calc_shock or self.parent.MainParamDict['Rel2Shock']
+            if calc_shock:
+                tmp = sim.get_data(
+                    data_class='shock_finders',
+                    shock_method=sim_params['shock_method']
+                )
+                show_line = False
+                if tmp['axis'] == self.param_dict['x_val']:
+                    show_line=self.param_dict['show_shock']
+
+                    if self.parent.MainParamDict['Rel2Shock']:
+                        self.shock_line.set_xdata([0, 0])
+                        xmin -= tmp['shock_loc'][0]
+                        xmax -= tmp['shock_loc'][0]
+                        self.axes.set_xlabel(
+                            '$x-x_s' +
+                            self.x_values['axis_label'][2:])
+
+                    else:
+                        self.shock_line.set_xdata(
+                            [tmp['shock_loc'], tmp['shock_loc']])
+
+                if tmp['axis'] == self.param_dict['y_val']:
+                    if self.parent.MainParamDict['Rel2Shock']:
+                        ymin -= tmp['shock_loc'][0]
+                        ymax -= tmp['shock_loc'][0]
+                        self.axes.set_ylabel(
+                            '$x-x_s' +
+                            self.y_values['axis_label'][2:])
+
+                self.shock_line.set_visible(show_line)
+
             self.image.set_data(hist2d)
             self.image.set_extent([xmin, xmax, ymin, ymax])
-
             if self.param_dict['set_v_min']:
                 self.clim[0] = 10**self.param_dict['v_min']
 
@@ -266,15 +300,5 @@ class phasePlot(iseultPlot):
         else:
             self.image.set_data(
                 np.ones((2, 2))*np.NaN)
-        if self.param_dict['show_shock']:
-            sim_params = self.parent.MainParamDict['sim_params'][sim.sim_num]
-            tmp = sim.get_data(
-                data_class='shock_finders',
-                shock_method=sim_params['shock_method']
-            )
-            if tmp['axis'] == self.param_dict['x_val']:
-                self.shock_line.set_visible(True)
-                self.shock_line.set_xdata([tmp['shock_loc'], tmp['shock_loc']])
-            else:
-                self.shock_line.set_visible(False)
+
         self.save_home()

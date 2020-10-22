@@ -21,6 +21,7 @@ from PyQt5.QtGui import QKeySequence
 from custom_toolbar import myCustomToolbar
 from PyQt5.QtCore import Qt, QFileSystemWatcher
 from PyQt5.QtWidgets import QAction, qApp
+from lasso_selector import GetPath
 
 
 class MainApp(QtWidgets.QMainWindow):
@@ -88,6 +89,7 @@ class MainApp(QtWidgets.QMainWindow):
         self.playbackbar.update_slider()
         # Overload the close function
         self.closeEvent = self.on_quit
+        # self.lassoes = GetPath(self.oengus, (1,1))
 
     def build_menu(self):
         menubar = self.menuBar()
@@ -281,8 +283,8 @@ class MainApp(QtWidgets.QMainWindow):
 
     def on_quit(self, *event):
         if self.playbackbar.settings_window is not None:
-             self.playbackbar.settings_window.deleteLater()
-             self.playbackbar.settings_window = None
+            self.playbackbar.settings_window.deleteLater()
+            self.playbackbar.settings_window = None
         for key, val in self.popups_dict.items():
             if val is not None:
                 val.deleteLater()

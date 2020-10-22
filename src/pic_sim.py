@@ -67,7 +67,7 @@ class picSim(object):
             response[elm] = len(
                 self.get_data(data_class='axes',
                               attribute=elm)['data']
-           )
+            )
         return response
 
     def get_time(self, units=None):
@@ -277,7 +277,7 @@ class picSim(object):
         response_dict = {}
 
         if lookup['data_class'] == 'scalar_v_time':
-            self.parser.prtl_stride = 1 
+            self.parser.prtl_stride = 1
             response_dict = {
                 'data': np.array([]),
                 'times': np.array([]),
@@ -491,13 +491,14 @@ class picSim(object):
             try:
                 f_suffix = self.file_list[n]
                 hash_key = 'shock_finders' + lookup['shock_method'] + f_suffix
+                shock_finders = self._cfgDict['shock_finders']
                 if hash_key not in self._data_dictionary:
-                    expr = self._cfgDict['shock_finders'][lookup['shock_method']]['expr']
+                    expr = shock_finders[lookup['shock_method']]['expr']
                     self.parser.string = expr
                     self.parser.f_suffix = f_suffix
                     self._data_dictionary[hash_key] = self.parser.getValue()
                 response_dict['shock_loc'] = self._data_dictionary[hash_key]
-                label = self._cfgDict['shock_finders'][lookup['shock_method']]['axis']
+                label = shock_finders[lookup['shock_method']]['axis']
                 response_dict['axis'] = label
             except IndexError:
                 pass

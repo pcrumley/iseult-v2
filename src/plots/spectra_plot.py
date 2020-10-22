@@ -141,7 +141,6 @@ class SpectralPlot(iseultPlot):
             framealpha=.05,
             fontsize=self.parent.MainParamDict['legendLabelSize'])
 
-
         self.legend.set_visible(self.param_dict['show_legend'])
         self.legend.get_frame().set_facecolor('k')
         self.legend.get_frame().set_linewidth(0.0)
