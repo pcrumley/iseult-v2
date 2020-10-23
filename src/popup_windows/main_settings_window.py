@@ -459,6 +459,7 @@ class SimTab(QWidget):
         #  Choose shock finder: | ComboBox |
         #
         ####
+
         layout.addWidget(QLabel('Choose sim'), 0, 0)
         self.sim_combo = QComboBox(self)
         self.update_sim_list()
@@ -530,18 +531,13 @@ class SimTab(QWidget):
             row = QHBoxLayout()
             sld_obj = {}
             sld_obj['label'] = QLabel(self)
-            #sld_obj['edit'] = QLineEdit(self)
-            #sld_obj['edit'].setMaximumWidth(55)
-            #sld_obj['edit'].setMinimumWidth(30)
-            #self.edit.setText(str(self.param.value))
-            #sld_obj['edit'].clearFocus()
-            # box to enter time.
             sld_obj['sld'] = QSlider(Qt.Horizontal, self)
             sld_obj['sld'].ax = ax
             # update the text box whenever sld is change
             sld_obj['sld'].valueChanged.connect(self.scale_handler)
             # only update the plot when the user releases the mouse
-            sld_obj['sld'].mouseReleaseEvent = partial(self.update_slice_val, ax)
+            sld_obj['sld'].mouseReleaseEvent = partial(
+                    self.update_slice_val, ax)
 
             # self.sld.setRange(self.param.minimum, self.param.maximum)
             sld_obj['sld'].setFocusPolicy(Qt.NoFocus)
@@ -593,7 +589,6 @@ class SimTab(QWidget):
         for btn in self.slice_radio_btns:
             btn.setChecked(btn.plane == sim_params['2DSlicePlane'])
 
-        sim_sizes = self.sim_selected.get_domain_size()
         x_ax = self.sim_selected.get_data(
             data_class='axes',
             attribute='x')['data']
@@ -605,7 +600,7 @@ class SimTab(QWidget):
             attribute='z')['data']
 
         self.slice_radio_btns[1].setEnabled(len(z_ax) > 1)
-        self.slice_radio_btns[2].setEnabled( # False)
+        self.slice_radio_btns[2].setEnabled(  # Fals
             (len(y_ax) > 1) and (len(z_ax) > 1))
 
         # enable or disable sliders
@@ -639,20 +634,20 @@ class SimTab(QWidget):
                         key, self.sim_selected
                     )
                 )
+
     def radio_clicked(self):
         # If the shared axes are changed, we have to call the link
         # handler on every subplot
         radioButton = self.sender()
         sim_ind = self.sim_selected.sim_num
         sim_params = self.main_params['sim_params'][sim_ind]
-
         if radioButton.isChecked():
             if sim_params['2DSlicePlane'] != radioButton.plane:
-                 sim_params['2DSlicePlane'] = radioButton.plane
-                 self.update_slice_widgets()
-                 self.oengus.figure.clf()
-                 self.oengus.create_graphs()
-                 self.oengus.canvas.draw()
+                sim_params['2DSlicePlane'] = radioButton.plane
+                self.update_slice_widgets()
+                self.oengus.figure.clf()
+                self.oengus.create_graphs()
+                self.oengus.canvas.draw()
 
     def avg_changed(self):
         ind = self.sim_selected.sim_num
