@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import (QWidget, QGridLayout,
+from PyQt5.QtWidgets import (QGridLayout,
                              QLabel, QLineEdit,
                              QComboBox, QCheckBox)
-import new_cmaps
 from base_plot_settings import iseultPlotSettings
 
 
@@ -16,6 +15,7 @@ class phaseSettings(iseultPlotSettings):
     def build_ui(self):
         self.setWindowTitle(f'Phase Plot {self.loc} Settings')
         layout = QGridLayout()
+
         ###
         #
         #  Do everything in 1 qridlayout        #
@@ -135,6 +135,7 @@ class phaseSettings(iseultPlotSettings):
             if self.params['prtl_type'] != self.prtl_combo.currentText():
                 self.params['prtl_type'] = self.prtl_combo.currentText()
                 self.update_attr_combos()
+                self.subplot.link_handler()
                 self.subplot.refresh()
                 self.subplot.update_labels_and_colors()
                 self.oengus.canvas.draw()
@@ -144,7 +145,7 @@ class phaseSettings(iseultPlotSettings):
             sender = self.sender()
             if self.params[sender.param_arg] != sender.currentText():
                 self.params[sender.param_arg] = sender.currentText()
-                self.subplot.axis_info()
+                self.subplot.link_handler()
                 self.subplot.refresh()
                 self.subplot.update_labels_and_colors()
                 self.oengus.canvas.draw()
@@ -160,7 +161,7 @@ class phaseSettings(iseultPlotSettings):
             self.update_attr_combos()
 
             self.parent.update_all_sim_lists()
-            self.subplot.axis_info()
+            self.subplot.link_handler()
             self.subplot.save_axes_pos()
             self.subplot.refresh()
             self.subplot.load_axes_pos()
