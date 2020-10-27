@@ -1,7 +1,24 @@
+# A yaml file that describes how data are saved in the HDF5
+# files for tristan-v1 simulations. I will document the yml file 
+# inline. 
+
 name:
   Tristan_MP
+
+# The code uses h5_files_lists to decide how to enumerate & iterate
+# over the run. For each output point of the simulation, the code
+# assumes that each regex in the file dictionary returns each of 
+# files. So in this instance we would expect something like:
+#   
+#   - prtl.tot.005, flds.tot.005, spect.005, param.005
+#   - prtl.tot.006, flds.tot.006, spect.006, param.006
+#   ...
+
 h5_files_list:
   prtl.tot.*:
+    # for each hdf5 file, you need to list all of the h5attributes
+    # you need access to. As the code is written now, this attrs
+    # MUST BE UNIQUE.
     - che
     - chi
     - gammae
@@ -81,7 +98,9 @@ h5_files_list:
     - walloc
     - xinject2
   spect.*:
-    # - dens No collision
+    # - dens There is an attr in spect called dens, but we
+    # ignore it because of the limitation that there can be
+    # no collision in the keys.
     - dgam
     - gamma
     - gmax
@@ -92,6 +111,22 @@ h5_files_list:
     - specprest
     - umean
     - xsl
+# the axes dictionary of the yml file explains how to
+# create a 1D axis that corresponds to the x, y, & z
+# axis of the rectilinear grid saved in the flds.tot
+# files.
+#
+# You must define an x, y, & z axis. On top of that
+# you must define the label you want to show when 
+# the fiels are plotted, as well as an expression that
+# defines how to calculate the axis.
+#
+# The way the expressions works is that every thing that is 
+# defined as a key in the hdf5_files_dict files is accessible
+# using that name. In addition, you have access to a subset of
+# numpy functions as well as custom defined functions. See
+# ./src/utils/my_parser.py
+#
 axes:
   x:
     label: $x\ [c/\omega_{pe}]$
@@ -102,6 +137,10 @@ axes:
   z:
     label: $z\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 0)) * istep / c_omp
+
+#
+# the params don't need a label as they are not plotted
+#
 param:
   c_omp:
     expr: c_omp
@@ -121,6 +160,31 @@ param:
     expr: stride
   time:
     expr: time
+
+
+#
+#  PARTICLES:
+#
+# the prtls dictionary is how iseult knows how to plot prtl
+# quantities. The structure is like:
+# prtls:
+#   SPECIES_NAME:
+#     hist_cbar_label: # The label plotted in the histogram 
+#                      # colorbars
+#     attrs: # list of all attributes that must have a label
+#            # and an expression that is parsed to a 1D arr
+#            # of len N, where N is the number of particles
+#            # of a particular species saved at a tstep
+#
+#       attr_name: # this name doesn't matter, just how a 
+#                  # particular attr is chosen in the GUI.
+#        
+#         expr:  # The expression that parses to the 1D array of
+#                # len N.
+#
+#         label: # axis label
+#        
+#
 
 prtls:
 
@@ -192,6 +256,22 @@ prtls:
         label: $z\ [c/\omega_{pe}]$
         expr: zi * pow(c_omp, -1)
 
+#
+#   SCALAR FIELDS:
+#
+#   This quanties can be plotted as a line or
+#   as a 2D image of a slice of the field quantity.
+#   
+#   Hopefully the structure is very similar to prtls and makes
+#   sense.
+#
+#   scalar_flds:
+#     FLD_NAME: # Name of the field for GUI
+#       label: LABEL # axis or 2D label.
+#       expr: EXPR # Expression that parses to a 3D array of shape
+#                  # (nz, ny, nx) where nz, ny, nx are the length of
+#                  # the axes arrays defined above
+
 scalar_flds:
   B_total:
     label: $|B|$
@@ -215,9 +295,20 @@ scalar_flds:
     label: $E\cdot B$
     expr: ex*bx + ey*by + ez*bz
 
-# Must define out to calculate time at each output in units 1/c_omp
+# Must define a way to calculate time at each output in units 1/c_omp.
+# this is used in the scalar vs time plot, and in the future it will be
+# a way of synchronizing the simulations
 time: time
 
+#
+# Very similar to flds and prtls. however scalars must evaluate to a 
+# single number. Used in the scalar vs time plot.
+#
+#   scalars:
+#     SCALAR_NAME: # Name of the scalar quantity for GUI
+#       label: LABEL # label for the lengend.
+#       expr: EXPR # Expression that parses to a single number
+#
 scalars:
   Total KE_e:
     expr: sum(sqrt(ue * ue + pow(ve, 2) + we * we + 1) -1) * stride * abs(qi) * c * c
@@ -243,7 +334,21 @@ scalars:
   B_tot_Sq:
     expr: sum(bx*bx + by*by + bz*bz)
     label: $|B|^2$
-
+#
+# Very similar to flds, basically, imagine scalar_flds except
+# a vec field must define a fld quantity for x, y, z, values of the field.
+#
+#   vec_flds:
+#     VEC_FIELD_NAME:     # Name of the vector field for GUI
+#       axis_label: LABEL # Label used for the y-axis when vec_fld is plotted 
+#                         # as a 1D line
+#         x: 
+#            label: LABEL # Label uses in the annotation of the field quantity.
+#            expr: EXPR   # evaluates to 3D arr of shape (nz, ny, nx)
+#
+#         # rest should be obvious
+#         ....
+#         #
 vec_flds:
   B:
     axis_label: $B$
@@ -282,7 +387,17 @@ vec_flds:
 spectra:
   # see ~/src/utils/spectra_utils how this is defined.
   name_of_spect_class: tristan-v1-spec
-
+#
+#  SHOCK FINDERS:
+# 
+#  shock finders a a little bit complicated expressions.
+#  Because it may not be possible to write them as a simple
+#  expression that can be parsed at a single output, we chose
+#  to define special functions that can take appropriate inputs
+#  to calcuate the shock's location.
+#
+#  See ~/src/utils/shock_finder_methods.py & ~/src/utils/my_parser.py
+#  to see how they are defined.
 shock_finders:
 
   Constant Velocity:

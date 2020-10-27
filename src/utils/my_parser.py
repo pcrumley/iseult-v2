@@ -72,6 +72,7 @@ _FUNCTIONS = {
     'tan': np.tan,
     'tanh': np.tanh,
     'take': np.take,
+    'empty': np.empty,
     'getsim': lambda: (_ for _ in ()).throw(NotImplementedError),
     'dens_half_max_shock': dens_half_max_shock,
     'const_vel_shock': const_vel_shock

@@ -3,7 +3,6 @@ import os
 import sys
 import yaml
 from functools import partial
-from pic_sim import picSim
 from oengus import Oengus
 import numpy as np
 from mpl_param import Param
@@ -21,7 +20,6 @@ from PyQt5.QtGui import QKeySequence
 from custom_toolbar import myCustomToolbar
 from PyQt5.QtCore import Qt, QFileSystemWatcher
 from PyQt5.QtWidgets import QAction, qApp
-from lasso_selector import GetPath
 
 
 class MainApp(QtWidgets.QMainWindow):
