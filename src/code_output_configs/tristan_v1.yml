@@ -385,8 +385,12 @@ vec_flds:
       expr: jz
 
 spectra:
-  # see ~/src/utils/spectra_utils how this is defined.
-  name_of_spect_class: tristan-v1-spec
+  energy:
+    xlabel: $\gamma - 1$
+    ylabel: $f(E)/dE$
+    species:
+        name_of_spect_class: tristan-v1-spec
+
 #
 #  SHOCK FINDERS:
 # 

@@ -387,7 +387,7 @@ class scalarFldsPlot(iseultPlot):
             if self.param_dict['set_v_min']:
                 min_max[0] = self.param_dict['v_min']
             if self.param_dict['set_v_max']:
-                min_max[0] = self.param_dict['v_max']
+                min_max[1] = self.param_dict['v_max']
             if self.param_dict['symmetric_y']:
                 tmp = max(abs(min_max[0]), abs(min_max[1]))
                 min_max[0] = -tmp
