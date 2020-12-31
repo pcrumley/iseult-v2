@@ -1,5 +1,21 @@
 name:
   Tristan_v_2
+# List of regex that must be in every valid output of the simulation you expect iseult to visit
+expected_output_files:
+  - prtl.tot.*
+  - flds.tot.*
+  # - domain.*
+  - spec.tot.*
+  - params.*
+ 
+# this dictionary contains of all files iseult expects to be in EVERY output of the simulation.
+# If files are not listed as expected output, iseult may display incorrect information e.g. showing
+# dens = 0  when there is actually particles there, but it should not crash.
+
+# Each dictionary is a RegEx used to match the pattern output by tristan, and inside are the
+# parameters iseult expects inside of those files. The parameter names MUST be unique per file
+# for the parser to work. i.e. below you can see that it defines the electron lorentz factor as
+# sqrt(u_1*u_1 + pow(v_1,2) + w_1*w_1 + 1) - 1. This dictionary is used to find where 'u_1' lives.
 h5_files_list:
   prtl.tot.*:
     - ind_1
@@ -35,10 +51,10 @@ h5_files_list:
     - xx
     - yy
     - zz
-#  domain.*:
-#    - sx
-#    - sy
-#    - sz
+  domain.*:
+    - sx
+    - sy
+    - sz
   spec.tot.*:
     - who_knows
   params.*:
