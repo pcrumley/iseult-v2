@@ -35,10 +35,10 @@ h5_files_list:
     - xx
     - yy
     - zz
-  domain.*:
-    - sx
-    - sy
-    - sz
+#  domain.*:
+#    - sx
+#    - sy
+#    - sz
   spec.tot.*:
     - who_knows
   params.*:
@@ -55,13 +55,13 @@ h5_files_list:
 
 axes:
   x:
-    label: $x $
+    label: $x\ [c/\omega_{pe}] $
     expr: arange(take(shape(bx), 2)) * output:istep / plasma:c_omp
   y:
-    label: $y$
+    label: $y\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 1)) * output:istep / plasma:c_omp
   z:
-    label: $z$
+    label: $z\ [c/\omega_{pe}]$
     expr: arange(take(shape(bx), 0)) * output:istep / plasma:c_omp
 param:
   c_omp:
