@@ -5,7 +5,14 @@
 name:
   Tristan_MP
 
-# The code uses h5_files_lists to decide how to enumerate & iterate
+# List of regex that must be in every valid output of the simulation you expect iseult to visit
+expected_output_files:
+  - prtl.tot.*
+  - flds.tot.*
+  - spect.*
+  - param.*
+ 
+# The code uses expected_output_files to decide how to enumerate & iterate
 # over the run. For each output point of the simulation, the code
 # assumes that each regex in the file dictionary returns each of 
 # files. So in this instance we would expect something like:
