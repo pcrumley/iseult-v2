@@ -42,44 +42,44 @@ h5_files_list:
   spec.tot.*:
     - who_knows
   params.*:
-    - pls:c_omp
-    - out:stride
-    - pls:ppc0
-    - out:istep
-    - prt:m1
-    - prt:m2
+    - plasma:c_omp
+    - output:stride
+    - plasma:ppc0
+    - output:istep
+    - particle:m1
+    - particle:m2
     - timestep
-    - alg:c
-    - prt:ch1
-    - prt:ch2
+    - algorithm:c
+    - particle:ch1
+    - particle:ch2
 
 axes:
   x:
     label: $x $
-    expr: arange(take(shape(bx), 2)) * out:istep / pls:c_omp
+    expr: arange(take(shape(bx), 2)) * output:istep / plasma:c_omp
   y:
     label: $y$
-    expr: arange(take(shape(bx), 1)) * out:istep / pls:c_omp
+    expr: arange(take(shape(bx), 1)) * output:istep / plasma:c_omp
   z:
     label: $z$
-    expr: arange(take(shape(bx), 0)) * out:istep / pls:c_omp
+    expr: arange(take(shape(bx), 0)) * output:istep / plasma:c_omp
 param:
   c_omp:
-    expr: pls:c_omp
+    expr: plasma:c_omp
   istep:
-    expr: out:istep
+    expr: output:istep
   me:
-    expr: prt:m1
+    expr: particle:m1
   mi:
-    expr: prt:m2
+    expr: particle:m2
   ppc0:
-    expr: pls:ppc0
+    expr: plasma:ppc0
   qi:
-    expr: prt:ch2
+    expr: particle:ch2
   sigma:
     expr: '1'
   stride:
-    expr: out:stride
+    expr: output:stride
   time:
     expr: timestep
   btheta:
@@ -116,13 +116,13 @@ prtls:
         expr: w_1
       x:
         label: $x\ [c/\omega_{pe}]$
-        expr: x_1 / pls:c_omp
+        expr: x_1 / plasma:c_omp
       y:
         label: $y\ [c/\omega_{pe}]$
-        expr: y_1 / pls:c_omp
+        expr: y_1 / plasma:c_omp
       z:
         label: $z\ [c/\omega_{pe}]$
-        expr: z_1 / pls:c_omp
+        expr: z_1 / plasma:c_omp
   ions:
     hist_cbar_label: $f_i (p)$
     attrs:
@@ -149,13 +149,13 @@ prtls:
         expr: w_2
       x:
         label: $x [c/\omega_{pe}]$
-        expr: x_2 / pls:c_omp
+        expr: x_2 / plasma:c_omp
       y:
         label: $y [c/\omega_{pe}]$
-        expr: y_2 / pls:c_omp
+        expr: y_2 / plasma:c_omp
       z:
         label: $z [c/\omega_{pe}]$
-        expr: z_2 / pls:c_omp
+        expr: z_2 / plasma:c_omp
 
 scalar_flds:
   B_total:
@@ -179,13 +179,13 @@ scalar_flds:
 
 scalars:
   Total KE_e:
-    expr: sum((sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * wei_1) * out:stride * pow(alg:c, 4) * prt:m1 * pow(pls:c_omp, -2)/ pls:ppc0
+    expr: sum((sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * wei_1) * output:stride * pow(algorithm:c, 4) * particle:m1 * pow(plasma:c_omp, -2)/ plasma:ppc0
     label: '$KE_e$'
   Total KE_i:
-    expr: sum((sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * wei_2) * out:stride * abs(prt:ch1) * pow(alg:c,4)* prt:m2 * pow(pls:c_omp, -2)/ pls:ppc0
+    expr: sum((sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * wei_2) * output:stride * abs(particle:ch1) * pow(algorithm:c,4)* particle:m2 * pow(plasma:c_omp, -2)/ plasma:ppc0
     label: '$KE_i'
   B_tot_Sq:
-    expr: sum(bx*bx + by*by + bz*bz) * pow(out:istep, 2) * 0.5
+    expr: sum(bx*bx + by*by + bz*bz) * pow(output:istep, 2) * 0.5
     label: $|B|^2$
   #const_shock_speed:
   #  expr: ''
@@ -195,7 +195,7 @@ scalars:
   #  label: $x_s$
 
 # Must define out to calculate time at each output in units 1/c_omp
-time: 'timestep / pls:c_omp' # a placeholder. need to change
+time: 'timestep / plasma:c_omp' # a placeholder. need to change
 
 vec_flds:
   B:
@@ -239,5 +239,5 @@ shock_finders:
     axis: x
 
   Density Half Max:
-    expr: dens_half_max_shock(dens1 + dens2, pls:c_omp, out:istep)
+    expr: dens_half_max_shock(dens1 + dens2, plasma:c_omp, output:istep)
     axis: x
