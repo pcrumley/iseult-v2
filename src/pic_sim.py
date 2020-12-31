@@ -196,8 +196,9 @@ class picSim(object):
 
         tmp_list = []
         for cfg_file in os.listdir(sim_cfgs_dir):
-            elm = os.path.join(sim_cfgs_dir, cfg_file)
-            tmp_list.append(os.path.abspath(elm))
+            if not cfg_file.startswith('.'):
+                elm = os.path.join(sim_cfgs_dir, cfg_file)
+                tmp_list.append(os.path.abspath(elm))
         filter(lambda x: x.split[-1] == '.yml', tmp_list)
         for cfg in tmp_list:
             with open(cfg, 'r') as f:
