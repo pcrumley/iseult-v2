@@ -102,8 +102,8 @@ class picSim(object):
                 tmp_dict[h5attr] = os.path.join(self.outdir, name[:-1])
 
         self.parser.vars = tmp_dict
-        output_file_keys = [key.split('.')[0] for key in output_file_names]
-        output_file_regex = [re.compile(elm) for elm in output_file_names]
+        output_file_keys = [key.split('.')[0] for key in self._cfgDict['expected_output_files']]
+        output_file_regex = [re.compile(elm) for elm in self._cfgDict['expected_output_files']]
         path_dict = {}
         try:
             # Create a dictionary of all the paths to the files

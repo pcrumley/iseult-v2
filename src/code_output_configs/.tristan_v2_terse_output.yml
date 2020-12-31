@@ -1,21 +1,5 @@
 name:
-  Tristan_v_2
-# List of regex that must be in every valid output of the simulation you expect iseult to visit
-expected_output_files:
-  - prtl.tot.*
-  - flds.tot.*
-  # - domain.*
-  - spec.tot.*
-  - params.*
- 
-# this dictionary contains of all files iseult expects to be in EVERY output of the simulation.
-# If files are not listed as expected output, iseult may display incorrect information e.g. showing
-# dens = 0  when there is actually particles there, but it should not crash.
-
-# Each dictionary is a RegEx used to match the pattern output by tristan, and inside are the
-# parameters iseult expects inside of those files. The parameter names MUST be unique per file
-# for the parser to work. i.e. below you can see that it defines the electron lorentz factor as
-# sqrt(u_1*u_1 + pow(v_1,2) + w_1*w_1 + 1) - 1. This dictionary is used to find where 'u_1' lives.
+  Tristan_v_2_old
 h5_files_list:
   prtl.tot.*:
     - ind_1
@@ -58,44 +42,44 @@ h5_files_list:
   spec.tot.*:
     - who_knows
   params.*:
-    - plasma:c_omp
-    - output:stride
-    - plasma:ppc0
-    - output:istep
-    - particle:m1
-    - particle:m2
+    - pls:c_omp
+    - out:stride
+    - pls:ppc0
+    - out:istep
+    - prt:m1
+    - prt:m2
     - timestep
-    - algorithm:c
-    - particle:ch1
-    - particle:ch2
+    - alg:c
+    - prt:ch1
+    - prt:ch2
 
 axes:
   x:
-    label: $x\ [c/\omega_{pe}] $
-    expr: arange(take(shape(bx), 2)) * output:istep / plasma:c_omp
+    label: $x $
+    expr: arange(take(shape(bx), 2)) * out:istep / pls:c_omp
   y:
-    label: $y\ [c/\omega_{pe}]$
-    expr: arange(take(shape(bx), 1)) * output:istep / plasma:c_omp
+    label: $y$
+    expr: arange(take(shape(bx), 1)) * out:istep / pls:c_omp
   z:
-    label: $z\ [c/\omega_{pe}]$
-    expr: arange(take(shape(bx), 0)) * output:istep / plasma:c_omp
+    label: $z$
+    expr: arange(take(shape(bx), 0)) * out:istep / pls:c_omp
 param:
   c_omp:
-    expr: plasma:c_omp
+    expr: pls:c_omp
   istep:
-    expr: output:istep
+    expr: out:istep
   me:
-    expr: particle:m1
+    expr: prt:m1
   mi:
-    expr: particle:m2
+    expr: prt:m2
   ppc0:
-    expr: plasma:ppc0
+    expr: pls:ppc0
   qi:
-    expr: particle:ch2
+    expr: prt:ch2
   sigma:
     expr: '1'
   stride:
-    expr: output:stride
+    expr: out:stride
   time:
     expr: timestep
   btheta:
@@ -132,13 +116,13 @@ prtls:
         expr: w_1
       x:
         label: $x\ [c/\omega_{pe}]$
-        expr: x_1 / plasma:c_omp
+        expr: x_1 / pls:c_omp
       y:
         label: $y\ [c/\omega_{pe}]$
-        expr: y_1 / plasma:c_omp
+        expr: y_1 / pls:c_omp
       z:
         label: $z\ [c/\omega_{pe}]$
-        expr: z_1 / plasma:c_omp
+        expr: z_1 / pls:c_omp
   ions:
     hist_cbar_label: $f_i (p)$
     attrs:
@@ -165,13 +149,13 @@ prtls:
         expr: w_2
       x:
         label: $x [c/\omega_{pe}]$
-        expr: x_2 / plasma:c_omp
+        expr: x_2 / pls:c_omp
       y:
         label: $y [c/\omega_{pe}]$
-        expr: y_2 / plasma:c_omp
+        expr: y_2 / pls:c_omp
       z:
         label: $z [c/\omega_{pe}]$
-        expr: z_2 / plasma:c_omp
+        expr: z_2 / pls:c_omp
 
 scalar_flds:
   B_total:
@@ -195,13 +179,13 @@ scalar_flds:
 
 scalars:
   Total KE_e:
-    expr: sum((sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * wei_1) * output:stride * pow(algorithm:c, 4) * particle:m1 * pow(plasma:c_omp, -2)/ plasma:ppc0
+    expr: sum((sqrt(u_1 * u_1 + pow(v_1, 2) + w_1 * w_1 + 1) - 1) * wei_1) * out:stride * pow(alg:c, 4) * prt:m1 * pow(pls:c_omp, -2)/ pls:ppc0
     label: '$KE_e$'
   Total KE_i:
-    expr: sum((sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * wei_2) * output:stride * abs(particle:ch1) * pow(algorithm:c,4)* particle:m2 * pow(plasma:c_omp, -2)/ plasma:ppc0
+    expr: sum((sqrt(u_2 * u_2 + v_2 * v_2 + w_2 * w_2 + 1) - 1) * wei_2) * out:stride * abs(prt:ch1) * pow(alg:c,4)* prt:m2 * pow(pls:c_omp, -2)/ pls:ppc0
     label: '$KE_i'
   B_tot_Sq:
-    expr: sum(bx*bx + by*by + bz*bz) * pow(output:istep, 2) * 0.5
+    expr: sum(bx*bx + by*by + bz*bz) * pow(out:istep, 2) * 0.5
     label: $|B|^2$
   #const_shock_speed:
   #  expr: ''
@@ -211,7 +195,7 @@ scalars:
   #  label: $x_s$
 
 # Must define out to calculate time at each output in units 1/c_omp
-time: 'timestep / plasma:c_omp' # a placeholder. need to change
+time: 'timestep / pls:c_omp' # a placeholder. need to change
 
 vec_flds:
   B:
@@ -255,5 +239,5 @@ shock_finders:
     axis: x
 
   Density Half Max:
-    expr: dens_half_max_shock(dens1 + dens2, plasma:c_omp, output:istep)
+    expr: dens_half_max_shock(dens1 + dens2, pls:c_omp, out:istep)
     axis: x
