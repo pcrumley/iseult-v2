@@ -9,7 +9,7 @@ import copy
 class phasePlot(iseultPlot):
     # A dictionary of all of the parameters for this plot with the
     # default parameters
-
+    spatial_vals = set(['x', 'y', 'z'])
     plot_param_dict = {
         'twoD': 1,
         'sim_num': 0,
@@ -35,9 +35,13 @@ class phasePlot(iseultPlot):
         'set_v_max': False,
         'y_min': -2.0,
         'y_max': 2.0,
+        'x_min': -2.0,
+        'x_max': 2.0,
         'cmap': 'None',
         'set_y_min': False,
         'set_y_max': False,
+        'set_x_min': False,
+        'set_x_max': False,
         'UseDivCmap': False,
         'interpolation': 'nearest',
         'face_color': 'gainsboro',
@@ -56,27 +60,24 @@ class phasePlot(iseultPlot):
 
     def axis_info(self):
         if self.parent.MainParamDict['LinkSpatial'] == 1:
-            for val in ['x', 'y', 'z']:
-                if self.param_dict['x_val'] == val:
-                    self.x_axis_info = {
-                        'data_ax': val,
-                        'sim_num': self.param_dict['sim_num'],
-                        'pos': self.pos,
-                        'axes': 'x'
-                    }
-                    break
+            if self.param_dict['x_val'] in self.spatial_vals:
+                self.x_axis_info = {
+                    'data_ax': self.param_dict['x_val'],
+                    'sim_num': self.param_dict['sim_num'],
+                    'pos': self.pos,
+                    'axes': 'x'
+                }
             else:
                 self.x_axis_info = None
 
-            for val in ['x', 'y', 'z']:
-                if self.param_dict['y_val'] == val:
-                    self.x_axis_info = {
-                        'data_ax': val,
-                        'sim_num': self.param_dict['sim_num'],
-                        'pos': self.pos,
-                        'axes': 'y'
-                    }
-                    break
+
+            if self.param_dict['y_val'] in self.spatial_vals:
+                self.x_axis_info = {
+                    'data_ax': val,
+                    'sim_num': self.param_dict['sim_num'],
+                    'pos': self.pos,
+                    'axes': 'y'
+                }
             else:
                 self.y_axis_info = None
         else:
@@ -278,11 +279,20 @@ class phasePlot(iseultPlot):
                     label = '$\log\ $' + label
                 self.CbarTickFormatter(label)
 
-            if self.param_dict['set_y_min']:
-                ymin = self.param_dict['y_min']
+            if not (self.param_dict['y_val'] in self.spatial_vals):
+                if self.param_dict['set_y_min']:
+                    ymin = self.param_dict['y_min']
 
-            if self.param_dict['set_y_max']:
-                ymax = self.param_dict['y_max']
+                if self.param_dict['set_y_max']:
+                    ymax = self.param_dict['y_max']
+
+            if not (self.param_dict['x_val'] in self.spatial_vals):
+                if self.param_dict['set_x_min']:
+                    xmin = self.param_dict['x_min']
+
+                if self.param_dict['set_x_max']:
+                    xmax = self.param_dict['x_max']
+
 
             if self.param_dict['symmetric_x']:
                 tmp = max(abs(xmin), abs(xmax))

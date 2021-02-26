@@ -128,6 +128,58 @@ class phaseSettings(iseultPlotSettings):
         self.edit_vmax.returnPressed.connect(self.lims_changed)
         layout.addWidget(self.edit_vmax, 4, 3)
 
+        self.y_min_cb = QCheckBox('Set y min')
+        self.y_min_cb.param_key = 'set_y_min'
+        self.y_min_cb.setChecked(self.params['set_y_min'])
+        self.y_min_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.y_min_cb, 5, 2)
+
+        self.edit_ymin = QLineEdit(self)
+        self.edit_ymin.param_arg = 'y_min'
+        self.edit_ymin.setText(
+            str(self.params['y_min']))
+        self.edit_ymin.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_ymin, 5, 3)
+
+        self.y_max_cb = QCheckBox('Set y max')
+        self.y_max_cb.param_key = 'set_y_max'
+        self.y_max_cb.setChecked(self.params['set_y_max'])
+        self.y_max_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.y_max_cb, 6, 2)
+
+        self.edit_ymax = QLineEdit(self)
+        self.edit_ymax.param_arg = 'y_max'
+        self.edit_ymax.setText(
+            str(self.params['y_max']))
+        self.edit_ymax.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_ymax, 6, 3)
+
+        self.x_min_cb = QCheckBox('Set x min')
+        self.x_min_cb.param_key = 'set_x_min'
+        self.x_min_cb.setChecked(self.params['set_x_min'])
+        self.x_min_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.x_min_cb, 7, 2)
+
+        self.edit_xmin = QLineEdit(self)
+        self.edit_xmin.param_arg = 'x_min'
+        self.edit_xmin.setText(
+            str(self.params['x_min']))
+        self.edit_xmin.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_xmin, 7, 3)
+
+        self.x_max_cb = QCheckBox('Set x max')
+        self.x_max_cb.param_key = 'set_x_max'
+        self.x_max_cb.setChecked(self.params['set_x_max'])
+        self.x_max_cb.stateChanged.connect(self.v_cb_handler)
+        layout.addWidget(self.x_max_cb, 8, 2)
+
+        self.edit_xmax = QLineEdit(self)
+        self.edit_xmax.param_arg = 'x_max'
+        self.edit_xmax.setText(
+            str(self.params['x_max']))
+        self.edit_xmax.returnPressed.connect(self.lims_changed)
+        layout.addWidget(self.edit_xmax, 8, 3)
+
         self.setLayout(layout)
 
     def prtl_type_changed(self, *args):
@@ -205,9 +257,30 @@ class phaseSettings(iseultPlotSettings):
             self.oengus.canvas.draw()
 
     def lims_changed(self):
-        edit_list = [self.edit_vmin, self.edit_vmax]
-        plot_param_List = ['v_min', 'v_max']
-        cb_list = [self.v_min_cb, self.v_max_cb]
+        edit_list = [
+            self.edit_vmin,
+            self.edit_vmax,
+            self.edit_ymin,
+            self.edit_ymax,
+            self.edit_xmin,
+            self.edit_xmax,
+        ]
+        plot_param_List = [
+            'v_min',
+            'v_max',
+            'y_min',
+            'y_max',
+            'x_min',
+            'x_max',
+            ]
+        cb_list = [
+            self.v_min_cb,
+            self.v_max_cb,
+            self.y_min_cb,
+            self.y_max_cb,
+            self.x_min_cb,
+            self.x_max_cb,
+        ]
         to_reload = False
         for j in range(len(cb_list)):
             try:
