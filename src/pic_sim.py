@@ -333,6 +333,8 @@ class picSim(object):
                 pass
             except AttributeNotFound:
                 pass
+            except OSError:
+                pass
             self.parser.prtl_stride = self.xtra_stride
             return response_dict
 
@@ -366,6 +368,8 @@ class picSim(object):
                 pass
             except AttributeNotFound:
                 pass
+            except OSError:
+                pass
             return response_dict
 
         elif lookup['data_class'] == 'param':
@@ -383,6 +387,8 @@ class picSim(object):
             except IndexError:
                 pass
             except AttributeNotFound:
+                pass
+            except OSError:
                 pass
             return 1.0
 
@@ -408,6 +414,8 @@ class picSim(object):
             except IndexError:
                 pass
             except AttributeNotFound:
+                pass
+            except OSError:
                 pass
             return response_dict
 
@@ -438,6 +446,8 @@ class picSim(object):
                 pass
             except AttributeNotFound:
                 pass
+            except OSError:
+                pass
             return response_dict
 
         elif lookup['data_class'] == 'axes':
@@ -459,6 +469,8 @@ class picSim(object):
             except IndexError:
                 pass
             except AttributeNotFound:
+                pass
+            except OSError:
                 pass
             return response_dict
 
@@ -482,6 +494,8 @@ class picSim(object):
                 pass
             except AttributeNotFound:
                 pass
+            except OSError:
+                pass
             return response_dict
 
         elif lookup['data_class'] == 'shock_finders':
@@ -504,6 +518,8 @@ class picSim(object):
             except IndexError:
                 pass
             except AttributeNotFound:
+                pass
+            except OSError:
                 pass
             return response_dict
 
